@@ -1483,5 +1483,40 @@
       "rules": [],
       "limits": []
     }
+  ],
+  "spatial_relations": [
+    {
+      "id": "sr_dongyu_qingyun_center",
+      "s": "p_dongyu",
+      "t": "p_qingyunshan",
+      "kind": "contain",
+      "value": "center",
+      "confidence": "high",
+      "first_ch": 1,
+      "evidence": { "ch": 1, "quote": "青云山坐落在东域腹地，是青云宗山门所在。" },
+      "note": "虚构样例：青云山位于东域中部"
+    },
+    {
+      "id": "sr_houshan_qingyun_north",
+      "s": "p_houshan",
+      "t": "p_qingyunshan",
+      "kind": "direction",
+      "value": "north_of",
+      "confidence": "medium",
+      "first_ch": 18,
+      "evidence": { "ch": 18, "quote": "后山禁地位于青云山北侧深处，非宗主不得擅入。" },
+      "note": "虚构样例：禁地在山北深处"
+    },
+    {
+      "id": "sr_jishi_qingyun_nearby",
+      "s": "p_jishiji",
+      "t": "p_qingyunshan",
+      "kind": "adjacent",
+      "value": "nearby",
+      "confidence": "medium",
+      "first_ch": 5,
+      "evidence": { "ch": 5, "quote": "山门外的集市紧挨着青云山脚下，凡人修士往来不绝。" },
+      "note": "虚构样例：集市在山门外侧近处"
+    }
   ]
 }

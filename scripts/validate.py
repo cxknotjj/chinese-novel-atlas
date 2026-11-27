@@ -30,6 +30,15 @@ FORESHADOW_STATUS = {"planted", "paid", "overdue", "dropped"}
 CONCEPT_KINDS = {"worldview", "golden_finger", "technique",
                  "item_grade", "organization_rule", "prophecy"}
 
+# 空间关系（spatial_relations，可选；契约见 output/<书名>/_contract/spatial-contract.md）
+SPATIAL_KINDS = {"direction", "distance", "contain", "adjacent",
+                 "portal", "travel_path", "road", "river",
+                 "separated_by", "in_between"}
+DIRECTION_VALUES = {"north_of", "south_of", "east_of", "west_of",
+                    "northeast_of", "northwest_of", "southeast_of",
+                    "southwest_of"}
+SPATIAL_CONFIDENCE = {"high", "medium", "low"}
+
 ID_PREFIX = {"entities": "e_", "places": "p_", "concepts": "c_",
              "realms": "r_", "foreshadows": "f_", "knowledge": "k_",
              "volumes": "v"}
@@ -264,6 +273,104 @@ def validate(data, report):
     for c in data.get("concepts") or []:
         if c.get("kind") not in CONCEPT_KINDS:
             report.err("枚举", f"设定 {c.get('id')} kind 越界：{c.get('kind')}")
+
+    # ---------- 空间关系（spatial_relations，可选） ----------
+    # 缺失或空 list 不算错误：M2 回退 M1 是视图行为，不是数据问题。
+    spatial = data.get("spatial_relations")
+    if spatial is not None and not isinstance(spatial, list):
+        report.err("空间", "spatial_relations 必须是 list")
+        spatial = None
+    if spatial:
+        chapters_total = meta.get("chapters")
+
+        def in_ch_range(x):
+            return (isinstance(x, int) and not isinstance(x, bool)
+                    and isinstance(chapters_total, int)
+                    and 1 <= x <= chapters_total)
+
+        def root_of(pid):
+            # 沿 parent 上溯到根地点；parent 指向不存在地点时停在悬空处，不崩。
+            seen = set()
+            cur = pid
+            while cur and cur in place:
+                if cur in seen:
+                    return cur
+                seen.add(cur)
+                cur = place[cur].get("parent")
+            return cur
+
+        sr_seen = set()
+        layer_constraints = Counter()
+        for i, rel in enumerate(spatial):
+            tag = f"spatial_relations[{i}]"
+            if not isinstance(rel, dict):
+                report.err("空间", f"{tag} 条目必须是对象")
+                continue
+            rid = rel.get("id")
+            if not rid:
+                report.err("空间", f"{tag} 缺少 id")
+            else:
+                if not str(rid).startswith("sr_"):
+                    report.err("空间", f"空间关系 id {rid} 未使用 sr_ 前缀")
+                if rid in sr_seen:
+                    report.err("空间", f"空间关系 id 重复：{rid}")
+                elif rid in ids:
+                    report.err("空间", f"空间关系 id {rid} 与既有条目 {ids[rid]} 重复")
+                sr_seen.add(rid)
+
+            s, t = rel.get("s"), rel.get("t")
+            if s not in place:
+                report.err("空间", f"空间关系 {rid or tag} 起点不存在：{s}")
+            if t not in place:
+                report.err("空间", f"空间关系 {rid or tag} 终点不存在：{t}")
+            if s in place and t in place and s == t:
+                report.err("空间", f"空间关系 {rid or tag} 自环：{s}")
+
+            kind = rel.get("kind")
+            if kind not in SPATIAL_KINDS:
+                report.err("空间", f"空间关系 {rid or tag} kind 越界：{kind}")
+            if kind == "direction" and rel.get("value") not in DIRECTION_VALUES:
+                report.err("空间", f"空间关系 {rid or tag} direction value 越界：{rel.get('value')}")
+            if rel.get("confidence") not in SPATIAL_CONFIDENCE:
+                report.err("空间", f"空间关系 {rid or tag} confidence 越界：{rel.get('confidence')}")
+
+            fc = rel.get("first_ch")
+            if not in_ch_range(fc):
+                report.err("空间", f"空间关系 {rid or tag} first_ch 越界：{fc}")
+
+            ev = rel.get("evidence")
+            if not isinstance(ev, dict):
+                report.err("空间", f"空间关系 {rid or tag} evidence 必须是对象")
+                ev = {}
+            ech = ev.get("ch")
+            if not in_ch_range(ech):
+                report.err("空间", f"空间关系 {rid or tag} evidence.ch 越界：{ech}")
+            quote = ev.get("quote")
+            if not isinstance(quote, str) or not quote.strip():
+                report.err("空间", f"空间关系 {rid or tag} evidence.quote 为空")
+            else:
+                if len(quote) > 120:
+                    report.err("空间", f"空间关系 {rid or tag} evidence.quote 超过 120 字")
+                if "\n" in quote or "\r" in quote:
+                    report.err("空间", f"空间关系 {rid or tag} evidence.quote 含换行")
+            if in_ch_range(ech) and isinstance(fc, int) and ech != fc:
+                report.warn("空间", f"证据章 {ech} 与 first_ch {fc} 不一致")
+
+            value = rel.get("value")
+            if not isinstance(value, str) or not value.strip():
+                report.err("空间", f"空间关系 {rid or tag} value 为空")
+            elif len(value) > 40:
+                report.err("空间", f"空间关系 {rid or tag} value 超过 40 字")
+
+            # 层统计只数 direction / distance 约束；两端都悬空时无法归层，跳过。
+            if kind in ("direction", "distance"):
+                anchor = s if s in place else (t if t in place else None)
+                if anchor is not None:
+                    layer_constraints[root_of(anchor)] += 1
+
+        for layer, n in layer_constraints.items():
+            if 1 <= n <= 2:
+                report.warn("空间", f"该层仅 {n} 条方向/距离约束，M2 会回退")
 
     # ---------- 卷 ----------
     vols = data.get("volumes") or []

@@ -18,6 +18,7 @@ from .foreshadows import apply_status, attach_mentions, merge_foreshadows
 from .places import merge_places
 from .realms import apply_power_history, load_realms
 from .relations import merge_relations
+from .spatial import load_spatial
 
 
 def merge_book(root, *, out="", batches="", title="", author="", genre="未标注",
@@ -45,6 +46,24 @@ def merge_book(root, *, out="", batches="", title="", author="", genre="未标�
         taken_ids={e["id"] for e in ents} | {f["id"] for f in fores},
         entity_names={e["id"]: e["name"] for e in ents},
     )
+
+    # 人工证据化空间数据：补充地点（id 已存在则跳过，不覆盖批次抽取结果），
+    # 空间关系原样挂到顶层；无 spatial.json 时关系为空 list，字段保持存在。
+    extra_places, spatial_relations = load_spatial(root)
+    place_ids = {p["id"] for p in places}
+    spatial_places_added = 0
+    for p in extra_places:
+        pid = p.get("id")
+        if not pid:
+            print(f"  空间地点缺少 id，已跳过：{str(p)[:60]}")
+            continue
+        if pid in place_ids:
+            print(f"  空间地点冲突跳过：{pid} 已存在，不覆盖已有地点")
+            continue
+        places.append(dict(p))
+        place_ids.add(pid)
+        spatial_places_added += 1
+
     concepts = merge_concepts(
         batches,
         taken_ids={e["id"] for e in ents} | {f["id"] for f in fores}
@@ -102,6 +121,7 @@ def merge_book(root, *, out="", batches="", title="", author="", genre="未标�
         "knowledge": [],
         "places": places,
         "concepts": concepts,
+        "spatial_relations": spatial_relations,
     }
 
     n_m = attach_mentions(root, fores)
@@ -131,6 +151,8 @@ def merge_book(root, *, out="", batches="", title="", author="", genre="未标�
         "realms": len(realms),
         "places": len(places),
         "concepts": len(concepts),
+        "spatial": len(spatial_relations),
+        "spatial_places": spatial_places_added,
         "chars": data["meta"]["chars"],
         "status_changed": changed,
     }

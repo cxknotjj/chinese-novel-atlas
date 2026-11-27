@@ -43,6 +43,7 @@ def main():
           f"超期阈值 {stats['threshold']} 章")
     print(f"境界    {stats['realms']}")
     print(f"地点    {stats['places']}　设定 {stats['concepts']}")
+    print(f"空间关系 {stats['spatial']} 条（新增地点 {stats['spatial_places']} 个）")
     print(f"字数    {stats['chars']:,}")
     print(f"输出    {out}")
     return 0

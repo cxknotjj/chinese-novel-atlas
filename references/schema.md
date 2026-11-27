@@ -25,6 +25,7 @@
   "foreshadows": [ /* 伏笔台账 */ ],
   "knowledge":   [ /* 三界认知：谁知道什么 */ ],
   "places":      [ /* 地点，支持层级 */ ],
+  "spatial_relations": [ /* 空间关系，可选；每条带原文证据 */ ],
   "concepts":    [ /* 世界观 / 金手指 / 功法 / 品阶 */ ]
 }
 ```
@@ -380,6 +381,121 @@ silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
 
 网文常见多层级：`大陆 → 域 → 国 → 城 → 宗门 → 山峰`。`parent` 链任意深，但**不能成环**。
 
+`places` 只有 `parent` 包含关系，**没有坐标、方位、距离字段**。视图渲染时计算的布局坐标只用于避让或示意，不写回 `places`，也不写进 data.json。
+
+---
+
+## spatial_relations（空间关系与地图分级）· 可选
+
+### 地图成熟度分级 M0–M4
+
+地图不是一种渲染样式，而是一种证据等级：没有方位、距离、边界证据时，只能画拓扑关系图，不能画带东南西北和比例尺的地图。分级表述参考公开的证据化拆书规范（调研见 `references/map-research.md` §3.1）：
+
+| 等级 | 名称 | 允许表达 | 不允许做 |
+|---|---|---|---|
+| M0 | 地点索引 | 地点名、出现章节、父级未知 | 不生成坐标图 |
+| M1 | 拓扑图 | 包含、相邻、可达、传送 | 坐标只用于避让，不表达方位和距离 |
+| M2 | 二维方位图 | 东南西北、边界、道路、局部坐标、区域 | 不把自动布局回写成事实坐标 |
+| M3 | 多层地图 | 位面、上下界、星域、楼层、父地图下钻 | z 轴没有叙事依据就不上 3D |
+| M4 | 时态地图 | 地点状态、国界、控制权、路线随章节变化 | 不用修改旧数据的方式隐藏变化 |
+
+**本项目当前支持 M1 + M2 证据化示意**：M1 消费 `places.parent` 与 `spatial_relations` 中非二维类型；M2 只消费带原文证据的 `direction` / `distance` / `contain`(带位置值) / `adjacent`。M3（多层下钻）、M4（按章节切片的时态地图）暂未实现。
+
+### 层（layer）
+
+一层 = 一个根地点（`parent` 为 null 的地点）及其整棵子树。
+
+- M1：默认显示某层子树；另有「全部」视图。
+- M2：只对**带 ≥3 条 direction/distance 约束**的层开放；不足时显示回退卡片（`该层方位证据不足（N 条方向/距离约束），已回退到 M1 拓扑图`），不得硬画。
+
+### 条目结构
+
+```json
+{
+  "id": "sr_lanzhou_jiayuan_center",
+  "s": "p_lanzhou",
+  "t": "p_jiayuancheng",
+  "kind": "contain",
+  "value": "center",
+  "confidence": "high",
+  "first_ch": 100,
+  "evidence": { "ch": 100, "quote": "嘉元城位于岚州中部" },
+  "note": "越国宏观；区域块内位置"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `id` | string | ✓ | `sr_` 前缀，全局唯一，蛇形小写 |
+| `s` / `t` | string | ✓ | 必须是 `places` 里的 id，`s != t` |
+| `kind` | enum | ✓ | 枚举见下 |
+| `value` | string | ✓ | ≤40 字，含义随 kind（见下） |
+| `confidence` | enum | ✓ | `high` / `medium` / `low` |
+| `first_ch` | int | ✓ | 1..`meta.chapters` 的整数 |
+| `evidence.ch` | int | ✓ | 1..`meta.chapters` 的整数 |
+| `evidence.quote` | string | ✓ | 原文片段，≤120 字，不含换行，不得改写原文 |
+| `note` | string | | ≤60 字 |
+
+### kind 枚举与 value 语义
+
+方向语义统一为「s 位于 t 的该方位」。
+
+| kind | value | 进 M2？ |
+|---|---|---|
+| `direction` | `north_of` `south_of` `east_of` `west_of` `northeast_of` `northwest_of` `southeast_of` `southwest_of` | 是 |
+| `distance` | 原文距离/时长短语，如 `百余里`、`一天一夜`、`三天路程` | 是（弱约束） |
+| `contain` | `north_part` `south_part` `east_part` `west_part` `center` `edge` `northeast_edge` 等区域位置；s=父，t=子 | 是（区域提示，不进象限） |
+| `adjacent` | `borders` 或 `nearby` | 是（软约束） |
+| `portal` | 自由短语，如 `古传送阵`、`随机降落` | 否，只画 M1 |
+| `travel_path` | 自由短语，如 `神风舟一天一夜` | 否，只画 M1 |
+| `road` / `river` | 自由短语 | 否，只画 M1 |
+| `separated_by` | 分隔物短语，如 `山脉` | 否 |
+| `in_between` | `p_x|p_y`（两个已有地点 id） | 否 |
+
+### 可选性与回退
+
+`spatial_relations` **可选**：缺失或空 list 时 M2 自动回退 M1，不算错误。没有 `spatial.json` 时，data.json 的 `spatial_relations` 为 `[]`（保持字段存在，便于视图判断）。
+
+### validate 空间规则
+
+规则标签「空间」。必须报 error：
+
+1. `spatial_relations` 存在时必须是 list；条目必须是对象。
+2. `id` 前缀 `sr_`、唯一。
+3. `s` / `t` 不是已有地点 id，或 `s == t`。
+4. `kind` 不在枚举内；`direction` 的 value 不在方位词表内。
+5. `confidence` 不在 `high/medium/low`。
+6. `first_ch` 非 1..chapters 的整数。
+7. `evidence` 不是对象，或 `evidence.ch` 越界/非整数，或 `evidence.quote` 为空/超过 120 字/含换行。
+8. `value` 为空或超过 40 字。
+
+报 warning：
+
+9. `evidence.ch` 与 `first_ch` 不一致（`证据章 220 与 first_ch 144 不一致`）。
+10. 层内 direction+distance 约束数为 1–2（`该层仅 N 条方向/距离约束，M2 会回退`）。
+
+### spatial.json（书目录下的可选输入文件）
+
+每本书目录下可有 `spatial.json`，三段结构：
+
+```json
+{ "meta": { "note": "人工证据化整理" },
+  "places": [ { "id": "p_yuanwuguo", "name": "元武国", "parent": null, "desc": "...", "first_ch": 144, "attrs": {} } ],
+  "spatial_relations": [ ... ] }
+```
+
+merge 行为：
+
+- `places` 里 data.json 没有的 id 追加进 `places`（已存在则报冲突并跳过）；
+- `spatial_relations` 原样挂到 data.json 顶层（并校验两端 id）；
+- 没有 `spatial.json` 时，data.json 的 `spatial_relations` 为 `[]`。
+
+### 禁忌
+
+- 不把自动布局坐标写回 `places`，也不把自动布局坐标当成事实坐标展示。
+- 不把「旁边」「不远处」「一天路程」折算成里数或像素距离。
+- 不给无原文证据的地点编方位；没有原文句子就不写、不进 M2。
+
 ---
 
 ## concepts
@@ -419,6 +535,8 @@ silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
 9. `foreshadows.payoff_ch` 若存在必须 ≥ `plant_ch`
 10. `coverage.chapters_done + chapters_skipped == chapters`
 
+空间关系（`spatial_relations`）的校验规则见上文「spatial_relations（空间关系与地图分级）· 可选」一节的「validate 空间规则」清单（8 条 error + 2 条 warning，规则标签「空间」）。
+
 ---
 
 ## v1.0 → v2.0 迁移
@@ -443,3 +561,4 @@ v1.0 的古典小说样例已归档到 `samples/_archive/`，不再维护，不�
 | 2.0 | 面向中文网文。新增境界/伏笔/逐章/分卷/认知隔离；移除 events |
 | 2.1 | 境界体系改为**全局定义**（`realms.json` + `scripts/realms.py`）。禁止逐批建立 `realms`，`power_history` 须逐条对回原文 |
 | 2.2 | 伏笔新增 `last_mention_ch` / `keywords`。超期判定从「埋了多久」改为「多久没提」，四处实现统一口径 |
+| 2.3 | 新增可选 `spatial_relations`（每条带 `evidence` 章号 + 原文片段）与「地图」视图（M1 拓扑 / M2 证据化示意）；`places` 语义不变、无坐标字段；M2 约束不足自动回退 M1 |
