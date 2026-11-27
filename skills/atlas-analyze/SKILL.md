@@ -73,6 +73,30 @@ python scripts/chunk.py "<文件路径>" --out output/{书名}/
 
 如果识别出的章数明显不对（比如整本只切出 1 章），停下来问用户章节格式，**不要猜**。
 
+### 第 1.5 步 · 境界体系扫描（**不能跳过**）
+
+```bash
+python scripts/realms.py output/{书名}/
+```
+
+**为什么单独一步**：境界是全局概念。逐批抽取时每批只看十几章，各批 `order` 独立编号，合并后必然错乱——实测出现过「筑基」被排成 `order:1`、105 个实体 `power_history` 全空的严重错误。
+
+扫描器输出三类候选：
+
+| 信号 | 强度 | 说明 |
+|---|---|---|
+| 「第 X 层 / 重 / 品」 | **强** | 网文常用功法层数代替境界名，这是最可靠的骨架 |
+| 标准境界词（练气/筑基/金丹…） | 弱 | 假阳性高，「后天」「心动」「融合」在中文里都是普通词 |
+| 功法名 + 层数（长春功第六层） | 中 | 区分不同体系（如外功的象甲功 vs 内功的长春功） |
+
+据结果写 `output/{书名}/realms.json`（结构见 `references/schema.md`），**每条 `power_history` 都要对回原文具体章号**。若作者用功法层数代境界，`realms.name` 用通用境界名、`stages` 直接装层数，并在 `mapping` 说明换算依据。
+
+写完校验：
+
+```bash
+python scripts/realms.py output/{书名}/ --check output/{书名}/realms.json
+```
+
 ### 第 2 步 · 逐章抽取
 
 ```bash
@@ -125,11 +149,12 @@ python scripts/build.py --dir output/{书名}/
 
 ```
 已生成：
-  output/红楼梦/data.json      47.5 KB
-  output/红楼梦/atlas.html     412 KB  ← 双击打开
+  output/青云签到三十年/data.json      35.2 KB
+  output/青云签到三十年/atlas.html     448 KB  ← 双击打开
 
-覆盖 120/120 回，识别 51 个人物、86 条关系。
-花费 1.42 元，用时 8 分 20 秒。
+覆盖 120/300 章，识别 18 个角色、25 条关系、4 级境界、12 条伏笔。
+其中 7 条伏笔已超期。
+花费 2.14 元，用时 15 分 20 秒。
 ```
 
 ---
@@ -180,8 +205,8 @@ python scripts/build.py --dir output/{书名}/
 
 | 组件 | 状态 |
 |---|---|
-| 数据契约 `references/schema.md` | ✅ 完成 |
-| 金标准样本 `samples/honglou/` | ✅ 完成（51 实体 / 86 关系） |
+| 数据契约 `references/schema.md` | ✅ 完成（v2.0） |
+| 虚构样例 `samples/fictional/` | ✅ 完成（18 角色 / 25 关系 / 12 伏笔） |
 | 视图模板 `template/viewer.html` | 🚧 开发中 |
 | `scripts/*.py` | ⬜ 待实现 |
 
