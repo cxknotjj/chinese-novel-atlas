@@ -72,6 +72,28 @@ npx skills add cxknotjj/chinese-novel-atlas
 
 ---
 
+## 项目结构
+
+```
+scripts/
+  merge.py / export.py     薄 CLI，只解析参数并调用实现层
+  build.py                 模板注入 + 构建前校验
+  chunk.py validate.py realms.py
+  mentions.py seek.py compare.py
+  novel_atlas/
+    names.py batches.py sources.py
+    merge/                  实体、关系、章节、伏笔、地点、设定、境界、清理
+    export/                 CSV、Markdown、单文件 HTML、静态站
+template/
+  viewer.html               页面骨架
+  viewer.css                样式源
+  viewer.js                 交互源
+```
+
+`template/` 下的三份源码由 `build.py` 在构建时内联回单文件 `atlas.html`，所以产物仍是“一个文件发给别人”的形态，但维护时可以分别改骨架、样式和交互。合并与导出的业务规则也各自落在独立模块中，`scripts/merge.py` / `scripts/export.py` 的调用方式保持不变。
+
+---
+
 ## 用法
 
 ```
@@ -170,16 +192,16 @@ output/我的书/
 - [x] `chunk.py` 分章 + 编码探测 + 章节模式打分 + 兜底
 - [x] agent 原生分批抽取（无外部 API、无 key、无网络请求）
 - [x] `scripts/prompts/batch_template.md` 批次输出模板
-- [x] `merge.py` 归并 + 基础别名消解 + 伏笔去重 + status 派生 + `merge-log.json` 合并审计
+- [x] `novel_atlas/merge` 归并管线（实体/别名消解、关系、章节、伏笔状态、地点、设定、境界、引用清理）+ `merge-log.json` 合并审计
 - [x] `realms.py` 境界骨架扫描 + 战力体系校验
 - [x] `validate.py` schema 全量校验（含战斗 a/b 引用与 coverage 交叉校验）
 - [x] `build.py` 单文件出图（构建前自动校验，demo 与 `atlas.html` 同源）
-- [x] `tests/test_validate.py` 契约回归（样例校验、旧 s/t 拒绝、悬空战斗、coverage 加和）
+- [x] `tests/` 回归（契约校验、实体归并、伏笔状态、地点父节点、导出产物）
 - [x] `.github/workflows/contract.yml` CI（单元测试 + 样例校验 + 样例构建）
 - [x] `seek.py` 原文定向检索（返回命中段 + `chN:pM` 坐标，不整章入上下文）
 - [x] `mentions.py` 伏笔提及追踪（按「沉默时长」判超期，不按埋设跨度）
 - [x] `compare.py` 跨书指标对照（`metrics.md` / `compare.html` / `diff.json`）
-- [x] `export.py` 五种导出（伏笔 CSV / Markdown 设定集 / 角色表 / 单文件 / 静态站）
+- [x] `novel_atlas/export` 五种导出（伏笔 CSV / Markdown 设定集 / 角色表 / 单文件 / 静态站）
 - [ ] 别名消解进阶（网文的称号极多："剑尊""魔帝""老祖"都是同一个人）
 - [ ] 真实网文样例（需自备文本，版权原因不内置）
 - [ ] README 首屏 GIF

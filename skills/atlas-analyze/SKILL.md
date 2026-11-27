@@ -113,7 +113,7 @@ python scripts/validate.py output/{书名}/data.json
 python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 ```
 
-把 `data.json` 内嵌进 `template/viewer.html`，产出单文件 `atlas.html`。
+把 `data.json` 内嵌进 `template/viewer.html`，构建时再内联 `viewer.css` / `viewer.js`，产出单文件 `atlas.html`。
 构建前会自动跑一次 `validate.py`，有错误会拒绝出图；确实需要临时预览才加 `--skip-validate`。
 加 `--external` 则改为同目录 `data.js` 外链（数据大、要反复重建时用）。
 `merge.py` 会同时生成 `merge-log.json`，记录实体归并簇、别名依据、输入/输出数量，便于回查。
@@ -180,11 +180,11 @@ python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 |---|---|
 | 数据契约 `references/schema.md` | ✅ 完成（v2.0） |
 | 虚构样例 `samples/fictional/` | ✅ 完成（18 角色 / 25 关系 / 12 伏笔） |
-| 视图模板 `template/viewer.html` | ✅ 完成（七视图：图谱 / 百科 / 地点志 / 版图 / 节奏 / 境界 / 伏笔，单文件可开） |
+| 视图模板 `template/viewer.*` | ✅ 完成（HTML 骨架 + CSS + JS，构建时内联为单文件；七视图） |
 | `scripts/chunk.py` | ✅ 分章 + 编码探测 + 模式打分 + 兜底 |
 | `scripts/prompts/batch_template.md` | ✅ 执行 agent 的批次输出模板 |
 | `scripts/realms.py` | ✅ 境界扫描 / 候选生成 / 体系校验 |
-| `scripts/merge.py` | ✅ 归并 + 别名消解 + 伏笔去重 + status 派生 |
+| `scripts/merge.py` + `novel_atlas/merge/` | ✅ 归并 + 别名消解 + 伏笔去重 + status 派生 |
 | `scripts/mentions.py` | ✅ 伏笔提及追踪（沉默时长判定 + `--apply` 回写） |
 | `scripts/validate.py` | ✅ schema 全量校验 |
 | `scripts/build.py` | ✅ 单文件内嵌 / 外链 data.js |

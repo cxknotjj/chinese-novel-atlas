@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """build.py — 把 data.json 注入视图模板，产出可双击打开的 atlas.html。
 
-模板只有一份：template/viewer.html。demo 和每本书的 atlas.html 都由它生成，
-不再手工复制，避免模板分叉。
+模板源码放在 template/：viewer.html 是页面骨架，viewer.css 与 viewer.js
+分别负责样式和交互；build 时把两者内联回单文件，demo 和每本书的
+atlas.html 都由同一份源码生成，不再手工复制，避免模板分叉。
 
 默认产出**单文件** HTML（数据内嵌，发给别人只用传一个文件）；
 加 --external 则把数据写成同目录 data.js，HTML 只引用它——适合数据大、
@@ -22,10 +23,27 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_TAG = '<script src="./data.js"></script>'
+CSS_TAG = "/*__ATLAS_CSS__*/"
+JS_TAG = "/*__ATLAS_JS__*/"
 
 
 def load_json(p):
     return json.loads(Path(p).read_text(encoding="utf-8"))
+
+
+def inline_assets(tpl, tpl_path):
+    """把模板目录里的 viewer.css / viewer.js 内联回 HTML 骨架。"""
+    if CSS_TAG in tpl:
+        css_path = tpl_path.parent / "viewer.css"
+        if not css_path.exists():
+            raise SystemExit(f"找不到样式源 {css_path}")
+        tpl = tpl.replace(CSS_TAG, css_path.read_text(encoding="utf-8"), 1)
+    if JS_TAG in tpl:
+        js_path = tpl_path.parent / "viewer.js"
+        if not js_path.exists():
+            raise SystemExit(f"找不到交互源 {js_path}")
+        tpl = tpl.replace(JS_TAG, js_path.read_text(encoding="utf-8"), 1)
+    return tpl
 
 
 def main():
@@ -64,6 +82,7 @@ def main():
     if not tpl_path.exists():
         raise SystemExit(f"找不到模板 {tpl_path}")
     tpl = tpl_path.read_text(encoding="utf-8")
+    tpl = inline_assets(tpl, tpl_path)
 
     if DATA_TAG not in tpl:
         raise SystemExit(f"模板里找不到数据占位 {DATA_TAG}，请检查 {tpl_path}")
