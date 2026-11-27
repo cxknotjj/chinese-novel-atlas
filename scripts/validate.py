@@ -115,6 +115,21 @@ def validate(data, report):
         for fid in c.get("new_foreshadows") or []:
             if fid not in fs:
                 report.err("规则1", f"ch{c.get('ch')} 的 new_foreshadows 引用不存在：{fid}")
+        for bi, b in enumerate(c.get("battles") or []):
+            if not isinstance(b, dict):
+                report.err("规则1", f"ch{c.get('ch')} battles[{bi}] 不是对象")
+                continue
+            # 旧批次写成了 s/t，契约要求 a/b；这里显式拒绝，避免静默漏掉
+            if "s" in b or "t" in b:
+                report.err("规则1", f"ch{c.get('ch')} battles[{bi}] 使用了旧字段 s/t，应为 a/b")
+            for side in ("a", "b"):
+                if b.get(side) not in ent:
+                    report.err("规则1",
+                               f"ch{c.get('ch')} battles[{bi}] 的 {side}={b.get(side)} 不是已有实体")
+            if b.get("a") and b.get("a") == b.get("b"):
+                report.err("规则1", f"ch{c.get('ch')} battles[{bi}] 双方相同：{b.get('a')}")
+            if b.get("gap") is not None and not num(b.get("gap")):
+                report.err("规则1", f"ch{c.get('ch')} battles[{bi}] gap 不是数字")
     for p in data.get("places") or []:
         if p.get("parent") and p["parent"] not in place:
             report.err("规则1", f"地点 {p.get('id')} 的 parent 不存在：{p['parent']}")
@@ -216,8 +231,11 @@ def validate(data, report):
     for f in data.get("foreshadows") or []:
         if f.get("status") == "dropped":
             continue
-        expect = "paid" if f.get("payoff_ch") else (
-            "overdue" if live - (f.get("plant_ch") or 0) > thr else "planted")
+        # 超期看「沉默时长」（距最后一次提及），没有提及数据时退回埋设章。
+        # 与 merge.py / export.py / viewer.html 保持同一套规则。
+        last = f.get("last_mention_ch") or f.get("plant_ch") or 0
+        expect = "paid" if f.get("payoff_ch") and f.get("payoff_ch") != f.get("plant_ch") else (
+            "overdue" if live - last > thr else "planted")
         if f.get("status") != expect:
             report.err("status", f"伏笔 {f.get('id')} status={f.get('status')}，"
                                  f"按派生规则应为 {expect}（阈值 {thr} 章）")

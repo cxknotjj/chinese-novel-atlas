@@ -29,7 +29,7 @@ REL_CN = {"kinship": "血亲", "marriage": "婚姻", "romance": "情感", "servi
           "mentorship": "师承", "alliance": "同盟", "conflict": "敌对", "social": "交游"}
 KIND_CN = {"worldview": "世界规则", "golden_finger": "金手指", "technique": "功法",
            "item_grade": "品阶", "organization_rule": "组织制度", "prophecy": "预言"}
-STATUS_CN = {"paid": "已回收", "overdue": "已超期", "planted": "待回收", "dropped": "已放弃"}
+STATUS_CN = {"paid": "有回收章", "overdue": "已超期", "planted": "待回收", "dropped": "已放弃"}
 STATUS_ORDER = {"overdue": 0, "planted": 1, "paid": 2, "dropped": 3}
 
 
@@ -49,9 +49,11 @@ def load(root):
 def status_of(f, live, thr):
     if f.get("status") == "dropped":
         return "dropped"
-    if f.get("payoff_ch"):
+    if f.get("payoff_ch") and f.get("payoff_ch") != f.get("plant_ch"):
         return "paid"
-    return "overdue" if live - (f.get("plant_ch") or 0) > thr else "planted"
+    # 与 merge.py / validate.py / viewer.html 一致：看沉默时长而非埋设跨度
+    last = f.get("last_mention_ch") or f.get("plant_ch") or 0
+    return "overdue" if live - last > thr else "planted"
 
 
 def foresight_rows(d):
@@ -126,12 +128,17 @@ def meta_line(d):
 
 def export_fs(d, out_dir):
     out = out_dir / "伏笔清单.csv"
+    live = d["_live"]
     with out.open("w", encoding="utf-8-sig", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(["id", "内容", "埋设章", "回收章", "状态", "跨度", "线索", "重要度", "备注"])
+        # 「沉默」是判超期的依据，「跨度」只是埋了多久——两者差很远，都要给
+        w.writerow(["id", "内容", "埋设章", "回收章", "最后提及", "沉默", "状态",
+                    "跨度", "线索", "重要度", "备注"])
         for f, st, span in foresight_rows(d):
+            last = f.get("last_mention_ch")
+            silent = "" if f.get("payoff_ch") else (live - (last or f.get("plant_ch") or 0))
             w.writerow([f.get("id"), f.get("content"), f.get("plant_ch"),
-                        f.get("payoff_ch") or "", STATUS_CN[st], span,
+                        f.get("payoff_ch") or "", last or "", silent, STATUS_CN[st], span,
                         f.get("thread") or "", f.get("importance"), f.get("note") or ""])
     return out
 

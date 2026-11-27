@@ -17,6 +17,7 @@
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,9 +36,30 @@ def main():
     ap.add_argument("--template", default=str(ROOT / "template" / "viewer.html"))
     ap.add_argument("--external", action="store_true",
                     help="数据写成 data.js 外链，而不是内嵌")
+    ap.add_argument("--strict", action="store_true",
+                    help="把校验警告也视为失败")
+    ap.add_argument("--skip-validate", action="store_true",
+                    help="跳过构建前的 data.json 契约校验（仅用于临时预览）")
     args = ap.parse_args()
 
     data = load_json(args.data)
+    if not args.skip_validate:
+        # 构建前先过契约校验，避免把引用错误的数据直接发给读者
+        sys.path.insert(0, str(ROOT / "scripts"))
+        from validate import Report, validate as validate_data
+        rep = Report()
+        validate_data(data, rep)
+        if rep.errors:
+            for rule, msg in rep.errors[:12]:
+                print(f"  ✗ [{rule}] {msg}", file=sys.stderr)
+            if len(rep.errors) > 12:
+                print(f"  ✗ …另有 {len(rep.errors) - 12} 条错误", file=sys.stderr)
+            raise SystemExit(f"data.json 校验失败（{len(rep.errors)} 个错误），"
+                             "修好数据或加 --skip-validate 后再构建")
+        if args.strict and rep.warnings:
+            for rule, msg in rep.warnings[:8]:
+                print(f"  ! [{rule}] {msg}", file=sys.stderr)
+            raise SystemExit(f"严格模式：data.json 有 {len(rep.warnings)} 条警告")
     tpl_path = Path(args.template)
     if not tpl_path.exists():
         raise SystemExit(f"找不到模板 {tpl_path}")
@@ -49,9 +71,16 @@ def main():
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     payload = payload.replace("</", "<\\/")      # 防止正文里的 </script> 截断
 
-    out_dir = Path(args.out)
+    # --out 既接受目录也接受完整文件路径：以 .html 结尾就当文件名。
+    # 之前只认目录，传 path/to/atlas.html 会试图把它建成目录并崩掉。
+    out_arg = Path(args.out)
+    if out_arg.suffix.lower() in (".html", ".htm"):
+        out_dir, out_name = out_arg.parent, out_arg.name
+    else:
+        out_dir, out_name = out_arg, args.name
+
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / args.name
+    out_file = out_dir / out_name
 
     if args.external:
         (out_dir / "data.js").write_text(
