@@ -5,6 +5,8 @@ import statistics
 from collections import Counter
 from pathlib import Path
 
+from ..foreshadow_rules import expected_status, threshold
+
 TYPE_CN = {"character": "人物", "org": "势力", "item": "器物", "creature": "异兽"}
 REL_CN = {"kinship": "血亲", "marriage": "婚姻", "romance": "情感", "service": "从属",
           "mentorship": "师承", "alliance": "同盟", "conflict": "敌对", "social": "交游"}
@@ -21,20 +23,13 @@ def load(root):
     d = json.loads(p.read_text(encoding="utf-8"))
     meta = d.get("meta") or {}
     live = max((c.get("ch") or 0 for c in d.get("chapters") or []), default=0)
-    span = live or meta.get("chapters") or 0
     d["_live"] = live
-    d["_thr"] = max(50, int(span * 0.15))
+    d["_thr"] = threshold(live, meta.get("chapters") or 0)
     return d
 
 
 def status_of(f, live, thr):
-    if f.get("status") == "dropped":
-        return "dropped"
-    if f.get("payoff_ch") and f.get("payoff_ch") != f.get("plant_ch"):
-        return "paid"
-    # 与 merge.py / validate.py / viewer.html 一致：看沉默时长而非埋设跨度
-    last = f.get("last_mention_ch") or f.get("plant_ch") or 0
-    return "overdue" if live - last > thr else "planted"
+    return expected_status(f, live, thr)
 
 
 def foresight_rows(d):

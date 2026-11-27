@@ -17,25 +17,22 @@ import statistics
 from collections import Counter
 from pathlib import Path
 
+from novel_atlas.foreshadow_rules import expected_status, threshold
+
 
 def load(p):
     return json.loads(Path(p).read_text(encoding="utf-8"))
 
 
 def foreshadow_status(f, live, thr):
-    if f.get("status") == "dropped":
-        return "dropped"
-    if f.get("payoff_ch"):
-        return "paid"
-    return "overdue" if live - (f.get("plant_ch") or 0) > thr else "planted"
+    return expected_status(f, live, thr)
 
 
 def metrics(d):
     meta = d.get("meta") or {}
     chs = d.get("chapters") or []
     live = max((c.get("ch") or 0 for c in chs), default=0)
-    span = live or (meta.get("chapters") or 0)
-    thr = max(50, int(span * 0.15))
+    thr = threshold(live, meta.get("chapters") or 0)
 
     hook = sum(1 for c in chs if c.get("hook"))
     words = [c.get("words") or 0 for c in chs if c.get("words")]

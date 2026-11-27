@@ -19,6 +19,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+from novel_atlas.foreshadow_rules import expected_status, threshold
+
 RELATION_TYPES = {"kinship", "marriage", "romance", "service",
                   "mentorship", "alliance", "conflict", "social"}
 ENTITY_TYPES = {"character", "org", "item", "creature"}
@@ -226,16 +228,13 @@ def validate(data, report):
     # ---------- status 派生一致性 ----------
     live = max(chs) if chs else 0
     total = meta.get("chapters") or live
-    span = live if live else total
-    thr = max(50, int(span * 0.15))
+    thr = threshold(live, total)
     for f in data.get("foreshadows") or []:
         if f.get("status") == "dropped":
             continue
         # 超期看「沉默时长」（距最后一次提及），没有提及数据时退回埋设章。
-        # 与 merge.py / export.py / viewer.html 保持同一套规则。
-        last = f.get("last_mention_ch") or f.get("plant_ch") or 0
-        expect = "paid" if f.get("payoff_ch") and f.get("payoff_ch") != f.get("plant_ch") else (
-            "overdue" if live - last > thr else "planted")
+        # 阈值与派生规则统一来自 novel_atlas.foreshadow_rules，viewer.js 同步。
+        expect = expected_status(f, live, thr)
         if f.get("status") != expect:
             report.err("status", f"伏笔 {f.get('id')} status={f.get('status')}，"
                                  f"按派生规则应为 {expect}（阈值 {thr} 章）")

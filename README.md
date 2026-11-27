@@ -81,7 +81,7 @@ scripts/
   chunk.py validate.py realms.py
   mentions.py seek.py compare.py
   novel_atlas/
-    names.py batches.py sources.py
+    names.py batches.py sources.py foreshadow_rules.py
     merge/                  实体、关系、章节、伏笔、地点、设定、境界、清理
     export/                 CSV、Markdown、单文件 HTML、静态站
 template/

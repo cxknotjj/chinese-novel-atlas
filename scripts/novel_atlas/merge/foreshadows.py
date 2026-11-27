@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from ..foreshadow_rules import expected_status, threshold
 from ..names import norm, sim
 
 
@@ -86,8 +87,7 @@ def apply_status(data):
     meta = data["meta"]
     live = max((c["ch"] for c in data["chapters"]), default=0)
     total = meta.get("chapters") or live
-    span = live if live else total
-    thr = max(50, int(span * 0.15))
+    thr = threshold(live, total)
     changed = 0
     for f in data["foreshadows"]:
         if f.get("status") == "dropped":
@@ -95,12 +95,7 @@ def apply_status(data):
         payoff = f.get("payoff_ch")
         if payoff is not None and payoff < (f.get("plant_ch") or 0):
             f["payoff_ch"] = None         # 回收早于埋设，按未回收处理
-            payoff = None
-        if payoff and payoff != f.get("plant_ch"):
-            expect = "paid"
-        else:
-            last = f.get("last_mention_ch") or f.get("plant_ch") or 0
-            expect = "overdue" if live - last > thr else "planted"
+        expect = expected_status(f, live, thr)
         if f.get("status") != expect:
             f["status"] = expect
             changed += 1
