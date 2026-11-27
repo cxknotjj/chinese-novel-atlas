@@ -125,11 +125,12 @@ python scripts/build.py --dir output/{书名}/
 
 ```
 已生成：
-  output/红楼梦/data.json      47.5 KB
-  output/红楼梦/atlas.html     412 KB  ← 双击打开
+  output/青云签到三十年/data.json      35.2 KB
+  output/青云签到三十年/atlas.html     448 KB  ← 双击打开
 
-覆盖 120/120 回，识别 51 个人物、86 条关系。
-花费 1.42 元，用时 8 分 20 秒。
+覆盖 120/300 章，识别 18 个角色、25 条关系、4 级境界、12 条伏笔。
+其中 7 条伏笔已超期。
+花费 2.14 元，用时 15 分 20 秒。
 ```
 
 ---
@@ -180,8 +181,8 @@ python scripts/build.py --dir output/{书名}/
 
 | 组件 | 状态 |
 |---|---|
-| 数据契约 `references/schema.md` | ✅ 完成 |
-| 金标准样本 `samples/honglou/` | ✅ 完成（51 实体 / 86 关系） |
+| 数据契约 `references/schema.md` | ✅ 完成（v2.0） |
+| 虚构样例 `samples/fictional/` | ✅ 完成（18 角色 / 25 关系 / 12 伏笔） |
 | 视图模板 `template/viewer.html` | 🚧 开发中 |
 | `scripts/*.py` | ⬜ 待实现 |
 
