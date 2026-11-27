@@ -114,7 +114,10 @@ def thrill_gap(d):
 
 def meta_line(d):
     m = d["meta"]
-    bits = [m.get("author"), f"{m.get('chars', 0):,} 字", f"{m.get('chapters', 0)} 章",
+    done = len(d.get("chapters") or [])
+    total = m.get("chapters", 0)
+    chapter_bit = f"{total} 章" if not done or done >= total else f"已分析 {done} / {total} 章"
+    bits = [m.get("author"), f"{m.get('chars', 0):,} 字", chapter_bit,
             m.get("genre"), m.get("platform")]
     return " · ".join(str(x) for x in bits if x)
 
