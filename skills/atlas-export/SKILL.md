@@ -26,7 +26,7 @@ python scripts/export.py --dir output/青云签到三十年/ --format single
 | `md` | `export/设定集.md` | 贴进笔记、提交到 Wiki |
 | `csv` | `export/角色表.csv` | 导入 Excel 做统计 |
 | `site` | `export/site/`（多页静态站） | 挂 GitHub Pages，同人和读者能搜到 |
-| `single` | `export/设定集.html` | 单文件，发给不用电脑的人 |
+| `single` | `export/设定集.html` | 单文件，发给不用电脑的人；内嵌完整「地图」视图（M1/M2） |
 
 ## `fs` — 伏笔清单（作者最需要）
 
@@ -99,9 +99,18 @@ export/site/
 
 每人一页的好处：**能被搜索引擎收录**。网文同人搜"林云 境界"时，可能落到你的页面上。
 
+## 地图视图的导出口径
+
+`single` 内嵌的 data.json 包含完整的「地图」视图（M1 / M2 切换），导出口径与视图契约一致：
+
+- **M1** 是层级/拓扑关系图，节点位置仅用于避让，不代表原文方位；导出物里不得把 M1 称作地理地图。
+- **M2** 只画带证据的 `direction` / `distance` / `contain` / `adjacent`；坐标是 0–100 的**示意坐标，非真实经纬度**；无方向/距离证据的节点在「方位未知」独立区，不落四象限。
+- 层内 direction+distance 约束 <3 条时自动回退 M1 拓扑，导出物显示回退原因，不画假坐标。
+- `spatial_relations` 随 data.json 一起导出；点节点面板里每条证据显示 `evidence.ch` 与 `evidence.quote`（≤120 字原文片段）用于溯源。`fs` / `md` / `csv` / `site` 不展开空间关系正文。
+
 ## 硬性约束
 
-1. **不要导出原文。** 只导出结构化数据，`evidence` 坐标保留，正文不带。
+1. **不要导出章节原文。** 只导出结构化数据，`evidence` 坐标保留，正文不带。空间关系的 `evidence.quote` 是契约允许的短原文片段（≤120 字），随 `spatial_relations` 用于点节点溯源，不属于整章正文导出。
 2. **不要丢掉 `meta`。** 每个导出物顶部都要有书名、作者、题材、平台、章数、生成时间——否则别人拿到一份设定集不知道是哪来的。
 3. **CSV 要处理逗号和引号。** 中文简介里有逗号，必须加引号；内容里已有「」的不要再套引号。
 4. **伏笔状态要现算。** 用 `plant_ch` / `payoff_ch` / 阈值派生，不要照抄存储的 `status`。

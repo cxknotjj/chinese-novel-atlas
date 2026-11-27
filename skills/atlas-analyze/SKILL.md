@@ -1,7 +1,7 @@
 ---
 name: atlas-analyze
 version: 0.4.0
-description: "把一部长篇小说拆成可点击、可查询的世界地图。产出结构化 JSON（人物 / 关系 / 事件 / 地点 / 概念）和一个自包含 HTML，双击即可浏览。支持百万字级长篇，由执行 agent 原生分批抽取，可断点续跑；不调用外部 API、不需要 key。触发词：拆书、拆这本书、拆《XXX》、分析这本小说、分析这本书、生成人物图谱、做个人物关系图、整理这本书的设定、做个设定集、读懂这本书、小说图谱、novel atlas。"
+description: "把一部长篇小说拆成可点击、可查询的世界图谱。产出结构化 JSON（人物 / 关系 / 事件 / 地点 / 概念）和一个自包含 HTML，双击即可浏览。支持百万字级长篇，由执行 agent 原生分批抽取，可断点续跑；不调用外部 API、不需要 key。触发词：拆书、拆这本书、拆《XXX》、分析这本小说、分析这本书、生成人物图谱、做个人物关系图、整理这本书的设定、做个设定集、读懂这本书、小说图谱、novel atlas。"
 ---
 
 # atlas-analyze · 拆书成图
@@ -77,6 +77,8 @@ python scripts/merge.py output/{书名}/ --genre 仙侠 --platform 起点
 
 `merge.py` 做四件事：正名 + 别名归并（`韩老魔 → 韩立`）、关系重映射、伏笔去重与 id 唯一化、按派生规则重算 `status`。
 
+书目录下若有可选的 `spatial.json`（`meta` / `places` / `spatial_relations` 三段，字段见 `references/schema.md`），merge 会把其中 data.json 没有的地点 id 追加进 `places`（已存在则报冲突并跳过），`spatial_relations` 原样挂到 data.json 顶层并校验两端 id；没有该文件时，data.json 的 `spatial_relations` 为 `[]`。
+
 境界必须先有权威表，否则各批次各自编号，`筑基` 会被排成第一境：
 
 ```bash
@@ -99,6 +101,14 @@ python scripts/mentions.py output/{书名}/ --apply
 
 `--apply` 会直接写回 `data.json` 并重算 `status`，不用再跑一次 merge。
 
+### 地图分级（M1 / M2）
+
+视图里的「地图」tab 分 M1 / M2 两套渲染，**默认只承诺 M1**：
+
+- **M1 拓扑/层级图**：只表达包含、传送、航线、随机落点、区域归属；节点位置仅用于避让，不代表原文方位，不画指北针、比例尺、经纬网。
+- **M2 证据化示意地图**：只有某层 `spatial_relations` 里 direction+distance 约束 **≥3 条**才允许出 M2；不足 3 条自动回退 M1。没有方向或距离证据的节点进「方位未知」独立区，不硬塞四象限；M2 坐标是 0–100 示意坐标，不是真实经纬度。
+- 抽取/整理阶段不得为了凑地图编方位、距离或坐标；没有原文句子就不写关系，宁可 M1 稀疏。「旁边」「不远处」「一天路程」不得折算成里数或像素距离；乱星海层、虚天殿层、血色禁地层这类只做 M1 航线/传送拓扑，不硬做 M2。
+
 ### 第 5 步 · 校验
 
 ```bash
@@ -106,6 +116,8 @@ python scripts/validate.py output/{书名}/data.json
 ```
 
 校验失败则报告具体哪条不合法，**不要自行"修一下"**。
+
+空间关系走「空间」规则：`spatial_relations` 两端 id 必须存在且 `s != t`；`kind` / `confidence` 枚举合法；`evidence` 必须是对象，`evidence.ch` 在 1..chapters 内，`evidence.quote` 非空、≤120 字、不含换行；`value` ≤40 字。层内 direction+distance 仅 1–2 条时给 warning，提示 M2 会回退。规则清单以 `references/schema.md` 的「validate 空间规则」为准。
 
 ### 第 6 步 · 构建视图
 
@@ -148,6 +160,7 @@ python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 3. **不要内嵌原文到产物。** `atlas.html` 只含结构化数据，原文用坐标引用（`ch03:p12`）。
 4. **不要跳过校验。** 数据不合法时 viewer 会崩，用户只会看到白屏。
 5. **不要自己编造人物关系。** 抽取不到就留空，宁可图谱稀疏，也不要幻觉。
+6. **不要编造空间方位。** 抽取不到方向/距离就留空；M2 只吃带原文证据的 `direction` / `distance` / `contain` / `adjacent`，证据不足的层留在 M1 拓扑，不给无证据地点编方位，也不把自动布局坐标写回 `places`。
 
 ---
 
@@ -178,15 +191,15 @@ python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 
 | 组件 | 状态 |
 |---|---|
-| 数据契约 `references/schema.md` | ✅ 完成（v2.0） |
+| 数据契约 `references/schema.md` | ✅ 完成（v2.3，含可选 `spatial_relations`） |
 | 虚构样例 `samples/fictional/` | ✅ 完成（18 角色 / 25 关系 / 12 伏笔） |
-| 视图模板 `template/viewer.*` | ✅ 完成（HTML 骨架 + CSS + JS，构建时内联为单文件；七视图） |
+| 视图模板 `template/viewer.*` | ✅ 完成（HTML 骨架 + CSS + JS，构建时内联为单文件；八视图，含地图 M1/M2） |
 | `scripts/chunk.py` | ✅ 分章 + 编码探测 + 模式打分 + 兜底 |
 | `scripts/prompts/batch_template.md` | ✅ 执行 agent 的批次输出模板 |
 | `scripts/realms.py` | ✅ 境界扫描 / 候选生成 / 体系校验 |
 | `scripts/merge.py` + `novel_atlas/merge/` | ✅ 归并 + 别名消解 + 伏笔去重 + status 派生 |
 | `scripts/mentions.py` | ✅ 伏笔提及追踪（沉默时长判定 + `--apply` 回写） |
-| `scripts/validate.py` | ✅ schema 全量校验 |
+| `scripts/validate.py` | ✅ schema 全量校验（含「空间」规则：两端 id、枚举、evidence 完整性） |
 | `scripts/build.py` | ✅ 单文件内嵌 / 外链 data.js |
 
 **当前阶段**：契约、视图、分章 / 原生抽取 / 合并 / 校验 / 出图均已可用。项目不包含外部 API 客户端、key 配置和费用估算；抽取必须按批读取、按批落盘，不要整本进上下文。
