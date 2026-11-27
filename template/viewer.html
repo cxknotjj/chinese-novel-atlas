@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Novel Atlas · 网文设定图谱</title>
+<style>
+  :root {
+    --paper: #FAF9F5;
+    --ink: #2B2A26;
+    --ink-2: #6B675E;
+    --ink-3: #9A9488;
+    --line: #E3DFD5;
+    --crimson: #A6314A;
+    --indigo: #3D6B7D;
+    --gold: #B8925A;
+    --danger: #C0392B;
+    --ok: #5A7A5E;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    background: var(--paper); color: var(--ink); overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    height: 56px; display: flex; align-items: center; gap: 16px;
+    padding: 0 20px; border-bottom: 1px solid var(--line);
+    background: rgba(250,249,245,0.94); backdrop-filter: blur(8px);
+    flex-wrap: nowrap; overflow: hidden;
+  }
+  .brand { display: flex; align-items: baseline; gap: 9px; flex: none; }
+  .brand h1 { font-size: 16px; font-weight: 500; margin: 0; white-space: nowrap; }
+  .brand .tag {
+    font-size: 11px; padding: 2px 7px; border-radius: 4px;
+    background: #F2EFE7; color: var(--ink-2); white-space: nowrap;
+  }
+  .stats { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); flex: none; }
+  .stats b { font-weight: 500; color: var(--ink); }
+  .stats span { white-space: nowrap; }
+
+  .tabs { display: flex; gap: 1px; margin-left: auto; flex: none; }
+  .tab {
+    padding: 6px 12px; font-size: 12.5px; color: var(--ink-2);
+    background: none; border: none; border-radius: 6px; cursor: pointer;
+    font-family: inherit; white-space: nowrap;
+  }
+  .tab:hover { background: rgba(0,0,0,0.035); }
+  .tab.on { background: var(--ink); color: #fff; }
+  .tab .dot {
+    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--danger); margin-left: 5px; vertical-align: middle;
+  }
+
+  main { display: flex; height: calc(100% - 56px); position: relative; }
+  #stage { flex: 1; position: relative; min-width: 0; }
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+
+  #legend {
+    position: absolute; left: 16px; bottom: 16px;
+    display: flex; flex-wrap: wrap; gap: 4px 11px; max-width: 330px;
+    font-size: 11px; color: var(--ink-2); pointer-events: none;
+  }
+  #legend span { display: inline-flex; align-items: center; gap: 5px; }
+  #legend i { width: 8px; height: 8px; border-radius: 50%; }
+
+  #hint {
+    position: absolute; right: 16px; bottom: 16px;
+    font-size: 11px; color: var(--ink-3); text-align: right; line-height: 1.7;
+    pointer-events: none;
+  }
+
+  aside {
+    display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 348px;
+    background: #fff; border-left: 1px solid var(--line);
+    box-shadow: -10px 0 30px rgba(43,42,38,0.06);
+    overflow-y: auto; padding: 20px 20px 40px; z-index: 5;
+  }
+  aside.open { display: block; }
+  aside::-webkit-scrollbar { width: 8px; }
+  aside::-webkit-scrollbar-thumb { background: #E0DCD2; border-radius: 4px; }
+
+  .panel-close {
+    position: absolute; top: 14px; right: 16px; width: 22px; height: 22px;
+    border: none; background: none; cursor: pointer; color: var(--ink-3);
+    font-size: 17px; line-height: 1; font-family: inherit;
+  }
+  .panel-close:hover { color: var(--ink); }
+
+  .ent-name { font-size: 20px; font-weight: 500; margin: 0 0 4px; padding-right: 26px; }
+  .ent-meta { font-size: 11.5px; color: var(--ink-3); margin-bottom: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+  .chip { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: #F4F1E9; color: var(--ink-2); }
+  .chip.grp { color: #fff; }
+  .ent-desc { font-size: 13px; line-height: 1.8; color: #45423B; margin: 0 0 16px; }
+
+  .sec-title {
+    font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-3);
+    margin: 0 0 9px; font-weight: 500;
+  }
+  .rel-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 0;
+    border-bottom: 1px dashed #EFEBE1; font-size: 12.5px; cursor: pointer;
+  }
+  .rel-item:hover .rel-name { color: var(--crimson); }
+  .rel-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .rel-label { color: var(--ink-3); font-size: 11px; margin-left: auto; text-align: right; }
+
+  .attrs { font-size: 12px; line-height: 1.95; color: var(--ink-2); }
+  .attrs b { color: var(--ink); font-weight: 500; }
+
+  .power-list { font-size: 12px; }
+  .power-row {
+    display: grid; grid-template-columns: 56px 1fr; gap: 8px;
+    padding: 5px 0; border-bottom: 1px dashed #EFEBE1;
+  }
+  .power-ch { color: var(--ink-3); font-size: 11px; }
+  .power-realm { color: var(--ink); }
+  .power-note { color: var(--ink-3); font-size: 11px; }
+
+  /* ---------- 通用视图容器 ---------- */
+  .view { padding: 20px 24px 40px; overflow-y: auto; height: 100%; }
+  .view::-webkit-scrollbar { width: 8px; }
+  .view::-webkit-scrollbar-thumb { background: #E0DCD2; border-radius: 4px; }
+  .view h2 {
+    font-size: 12px; font-weight: 500; color: var(--ink-2);
+    margin: 22px 0 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .view h2:first-child { margin-top: 0; }
+  .view h2 .n { color: var(--ink-3); font-weight: 400; }
+
+  /* 百科 */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 9px; }
+  .card {
+    padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px;
+    background: #fff; cursor: pointer; transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: #C9C2B2; transform: translateY(-1px); }
+  .card .n { font-size: 13.5px; font-weight: 500; margin-bottom: 3px; }
+  .card .d {
+    font-size: 11px; color: var(--ink-3); line-height: 1.5;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+
+  /* 节奏 */
+  .rhythm-wrap { background: #fff; border: 1px solid var(--line); border-radius: 11px; padding: 16px 14px 8px; }
+  .metric-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .metric {
+    flex: 1; min-width: 130px; background: #fff; border: 1px solid var(--line);
+    border-radius: 9px; padding: 12px 14px;
+  }
+  .metric .k { font-size: 11px; color: var(--ink-3); margin-bottom: 5px; }
+  .metric .v { font-size: 20px; font-weight: 500; line-height: 1.2; }
+  .metric .b { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+  .metric.warn .v { color: var(--danger); }
+
+  .sample-note {
+    font-size: 11.5px; color: #8A6D3B; background: #FDF8EC;
+    border: 1px solid #F0E3C8; border-radius: 7px;
+    padding: 7px 11px; margin-bottom: 14px;
+  }
+
+  .ch-list { margin-top: 6px; }
+  .ch-row {
+    display: grid; grid-template-columns: 52px 1fr auto; gap: 12px;
+    padding: 9px 0; border-bottom: 1px solid #F2EFE7; cursor: pointer;
+  }
+  .ch-row:hover { background: #FCFBF7; }
+  .ch-no { font-size: 11px; color: var(--ink-3); padding-top: 2px; }
+  .ch-title { font-size: 13px; margin-bottom: 3px; }
+  .ch-hook { font-size: 11.5px; color: var(--ink-2); }
+  .ch-hook::before { content: '钩子 · '; color: var(--ink-3); }
+  .ch-badge {
+    font-size: 10.5px; padding: 2px 7px; border-radius: 4px;
+    background: #F2EFE7; color: var(--ink-2); height: fit-content; white-space: nowrap;
+  }
+
+  /* 境界 */
+  .realm-ladder { display: flex; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .realm-step {
+    flex: 1; min-width: 110px; border-radius: 9px; padding: 10px 12px;
+    color: var(--ink); border: 1px solid var(--line);
+  }
+  .realm-step .rn { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .realm-step .rs { font-size: 10.5px; color: var(--ink-2); }
+  .realm-step .rbar { display: flex; gap: 2px; margin-top: 8px; height: 7px; }
+  .realm-step .rbar i { flex: 1; border-radius: 1.5px; }
+
+  .gantt { background: #fff; border: 1px solid var(--line); border-radius: 11px; padding: 14px 12px 6px; overflow-x: auto; }
+  .gantt-row { display: grid; grid-template-columns: 62px 1fr 76px; gap: 10px; align-items: center; height: 26px; }
+  .gantt-name { font-size: 11.5px; color: var(--ink-2); text-align: right; padding-right: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gantt-name:hover { color: var(--crimson); }
+  .gantt-row.main .gantt-name { color: var(--ink); font-weight: 500; }
+  .gantt-track { position: relative; height: 14px; background: #EDE9DF; border-radius: 3px; overflow: hidden; }
+  .gantt-seg { position: absolute; top: 0; height: 14px; cursor: pointer; box-shadow: inset -1px 0 0 rgba(255,255,255,0.85); }
+  .gantt-seg:hover { outline: 1.5px solid var(--crimson); outline-offset: 1px; }
+  .gantt-now { font-size: 11px; color: var(--ink); padding-left: 8px; white-space: nowrap; }
+  .gantt-axis { position: relative; height: 18px; margin-top: 4px; margin-left: 72px; margin-right: 86px; }
+  .gantt-tick { position: absolute; font-size: 10px; color: var(--ink-3); transform: translateX(-50%); }
+
+  .battle-row {
+    display: grid; grid-template-columns: 52px 1fr auto; gap: 12px;
+    align-items: center; padding: 9px 0; border-bottom: 1px solid #F2EFE7; font-size: 12.5px;
+  }
+  .battle-vs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .battle-vs b { font-weight: 500; color: var(--ink-2); font-size: 11.5px; }
+  .battle-vs .vs { color: var(--ink-3); font-size: 11px; }
+
+  /* 伏笔 */
+  .fs-summary { display: flex; gap: 9px; margin-bottom: 16px; flex-wrap: wrap; }
+  .fs-stat {
+    flex: 1; min-width: 100px; border-radius: 9px; padding: 11px 13px;
+    border: 1px solid var(--line); background: #fff;
+  }
+  .fs-stat .v { font-size: 21px; font-weight: 500; line-height: 1.1; }
+  .fs-stat .k { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+  .fs-stat.alarm { border-color: #EBC9C4; background: #FDF6F4; }
+  .fs-stat.alarm .v { color: var(--danger); }
+
+  .fs-row { padding: 11px 0; border-bottom: 1px solid #F2EFE7; }
+  .fs-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
+  .fs-content { font-size: 13px; flex: 1; }
+  .fs-badge { font-size: 10.5px; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .fs-meta { font-size: 11px; color: var(--ink-3); margin-bottom: 6px; }
+  .fs-bar { position: relative; height: 6px; background: #F2EFE7; border-radius: 3px; }
+  .fs-bar .span { position: absolute; height: 6px; border-radius: 3px; }
+  .fs-bar .over { position: absolute; height: 6px; border-radius: 3px;
+    background: repeating-linear-gradient(45deg, #E8A79D, #E8A79D 3px, #F5D3CD 3px, #F5D3CD 6px); }
+  .fs-row:hover { background: #FCFBF7; }
+
+  input[type=search] {
+    font-family: inherit; font-size: 12.5px; padding: 5px 10px; width: 138px; flex: none;
+    border: 1px solid var(--line); border-radius: 7px; background: #fff;
+    color: var(--ink); outline: none; transition: border-color .15s, width .2s;
+  }
+  input[type=search]:focus { border-color: var(--gold); width: 176px; }
+
+  @media (max-width: 1180px) { .stats span:nth-child(n+3) { display: none; } }
+  @media (max-width: 980px) { .stats { display: none; } .brand .tag { display: none; } }
+  @media (max-width: 800px) { aside { width: 100%; } input[type=search] { width: 110px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1 id="title">—</h1>
+    <span class="tag" id="tag">—</span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="tabs">
+    <button class="tab on" data-view="graph">图谱</button>
+    <button class="tab" data-view="wiki">百科</button>
+    <button class="tab" data-view="rhythm">节奏</button>
+    <button class="tab" data-view="realms">境界</button>
+    <button class="tab" data-view="foreshadow">伏笔<span class="dot" id="fsDot" hidden></span></button>
+  </div>
+  <input type="search" id="search" placeholder="搜索人物 / 别名">
+</header>
+
+<main>
+  <div id="stage">
+    <canvas id="canvas"></canvas>
+    <div id="legend"></div>
+    <div id="hint">拖拽节点 · 滚轮缩放 · 点击查看</div>
+  </div>
+
+  <div id="wiki" class="view" hidden></div>
+  <div id="rhythm" class="view" hidden></div>
+  <div id="realms" class="view" hidden></div>
+  <div id="foreshadow" class="view" hidden></div>
+
+  <aside id="panel">
+    <button class="panel-close" id="panelClose">×</button>
+    <div id="panelBody"></div>
+  </aside>
+</main>
+
+<script src="./data.js"></script>
+<script>
+(function () {
+  const D = window.ATLAS_DATA;
+  if (!D) {
+    document.body.innerHTML = '<p style="padding:40px">未找到数据文件 samples/fictional/data.js</p>';
+    return;
+  }
+
+  /* ================= 数据适配 ================= */
+  const CHAPTERS = D.chapters || [];
+  const REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
+  const FORESHADOWS = D.foreshadows || [];
+  const CURRENT_CH = Math.max(
+    ...CHAPTERS.map(c => c.ch),
+    (D.meta.coverage && D.meta.coverage.chapters_done) || 0,
+    1
+  );
+  // 阈值与 scripts/merge.py、validate.py、export.py 保持一致：
+  // 以「已分析到的章数」为跨度基准，下限 50 章。
+  // 不能全用全书章数——只拆前 200 章时，2443 章的 15% 是 366，
+  // 会让所有坑永远无法触发告警，功能形同失效。
+  const FS_SPAN = Math.max(CURRENT_CH, 1);
+  const FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
+
+  // 阵营配色：按出现顺序动态分配，任何书都能用
+  const PALETTE = ['#A6314A', '#3D6B7D', '#6B4A7A', '#B8925A', '#5A7A5E',
+                   '#7A6A5A', '#7A8A9A', '#9A9488'];
+  const GROUP_COLOR = {};
+  [...new Set(D.entities.map(e => e.group))].forEach((g, i) => {
+    GROUP_COLOR[g] = PALETTE[i % PALETTE.length];
+  });
+  const REALM_COLOR = ['#C3D5DC', '#8FB0BE', '#4E7C8F', '#2A5666', '#1B3F4D'];
+  const REL_STYLE = {
+    kinship:    { color: '#C9C2B2', width: 1.2, dash: [] },
+    marriage:   { color: '#C0A06E', width: 1.8, dash: [] },
+    romance:    { color: '#C97A8C', width: 1.6, dash: [5, 4] },
+    service:    { color: '#D8D2C4', width: 1.0, dash: [2, 3] },
+    mentorship: { color: '#9FB3BC', width: 1.2, dash: [6, 3] },
+    alliance:   { color: '#A8B79C', width: 1.3, dash: [] },
+    conflict:   { color: '#C25A5A', width: 1.6, dash: [1, 3] },
+    social:     { color: '#D5CFC2', width: 0.9, dash: [] }
+  };
+  const REL_CN = {
+    kinship: '血亲', marriage: '婚姻', romance: '情感', service: '主从',
+    mentorship: '师承', alliance: '同盟', conflict: '敌对', social: '交游'
+  };
+  const STATUS_META = {
+    overdue: { cn: '已超期', color: '#C0392B', bg: '#FDF1EF' },
+    planted: { cn: '待回收', color: '#B8925A', bg: '#FBF5EA' },
+    paid:    { cn: '已回收', color: '#5A7A5E', bg: '#EFF5EE' },
+    dropped: { cn: '已放弃', color: '#9A9488', bg: '#F2EFE7' }
+  };
+  const EMOTION_COLOR = {
+    '爽': '#C0533F', '压抑': '#7A7A85', '紧张': '#B8925A',
+    '温情': '#C98B9E', '悲': '#6B7A8F', '平': '#B4B2A9'
+  };
+
+  /* 伏笔状态：派生，不信任存储值 */
+  /** 距最后一次提及过了多久；没有提及数据时退回埋设章 */
+  function fsSilent(f) {
+    const last = f.last_mention_ch || f.plant_ch;
+    return CURRENT_CH - last;
+  }
+  function fsStatus(f) {
+    if (f.payoff_ch !== null && f.payoff_ch !== undefined) return 'paid';
+    if (f.status === 'dropped') return 'dropped';
+    return fsSilent(f) > FS_THRESHOLD ? 'overdue' : 'planted';
+  }
+
+  /* ================= 建索引 ================= */
+  const byId = new Map();
+  D.entities.forEach(e => byId.set(e.id, e));
+  const allById = new Map();
+  D.entities.forEach(e => allById.set(e.id, Object.assign({ _kind: 'entity' }, e)));
+  D.places.forEach(p => allById.set(p.id, Object.assign({ _kind: 'place' }, p)));
+  D.concepts.forEach(c => allById.set(c.id, Object.assign({ _kind: 'concept' }, c)));
+  const realmById = new Map(REALMS.map(r => [r.id, r]));
+
+  const deg = new Map();
+  D.relations.forEach(r => {
+    deg.set(r.s, (deg.get(r.s) || 0) + 1);
+    deg.set(r.t, (deg.get(r.t) || 0) + 1);
+  });
+
+  function realmIndex(id) {
+    const r = realmById.get(id);
+    return r ? r.order : 0;
+  }
+  function powerAt(id) {
+    const e = byId.get(id);
+    const h = (e && e.power_history) || [];
+    if (!h.length) return null;
+    let cur = h[0];
+    h.forEach(p => { if (p.ch <= CURRENT_CH) cur = p; });
+    return cur;
+  }
+  /** 指定章号时的修为（取该章或之前最后一条） */
+  function powerAtCh(id, ch) {
+    const e = byId.get(id);
+    const h = (e && e.power_history) || [];
+    let cur = null;
+    h.forEach(p => { if (p.ch <= ch) cur = p; });
+    return cur || h[0] || null;
+  }
+  function powerFull(p) {
+    if (!p) return '—';
+    const r = realmById.get(p.realm);
+    return (r ? r.name : p.realm) + (p.stage ? '·' + p.stage : '');
+  }
+  /** 综合等级数：境界序 ×100 + 层数序，用于跨境界与同境界内比较 */
+  function levelNum(p) {
+    if (!p) return 0;
+    const r = realmById.get(p.realm);
+    const st = (r && r.stages) || [];
+    const i = st.indexOf(p.stage);
+    return (r ? r.order : 0) * 100 + (i >= 0 ? i : 0);
+  }
+  /** 把等级差换算成可读文案：同境界内说「X 层」，跨境界说「X 级」 */
+  function fbLayer(diff) {
+    const a = Math.abs(diff);
+    return a >= 100 ? `${Math.floor(a / 100)} 级` : `${a} 层`;
+  }
+  /** 境界内的层数比例 0..1，用于同境界内部的色阶渐变 */
+  function stageFrac(p) {
+    if (!p) return 0;
+    const r = realmById.get(p.realm);
+    const st = (r && r.stages) || [];
+    if (!st.length) return 0.5;
+    const i = st.indexOf(p.stage);
+    return i < 0 ? 0.5 : (st.length > 1 ? i / (st.length - 1) : 0.5);
+  }
+  /** 境界基色 + 层数明度：练气一层浅、九层深，一眼看出成长 */
+  function realmColorOf(p) {
+    const ri = Math.max(realmIndex(p && p.realm), 1);
+    const base = REALM_COLOR[Math.min(ri - 1, REALM_COLOR.length - 1)];
+    const f = stageFrac(p);
+    // 同境界内：明度 84% → 46%
+    const l = 84 - f * 38;
+    return shade(base, l);
+  }
+  function shade(hex, lightness) {
+    const n = parseInt(hex.slice(1), 16);
+    let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    const max = Math.max(r, g, b) / 255, min = Math.min(r, g, b) / 255;
+    let h = 0, s = 0;
+    const L0 = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = L0 > 0.5 ? d / (2 - max - min) : d / (max + min);
+      h = max === r / 255 ? ((g / 255 - b / 255) / d + (g < b ? 6 : 0))
+        : max === g / 255 ? ((b / 255 - r / 255) / d + 2)
+        : ((r / 255 - g / 255) / d + 4);
+      h *= 60;
+    }
+    return `hsl(${h.toFixed(0)}, ${(s * 100).toFixed(0)}%, ${lightness.toFixed(0)}%)`;
+  }
+
+  /* ================= 顶栏 ================= */
+  const overdueCnt = FORESHADOWS.filter(f => fsStatus(f) === 'overdue').length;
+  document.getElementById('title').textContent = D.meta.title;
+  document.getElementById('tag').textContent =
+    [D.meta.genre, D.meta.platform, D.meta.status].filter(Boolean).join(' · ');
+  document.getElementById('stats').innerHTML =
+    `<span><b>${(D.meta.chars / 10000).toFixed(0)}</b> 万字</span>` +
+    `<span><b>${D.meta.chapters}</b> 章</span>` +
+    `<span><b>${D.entities.length}</b> 角色</span>`;
+  if (overdueCnt) {
+    const dot = document.getElementById('fsDot');
+    dot.hidden = false;
+    dot.title = overdueCnt + ' 个伏笔已超期';
+  }
+
+  /* ================= 图谱 ================= */
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  const rawNodes = D.entities.map(e => {
+    const d = deg.get(e.id) || 0;
+    return {
+      id: e.id, ref: e, name: e.name,
+      r: 5.5 + Math.min(d, 22) * 0.62,
+      d, x: 0, y: 0, vx: 0, vy: 0, fixed: false
+    };
+  });
+  // 只画有关系连线的节点。孤立点没有信息量，还会把核心群挤到角落
+  const nodes = rawNodes.filter(n => n.d > 0);
+  const isolatedCount = rawNodes.length - nodes.length;
+  const nodeById = new Map(nodes.map(n => [n.id, n]));
+
+  const groups = [...new Set(nodes.map(n => n.ref.group))];
+  groups.forEach((g, gi) => {
+    const a = (gi / groups.length) * Math.PI * 2;
+    const cx = Math.cos(a) * 150, cy = Math.sin(a) * 130;
+    const members = nodes.filter(n => n.ref.group === g);
+    members.forEach((n, i) => {
+      const t = (i / Math.max(1, members.length)) * Math.PI * 2;
+      n.x = cx + Math.cos(t) * 42 + (Math.random() - .5) * 18;
+      n.y = cy + Math.sin(t) * 42 + (Math.random() - .5) * 18;
+    });
+  });
+
+  const links = D.relations.map(r => ({
+    s: nodeById.get(r.s), t: nodeById.get(r.t), ref: r,
+    w: r.weight || 0.5, type: r.type
+  })).filter(l => l.s && l.t);
+
+  const adj = new Map();
+  links.forEach(l => {
+    if (!adj.has(l.s.id)) adj.set(l.s.id, new Set());
+    if (!adj.has(l.t.id)) adj.set(l.t.id, new Set());
+    adj.get(l.s.id).add(l.t.id);
+    adj.get(l.t.id).add(l.s.id);
+  });
+
+  let view = { x: 0, y: 0, k: 1 };
+  let hoverId = null, selectId = null, alpha = 1;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    if (W <= 0 || H <= 0) return;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function tick() {
+    if (alpha < 0.008) return;
+    const cx = (W / 2 - view.x) / view.k;
+    const cy = (H / 2 - view.y) / view.k;
+    const k = 0.0022 * alpha;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1) { d2 = 1; dx = Math.random() - .5; dy = Math.random() - .5; }
+        const d = Math.sqrt(d2);
+        const f = (1450 * alpha) / d2;
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
+    }
+    links.forEach(l => {
+      const dx = l.t.x - l.s.x, dy = l.t.y - l.s.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const target = 74 + (1 - l.w) * 44;
+      const f = (d - target) * 0.035 * l.w * alpha;
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      l.s.vx += fx; l.s.vy += fy;
+      l.t.vx -= fx; l.t.vy -= fy;
+    });
+    nodes.forEach(n => {
+      if (n.fixed) { n.vx = n.vy = 0; return; }
+      n.vx += (cx - n.x) * k * 1.15;
+      n.vy += (cy - n.y) * k * 1.15;
+      n.vx *= 0.86; n.vy *= 0.86;
+      n.x += n.vx; n.y += n.vy;
+    });
+    alpha *= 0.994;
+  }
+
+  function fitView(pad) {
+    if (!nodes.length || W <= 0) return;
+    pad = pad || 46;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodes.forEach(n => {
+      minX = Math.min(minX, n.x - n.r); maxX = Math.max(maxX, n.x + n.r);
+      minY = Math.min(minY, n.y - n.r); maxY = Math.max(maxY, n.y + n.r);
+    });
+
+    const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+    const k = Math.max(0.42, Math.min((W - pad * 2) / w, (H - pad * 2) / h, 1.4));
+    view.k = k;
+    view.x = W / 2 - (minX + maxX) / 2 * k;
+    view.y = H / 2 - (minY + maxY) / 2 * k;
+  }
+
+  function draw() {
+    if (W <= 0) return;
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(view.x, view.y);
+    ctx.scale(view.k, view.k);
+
+    const focus = hoverId || selectId;
+    const hot = focus ? new Set([focus, ...(adj.get(focus) || [])]) : null;
+
+    links.forEach(l => {
+      const st = REL_STYLE[l.type] || REL_STYLE.social;
+      const active = !focus || (hot.has(l.s.id) && hot.has(l.t.id));
+      ctx.beginPath();
+      ctx.strokeStyle = active ? st.color : '#F0ECE2';
+      ctx.lineWidth = st.width * (active ? 1 : 0.7);
+      ctx.setLineDash(st.dash);
+      ctx.moveTo(l.s.x, l.s.y);
+      ctx.lineTo(l.t.x, l.t.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    nodes.forEach(n => {
+      const dim = focus && !hot.has(n.id);
+      const color = GROUP_COLOR[n.ref.group] || '#999';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = dim ? '#EDE9E0' : color;
+      ctx.fill();
+      if (n.id === selectId) { ctx.lineWidth = 2.5; ctx.strokeStyle = '#2B2A26'; ctx.stroke(); }
+      if (!dim && (n.d >= 3 || view.k > 1.3)) {
+        ctx.font = `${Math.min(12, 9 + n.d * 0.12)}px -apple-system, "PingFang SC", sans-serif`;
+        ctx.fillStyle = '#2B2A26';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, n.x, n.y + n.r + 12);
+      }
+    });
+    ctx.restore();
+  }
+
+  function loop() { tick(); draw(); requestAnimationFrame(loop); }
+
+  function toWorld(px, py) { return { x: (px - view.x) / view.k, y: (py - view.y) / view.k }; }
+  function pick(px, py) {
+    const p = toWorld(px, py);
+    let best = null, bestD = Infinity;
+    nodes.forEach(n => {
+      const d = Math.hypot(n.x - p.x, n.y - p.y);
+      if (d < n.r + 6 && d < bestD) { bestD = d; best = n; }
+    });
+    return best;
+  }
+
+  let dragNode = null, panning = false, last = null, moved = false, clickedEmpty = false;
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const n = pick(e.clientX - rect.left, e.clientY - rect.top);
+    moved = false; clickedEmpty = !n;
+    if (n) { dragNode = n; n.fixed = true; n._px = e.clientX; n._py = e.clientY; }
+    else { panning = true; last = { x: e.clientX, y: e.clientY }; }
+    canvas.classList.add('dragging');
+  });
+
+  window.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    if (dragNode) {
+      const p = toWorld(mx, my);
+      if (Math.hypot(e.clientX - dragNode._px, e.clientY - dragNode._py) > 3) moved = true;
+      dragNode.x = p.x; dragNode.y = p.y;
+      alpha = Math.max(alpha, 0.28);
+      return;
+    }
+    if (panning && last) {
+      view.x += e.clientX - last.x; view.y += e.clientY - last.y;
+      last = { x: e.clientX, y: e.clientY }; moved = true;
+      return;
+    }
+    if (mx < 0 || my < 0 || mx > W || my > H) { hoverId = null; return; }
+    const n = pick(mx, my);
+    hoverId = n ? n.id : null;
+    canvas.style.cursor = n ? 'pointer' : 'grab';
+  });
+
+  window.addEventListener('mouseup', e => {
+    if (dragNode) {
+      const n = dragNode;
+      const dist = Math.hypot(e.clientX - n._px, e.clientY - n._py);
+      if (dist < 6) select(n.id); else n.fixed = false;
+    } else if (clickedEmpty && !moved) {
+      selectId = null; closePanel();
+    }
+    dragNode = null; panning = false; last = null; clickedEmpty = false;
+    canvas.classList.remove('dragging');
+  });
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const before = toWorld(mx, my);
+    view.k = Math.min(3.2, Math.max(0.35, view.k * (e.deltaY < 0 ? 1.1 : 0.9)));
+    const after = toWorld(mx, my);
+    view.x += (after.x - before.x) * view.k;
+    view.y += (after.y - before.y) * view.k;
+  }, { passive: false });
+
+  canvas.addEventListener('dblclick', () => {
+    nodes.forEach(n => { n.fixed = false; });
+    alpha = 0.5;
+    setTimeout(fitView, 60);
+  });
+
+  /* ================= 详情面板 ================= */
+  const panel = document.getElementById('panel');
+  const panelBody = document.getElementById('panelBody');
+
+  function closePanel() {
+    panel.classList.remove('open');
+    selectId = null;
+  }
+  document.getElementById('panelClose').addEventListener('click', closePanel);
+
+  function relColor(t) { return (REL_STYLE[t] || REL_STYLE.social).color; }
+
+  function renderPowerHistory(e) {
+    const h = e.power_history || [];
+    if (!h.length) return '';
+    return `<div class="sec-title" style="margin-top:18px">境界轨迹</div>
+      <div class="power-list">
+      ${h.map(p => `<div class="power-row">
+        <span class="power-ch">第 ${p.ch} 章</span>
+        <span><span class="power-realm">${powerFull(p)}</span>
+        ${p.note ? `<span class="power-note"> · ${p.note}</span>` : ''}</span>
+      </div>`).join('')}
+      </div>`;
+  }
+
+  function select(id) {
+    const rec = allById.get(id);
+    if (!rec) return;
+    if (rec._kind !== 'entity') { renderLite(rec); return; }
+    selectId = id;
+    const e = rec;
+    const neighbors = links.filter(l => l.s.id === id || l.t.id === id)
+      .map(l => ({ other: l.s.id === id ? l.t : l.s, rel: l.ref }))
+      .sort((a, b) => (b.rel.weight || 0) - (a.rel.weight || 0));
+
+    const power = powerAt(id);
+    const myForeshadows = FORESHADOWS.filter(f =>
+      (f.content || '').includes(e.name) ||
+      (f.note || '').includes(e.name));
+
+    panelBody.innerHTML = `
+      <h2 class="ent-name">${e.name}</h2>
+      <div class="ent-meta">
+        第 ${e.first_ch} 章登场${e.last_ch ? ` · 第 ${e.last_ch} 章退场` : ''}
+        ${power ? ` · 当前 ${powerFull(power)}` : ''}
+      </div>
+      <div class="chips">
+        <span class="chip grp" style="background:${GROUP_COLOR[e.group] || '#999'}">${e.group}</span>
+        ${(e.aliases || []).map(a => `<span class="chip">${a}</span>`).join('')}
+      </div>
+      <p class="ent-desc">${e.desc || ''}</p>
+      ${e.attrs ? `<div class="sec-title">档案</div><div class="attrs">${
+        Object.entries(e.attrs).map(([k, v]) => `<b>${k}</b> · ${v}`).join('<br>')
+      }</div>` : ''}
+      ${renderPowerHistory(e)}
+      <div class="sec-title" style="margin-top:18px">关系 · ${neighbors.length}</div>
+      ${neighbors.map(n => `
+        <div class="rel-item" data-goto="${n.other.id}">
+          <span class="rel-dot" style="background:${relColor(n.rel.type)}"></span>
+          <span class="rel-name">${n.other.name}</span>
+          <span class="rel-label">${n.rel.label || REL_CN[n.rel.type] || ''}</span>
+        </div>`).join('')}
+      ${myForeshadows.length ? `<div class="sec-title" style="margin-top:18px">相关伏笔</div>` +
+        myForeshadows.map(f => `
+          <div class="rel-item">
+            <span class="rel-dot" style="background:${STATUS_META[fsStatus(f)].color}"></span>
+            <span class="rel-name" style="font-size:12px">${f.content}</span>
+          </div>`).join('') : ''}
+    `;
+    panel.classList.add('open');
+    panelBody.querySelectorAll('[data-goto]').forEach(el => {
+      el.addEventListener('click', () => {
+        const t = el.getAttribute('data-goto');
+        select(t);
+        const n = nodeById.get(t);
+        if (n) { view.x = W / 2 - n.x * view.k; view.y = H / 2 - n.y * view.k; }
+      });
+    });
+  }
+
+  function renderLite(r) {
+    const kindCn = r._kind === 'place' ? '地点' : '设定';
+    let extra = '';
+    if (r.parent) {
+      const p = allById.get(r.parent);
+      if (p) extra = `<div class="chips"><span class="chip">上级：${p.name}</span></div>`;
+    }
+    if (r._kind === 'concept' && r.kind) {
+      extra += `<div class="chips"><span class="chip">${
+        { worldview: '世界观', golden_finger: '金手指', technique: '功法',
+          item_grade: '品阶', organization_rule: '组织规则', prophecy: '预言' }[r.kind] || r.kind
+      }</span></div>`;
+    }
+    const rules = (r.rules && r.rules.length) ? `
+      <div class="sec-title" style="margin-top:16px">规则</div>
+      <div class="attrs">${r.rules.map(x => '· ' + x).join('<br>')}</div>` : '';
+    const limits = (r.limits && r.limits.length) ? `
+      <div class="sec-title" style="margin-top:16px">限制 / 代价</div>
+      <div class="attrs" style="color:#A6314A">${r.limits.map(x => '· ' + x).join('<br>')}</div>` : '';
+    panelBody.innerHTML = `
+      <h2 class="ent-name">${r.name}</h2>
+      <div class="ent-meta">${kindCn} · 第 ${r.first_ch || '?'} 章出现</div>
+      ${extra}
+      <p class="ent-desc">${r.desc || ''}</p>
+      ${rules}${limits}
+    `;
+    panel.classList.add('open');
+  }
+
+  /* ================= 视图切换 ================= */
+  const stage = document.getElementById('stage');
+  const views = {
+    graph: stage,
+    wiki: document.getElementById('wiki'),
+    rhythm: document.getElementById('rhythm'),
+    realms: document.getElementById('realms'),
+    foreshadow: document.getElementById('foreshadow')
+  };
+  let curView = 'graph';
+
+  function setView(v) {
+    curView = v;
+    Object.keys(views).forEach(k => { views[k].hidden = k !== v; });
+    document.querySelectorAll('.tab').forEach(t =>
+      t.classList.toggle('on', t.dataset.view === v));
+    if (v === 'graph') { resize(); alpha = Math.max(alpha, 0.3); }
+    if (v === 'rhythm') renderRhythm();
+    if (v === 'realms') renderRealms();
+    if (v === 'foreshadow') renderForeshadow();
+  }
+  document.querySelectorAll('.tab').forEach(t =>
+    t.addEventListener('click', () => setView(t.dataset.view)));
+
+  /* ================= 百科 ================= */
+  function renderWiki() {
+    const secs = [
+      { title: '角色', items: D.entities.filter(e => e.type === 'character') },
+      { title: '势力与器物', items: D.entities.filter(e => e.type !== 'character') },
+      { title: '境界体系', items: REALMS.map(r => ({ id: r.id, name: r.name, desc: r.desc })) },
+      { title: '地点', items: D.places },
+      { title: '设定', items: D.concepts }
+    ].filter(s => s.items.length);
+    views.wiki.innerHTML = secs.map(s => `
+      <h2>${s.title} <span class="n">${s.items.length}</span></h2>
+      <div class="grid">
+        ${s.items.map(it => `
+          <div class="card" data-id="${it.id}">
+            <div class="n">${it.name}</div>
+            <div class="d">${(it.desc || '').slice(0, 44)}</div>
+          </div>`).join('')}
+      </div>`).join('');
+    views.wiki.querySelectorAll('[data-id]').forEach(c => {
+      c.addEventListener('click', () => {
+        const id = c.dataset.id;
+        const rec = allById.get(id);
+        if (rec && rec._kind === 'entity') {
+          setView('graph');
+          select(id);
+          const n = nodeById.get(id);
+          if (n) { view.x = W / 2 - n.x * view.k; view.y = H / 2 - n.y * view.k; }
+        } else if (rec) {
+          renderLite(rec);
+        } else {
+          const r = REALMS.find(x => x.id === id);
+          if (r) renderLite({ _kind: 'concept', name: r.name, desc: r.desc, first_ch: r.first_ch });
+        }
+      });
+    });
+  }
+
+  /* ================= 节奏 ================= */
+  function svgLine() {
+    if (!CHAPTERS.length) return '';
+    const W = 860, H = 190, P = 34;
+    const minC = CHAPTERS[0].ch, maxC = CURRENT_CH;
+    const X = c => P + ((c - minC) / Math.max(maxC - minC, 1)) * (W - P * 2);
+    const Y = t => H - P - t * (H - P * 2 - 8);
+
+    let path = '';
+    CHAPTERS.forEach((c, i) => {
+      path += (i === 0 ? 'M' : 'L') + X(c.ch).toFixed(1) + ' ' + Y(c.tension).toFixed(1) + ' ';
+    });
+    const area = path + `L${X(CHAPTERS[CHAPTERS.length - 1].ch).toFixed(1)} ${Y(0)} L${X(CHAPTERS[0].ch).toFixed(1)} ${Y(0)} Z`;
+
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#A6314A" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#A6314A" stop-opacity="0"/>
+      </linearGradient></defs>
+      ${[0.25, 0.5, 0.75, 1].map(t => `
+        <line x1="${P}" y1="${Y(t)}" x2="${W - P}" y2="${Y(t)}" stroke="#F0ECE2" stroke-width="1"/>
+        <text x="${P - 8}" y="${Y(t) + 3}" font-size="9" fill="#B4B2A9" text-anchor="end">${t}</text>`).join('')}
+      <path d="${area}" fill="url(#g1)"/>
+      <path d="${path}" fill="none" stroke="#A6314A" stroke-width="1.6" stroke-linejoin="round"/>
+      ${CHAPTERS.map(c => `
+        <circle cx="${X(c.ch).toFixed(1)}" cy="${Y(c.tension).toFixed(1)}" r="3.2"
+          fill="${EMOTION_COLOR[c.emotion] || '#B4B2A9'}" stroke="#fff" stroke-width="1.2">
+          <title>第${c.ch}章 ${c.title} · 张力${c.tension}</title>
+        </circle>`).join('')}
+      <text x="${P}" y="${H - 8}" font-size="9" fill="#B4B2A9">第 1 章</text>
+      <text x="${W - P}" y="${H - 8}" font-size="9" fill="#B4B2A9" text-anchor="end">第 ${CURRENT_CH} 章</text>
+    </svg>`;
+  }
+
+  function renderRhythm() {
+    const hookRate = CHAPTERS.length ? CHAPTERS.filter(c => c.hook).length / CHAPTERS.length : 0;
+    const avgWords = CHAPTERS.length
+      ? Math.round(CHAPTERS.reduce((a, c) => a + c.words, 0) / CHAPTERS.length) : 0;
+    const shuang = CHAPTERS.filter(c => c.emotion === '爽').map(c => c.ch);
+    let gap = '—';
+    if (shuang.length > 1) {
+      const gs = [];
+      for (let i = 1; i < shuang.length; i++) gs.push(shuang[i] - shuang[i - 1]);
+      gs.sort((a, b) => a - b);
+      gap = gs[Math.floor(gs.length / 2)] + ' 章';
+    }
+    const isFanqie = (D.meta.platform || '').includes('番茄');
+    const hookWarn = isFanqie && hookRate < 0.8;
+    const done = (D.meta.coverage && D.meta.coverage.chapters_done) || CHAPTERS.length;
+    const sampled = CHAPTERS.length < done;
+
+    views.rhythm.innerHTML = `
+      ${sampled ? `<div class="sample-note">
+        章节数据为抽样（${CHAPTERS.length} / ${done} 章），爽点间隔与钩子率仅供参考；全量分析后指标才准确。
+      </div>` : ''}
+      <div class="metric-row">
+        <div class="metric ${hookWarn ? 'warn' : ''}">
+          <div class="k">章末钩子率</div>
+          <div class="v">${(hookRate * 100).toFixed(0)}%</div>
+          <div class="b">${isFanqie ? '番茄基准 80%' : '起点基准 60%'}</div>
+        </div>
+        <div class="metric">
+          <div class="k">爽点间隔</div>
+          <div class="v">${gap}</div>
+          <div class="b">${isFanqie ? '番茄基准 3 章' : '起点基准 10 章'}</div>
+        </div>
+        <div class="metric">
+          <div class="k">平均章字数</div>
+          <div class="v">${avgWords}</div>
+          <div class="b">${isFanqie ? '番茄基准 4000' : '起点基准 6000'}</div>
+        </div>
+        <div class="metric">
+          <div class="k">已分析章节</div>
+          <div class="v">${CHAPTERS.length}</div>
+          <div class="b">全书 ${D.meta.chapters} 章</div>
+        </div>
+      </div>
+
+      <h2>张力曲线 <span class="n">每点一章，颜色为情绪</span></h2>
+      <div class="rhythm-wrap">${svgLine()}</div>
+
+      <h2>章节明细 <span class="n">按张力排序</span></h2>
+      <div class="ch-list">
+        ${CHAPTERS.slice().sort((a, b) => b.tension - a.tension).map(c => `
+          <div class="ch-row" data-ch="${c.ch}">
+            <div class="ch-no">第 ${c.ch} 章</div>
+            <div>
+              <div class="ch-title">${c.title}</div>
+              <div class="ch-hook">${c.hook || '无钩子'}</div>
+            </div>
+            <div class="ch-badge" style="color:${EMOTION_COLOR[c.emotion] || '#888'}">${c.emotion} · ${c.tension}</div>
+          </div>`).join('')}
+      </div>
+    `;
+    views.rhythm.querySelectorAll('[data-ch]').forEach(row => {
+      row.addEventListener('click', () => {
+        const c = CHAPTERS.find(x => x.ch === +row.dataset.ch);
+        if (c) showChapter(c);
+      });
+    });
+  }
+
+  function showChapter(c) {
+    panelBody.innerHTML = `
+      <h2 class="ent-name">第 ${c.ch} 章</h2>
+      <div class="ent-meta">${c.title} · ${c.words} 字 · 张力 ${c.tension}</div>
+      <div class="chips">
+        <span class="chip" style="color:${EMOTION_COLOR[c.emotion] || '#888'}">${c.emotion}</span>
+        ${c.hook_type ? `<span class="chip">钩子：${c.hook_type}</span>` : ''}
+      </div>
+      <p class="ent-desc">${c.summary}</p>
+      ${c.hook ? `<div class="sec-title">章末钩子</div><div class="attrs">${c.hook}</div>` : ''}
+      ${(c.battles || []).length ? `<div class="sec-title" style="margin-top:16px">战斗</div>
+        ${c.battles.map(b => `<div class="attrs">${(byId.get(b.a) || {}).name} vs ${(byId.get(b.b) || {}).name}
+          · 境界差 ${b.gap > 0 ? '+' : ''}${b.gap} · ${b.note}</div>`).join('')}` : ''}
+    `;
+    panel.classList.add('open');
+  }
+
+  /* ================= 境界 ================= */
+  function renderRealms() {
+    // 主角（关系最多者）置顶，其余按最终修为降序
+    const mainId = [...deg.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const chars = D.entities
+      .filter(e => e.type === 'character' && (e.power_history || []).length)
+      .sort((a, b) => {
+        if (a.id === mainId) return -1;
+        if (b.id === mainId) return 1;
+        const pa = a.power_history[a.power_history.length - 1];
+        const pb = b.power_history[b.power_history.length - 1];
+        return levelNum(pb) - levelNum(pa);
+      });
+
+    const ladder = REALMS.map((r, i) => {
+      const st = r.stages || [];
+      const base = REALM_COLOR[Math.min(i, REALM_COLOR.length - 1)];
+      const bars = st.length
+        ? `<div class="rbar">${st.map((s, j) =>
+            `<i style="background:${shade(base, 84 - (st.length > 1 ? j / (st.length - 1) : 0.5) * 38)}" title="${s}"></i>`
+          ).join('')}</div>`
+        : '';
+      const seen = st.length
+        ? (D.entities.flatMap(e => e.power_history || []).filter(p => p.realm === r.id).length) : 0;
+      return `
+      <div class="realm-step" style="background:${shade(base, 92)};border-color:${shade(base, 74)}">
+        <div class="rn">${r.name}</div>
+        <div class="rs">${st.length ? `${st.length} 个小阶` : '无细分'}${seen ? ` · ${seen} 条记录` : ''}</div>
+        ${bars}
+      </div>`;
+    }).join('');
+
+    const W = 800, P = 4;
+    const minC = 1, maxC = CURRENT_CH;
+    const X = c => P + ((c - minC) / Math.max(maxC - minC, 1)) * (W - P * 2);
+
+    const rows = chars.map(e => {
+      const h = e.power_history;
+      const segs = h.map((p, i) => {
+        const from = p.ch;
+        const to = (i + 1 < h.length) ? h[i + 1].ch : (e.last_ch || CURRENT_CH);
+        return `<div class="gantt-seg" data-ent="${e.id}" style="left:${(X(from) / W * 100).toFixed(2)}%;
+          width:${Math.max((X(to) - X(from)) / W * 100, 0.8).toFixed(2)}%;
+          background:${realmColorOf(p)}" title="${powerFull(p)} · 第${from}章${p.note ? ' · ' + p.note : ''}"></div>`;
+      }).join('');
+      const latest = h[h.length - 1];
+      const isMain = e.id === mainId;
+      return `<div class="gantt-row${isMain ? ' main' : ''}">
+        <div class="gantt-name" data-ent="${e.id}">${e.name}${isMain ? ' ★' : ''}</div>
+        <div class="gantt-track">${segs}</div>
+        <div class="gantt-now">${powerFull(latest)}</div>
+      </div>`;
+    }).join('');
+
+    const battles = [];
+    CHAPTERS.forEach(c => (c.battles || []).forEach(b => battles.push(Object.assign({ ch: c.ch }, b))));
+
+    views.realms.innerHTML = `
+      <h2>境界阶梯 <span class="n">${REALMS.length} 级</span></h2>
+      <div class="realm-ladder">${ladder}</div>
+
+      <h2>各角色境界轨迹 <span class="n">横轴为章号</span></h2>
+      <div class="gantt">
+        ${rows}
+        <div class="gantt-axis" style="margin-left:78px">
+          ${[1, 30, 60, 90, CURRENT_CH].map(c => `
+            <span class="gantt-tick" style="left:${(X(c) / W * 100).toFixed(2)}%">${c}</span>`).join('')}
+        </div>
+      </div>
+
+      ${battles.length ? `
+      <h2>战斗记录 <span class="n">负值为越级挑战</span></h2>
+      ${battles.map(b => {
+        const pa = powerAtCh(b.a, b.ch), pb = powerAtCh(b.b, b.ch);
+        const diff = levelNum(pa) - levelNum(pb);
+        return `
+        <div class="battle-row">
+          <div class="ch-no" style="color:#9A9488">第 ${b.ch} 章</div>
+          <div class="battle-vs">
+            <span>${(byId.get(b.a) || {}).name} <b>${powerFull(pa)}</b></span>
+            <span class="vs">vs</span>
+            <span>${(byId.get(b.b) || {}).name} <b>${powerFull(pb)}</b></span>
+          </div>
+          <div style="color:${diff < 0 ? '#C0392B' : '#5A7A5E'}">
+            ${diff < 0 ? `境界差 ${fbLayer(diff)} · 越级` : diff > 0 ? `境界差 +${fbLayer(diff)}` : '同阶'}
+          </div>
+        </div>`;
+      }).join('')}` : ''}
+    `;
+    views.realms.querySelectorAll('[data-ent]').forEach(el => {
+      el.addEventListener('click', () => select(el.dataset.ent));
+    });
+  }
+
+  /* ================= 伏笔 ================= */
+  function renderForeshadow() {
+    const counts = { overdue: 0, planted: 0, paid: 0, dropped: 0 };
+    FORESHADOWS.forEach(f => counts[fsStatus(f)]++);
+
+    const order = { overdue: 0, planted: 1, dropped: 2, paid: 3 };
+    const sorted = FORESHADOWS.slice().sort((a, b) =>
+      (order[fsStatus(a)] - order[fsStatus(b)]) || (b.importance - a.importance));
+
+    const maxC = Math.max(CURRENT_CH, ...FORESHADOWS.map(f => f.payoff_ch || 0));
+
+    const doneTotal = (D.meta.coverage && D.meta.coverage.chapters_done) || CURRENT_CH;
+    const partial = doneTotal < D.meta.chapters;
+    views.foreshadow.innerHTML = `
+      ${partial ? `<div class="sample-note">
+        当前只分析了全书 ${D.meta.chapters} 章中的前 ${doneTotal} 章。
+        「超期」看的是<b>沉默时长</b>：距最后一次提及超过 ${FS_THRESHOLD} 章才会标红
+        （阈值 = 已分析 ${doneTotal} 章 × 15%，下限 50）。
+        埋得久但一直在提的主线伏笔不算超期；埋下去就再没管过的才会。
+        尚未分析的 ${D.meta.chapters - doneTotal} 章里可能已回收一部分，跑完全书结论才准确。
+      </div>` : ''}
+      <div class="fs-summary">
+        <div class="fs-stat alarm">
+          <div class="v">${counts.overdue}</div>
+          <div class="k">已超期（>${FS_THRESHOLD} 章未收）</div>
+        </div>
+        <div class="fs-stat"><div class="v">${counts.planted}</div><div class="k">待回收</div></div>
+        <div class="fs-stat"><div class="v">${counts.paid}</div><div class="k">已回收</div></div>
+        <div class="fs-stat"><div class="v">${counts.dropped}</div><div class="k">已放弃</div></div>
+      </div>
+
+      <h2>伏笔台账 <span class="n">按状态与重要度排序</span></h2>
+      ${sorted.map(f => {
+        const st = fsStatus(f);
+        const meta = STATUS_META[st];
+        const end = f.payoff_ch || CURRENT_CH;
+        const leftPct = (f.plant_ch / maxC) * 100;
+        const widthPct = Math.max(((end - f.plant_ch) / maxC) * 100, 1);
+        const overPct = f.payoff_ch ? 0 : Math.max(((CURRENT_CH - f.plant_ch) / maxC) * 100 - widthPct, 0);
+        return `
+        <div class="fs-row">
+          <div class="fs-head">
+            <span class="fs-content">${f.content}</span>
+            <span class="fs-badge" style="color:${meta.color};background:${meta.bg}">${meta.cn}</span>
+          </div>
+          <div class="fs-meta">
+            第 ${f.plant_ch} 章埋${f.payoff_ch
+              ? ` · 第 ${f.payoff_ch} 章收 · 跨 ${f.payoff_ch - f.plant_ch} 章`
+              : ` · 已过 ${CURRENT_CH - f.plant_ch} 章`}${!f.payoff_ch && f.last_mention_ch
+              ? ` · 最后提及第 ${f.last_mention_ch} 章（沉默 ${fsSilent(f)} 章）`
+              : !f.payoff_ch ? ' · 埋下后再未提及' : ''}
+            ${f.thread ? ` · 线索「${f.thread}」` : ''}
+          </div>
+          <div class="fs-bar">
+            <div class="span" style="left:${leftPct}%;width:${widthPct}%;background:${meta.color}"></div>
+            ${overPct > 0 && st === 'overdue' ? `<div class="over" style="left:${leftPct + widthPct}%;width:${overPct}%"></div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    `;
+  }
+
+  /* ================= 搜索 ================= */
+  document.getElementById('search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) { hoverId = null; return; }
+    const hit = D.entities.find(x =>
+      x.name.toLowerCase().includes(q) ||
+      (x.aliases || []).some(a => a.toLowerCase().includes(q)));
+    if (hit) {
+      if (curView !== 'graph') setView('graph');
+      select(hit.id);
+      const n = nodeById.get(hit.id);
+      if (n) { view.x = W / 2 - n.x * view.k; view.y = H / 2 - n.y * view.k; }
+    }
+  });
+
+  /* ================= 图例 ================= */
+  document.getElementById('legend').innerHTML =
+    [...new Set(D.entities.map(e => e.group))].map(g =>
+      `<span><i style="background:${GROUP_COLOR[g] || '#999'}"></i>${g}</span>`).join('') +
+    (isolatedCount ? `<span style="color:#9A9488">另有 ${isolatedCount} 个角色无关系连线（见百科）</span>` : '');
+
+  /* ================= 启动 ================= */
+  if (location.search.includes('debug=1')) {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99;background:#fff;border:1px solid #ccc;padding:6px 10px;font:11px monospace;white-space:pre';
+    document.body.appendChild(d);
+    setInterval(() => {
+      const r = canvas.parentElement.getBoundingClientRect();
+      let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+      nodes.forEach(n => { minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x); minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y); });
+      d.textContent = `W=${W|0} H=${H|0} dpr=${DPR} parent=${r.width|0}x${r.height|0}\nview k=${view.k.toFixed(3)} x=${view.x|0} y=${view.y|0}\nnodes ${nodes.length} bbox x[${minX|0},${maxX|0}] y[${minY|0},${maxY|0}]\ntranslated center=(${((minX+maxX)/2*view.k+view.x)|0},${((minY+maxY)/2*view.k+view.y)|0})`;
+    }, 400);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  renderWiki();
+  requestAnimationFrame(loop);
+  for (let i = 0; i < 900; i++) tick();
+  fitView();
+  alpha = 0.03;
+})();
+</script>
+</body>
+</html>
