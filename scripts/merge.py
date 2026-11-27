@@ -78,7 +78,7 @@ def load_batches(d):
     return batches
 
 
-def _new_record(e):
+def _new_record(e, source=""):
     rec = dict(e)
     rec.setdefault("parent", None)
     rec.setdefault("attrs", {})
@@ -86,10 +86,11 @@ def _new_record(e):
     rec.setdefault("aliases", [])
     rec["_groups"] = Counter([e.get("group") or "其他"])
     rec["_ids"] = {e.get("id")} - {None}
+    rec["_sources"] = {source} - {""}
     return rec
 
 
-def _absorb(cur, e):
+def _absorb(cur, e, source=""):
     """把 e 的信息补进 cur（保留更全的那份）。"""
     if len(e.get("desc") or "") > len(cur.get("desc") or ""):
         cur["desc"] = e["desc"]
@@ -98,6 +99,13 @@ def _absorb(cur, e):
     fc = e.get("first_ch")
     if isinstance(fc, int) and (cur.get("first_ch") is None or fc < cur["first_ch"]):
         cur["first_ch"] = fc
+    # last_ch：只要后续批次仍认为“未退场”（null），就清掉早批次的误判退场章
+    if e.get("last_ch") is None:
+        cur["last_ch"] = None
+    elif cur.get("last_ch") is not None:
+        cur["last_ch"] = max(cur["last_ch"], e["last_ch"])
+    else:
+        cur["last_ch"] = e["last_ch"]
     lc = e.get("last_ch")
     if isinstance(lc, int) and (cur.get("last_ch") is None or lc > cur["last_ch"]):
         cur["last_ch"] = lc
@@ -110,12 +118,15 @@ def _absorb(cur, e):
         cur["parent"] = e["parent"]
     cur.setdefault("_groups", Counter())[e.get("group") or "其他"] += 1
     cur.setdefault("_ids", set()).update({e.get("id")} - {None})
+    cur.setdefault("_sources", set()).update(e.get("_sources") or set())
+    cur.setdefault("_sources", set()).update({source} - {""})
 
 
 def merge_entities(batches):
-    """按 (正名, 类型) 归并，再按别名做第二级归并。返回 (entities, id_map)。"""
+    """按 (正名, 类型) 归并，再按别名做第二级归并。返回 (entities, id_map, merge_log)。"""
     pool, index = [], {}
-    for _, b in batches:
+    name_merges = []
+    for source, b in batches:
         for e in b.get("entities", []):
             name = norm(e.get("name", ""))
             if not name:
@@ -124,13 +135,18 @@ def merge_entities(batches):
             if key in index:
                 cur = pool[index[key]]
                 if GENERIC_NAME_RE.match(name) and (e.get("group") or "") != (cur.get("group") or ""):
-                    pool.append(_new_record(e))       # 同名的“李氏”分属两府，各留各的
+                    pool.append(_new_record(e, source))       # 同名的“李氏”分属两府，各留各的
                     index[key] = len(pool) - 1
                     continue
-                _absorb(pool[index[key]], e)
+                name_merges.append({
+                    "name": e.get("name"), "type": e.get("type"),
+                    "kept_id": cur.get("id"), "merged_id": e.get("id"),
+                    "source": source
+                })
+                _absorb(cur, e, source)
             else:
                 index[key] = len(pool)
-                pool.append(_new_record(e))
+                pool.append(_new_record(e, source))
 
     # ---- 第二级：别名归并（union-find）----
     parent = list(range(len(pool)))
@@ -159,6 +175,7 @@ def merge_entities(batches):
             alias_owner.setdefault(an, set()).add(i)
 
     merged_alias = 0
+    alias_merges = []
     for an, owners in alias_owner.items():
         target = name_to_idx.get(an)
         if target is None:
@@ -167,7 +184,15 @@ def merge_entities(batches):
             continue          # 同一个别名挂在多个人身上，说明是通用称号，跳过
         if owners == {target}:
             continue
-        union(next(iter(owners)), target)
+        owner = next(iter(owners))
+        union(owner, target)
+        alias_merges.append({
+            "alias": an,
+            "merged_name": pool[owner].get("name"),
+            "merged_id": pool[owner].get("id"),
+            "target_name": pool[target].get("name"),
+            "target_id": pool[target].get("id"),
+        })
         merged_alias += 1
 
     # ---- 按簇合并 ----
@@ -175,12 +200,12 @@ def merge_entities(batches):
     for i in range(len(pool)):
         clusters.setdefault(find(i), []).append(i)
 
-    out, id_map = [], {}
+    out, id_map, clusters_log = [], {}, []
     for root, members in sorted(clusters.items(), key=lambda kv: min(kv[1])):
         members = sorted(members)
         head = pool[members[0]]          # 最早出现的那条当主记录
         for i in members[1:]:
-            _absorb(head, pool[i])
+            _absorb(head, pool[i], "")
         head["group"] = head["_groups"].most_common(1)[0][0]
         head["aliases"] = [a for a in dict.fromkeys(head.get("aliases", []))
                            if norm(a) != norm(head["name"])]
@@ -189,6 +214,7 @@ def merge_entities(batches):
             key=lambda x: x["ch"])
         ids = set(head.pop("_ids", set()))
         head.pop("_groups", None)
+        sources = sorted(head.pop("_sources", set()))
         # 全局 id 唯一：主记录沿用最早那批的 id，冲突时加后缀
         base = head.get("id") or f"e_{len(out) + 1:03d}"
         final, n = base, 2
@@ -199,11 +225,42 @@ def merge_entities(batches):
         for old in ids:
             id_map[old] = final
         id_map.setdefault(base, final)
+        if len(members) > 1:
+            clusters_log.append({
+                "final_id": final,
+                "name": head.get("name"),
+                "type": head.get("type"),
+                "group": head.get("group"),
+                "merged_ids": sorted(ids),
+                "sources": sources,
+                "members": [
+                    {
+                        "id": pool[m].get("id"),
+                        "name": pool[m].get("name"),
+                        "aliases": pool[m].get("aliases") or [],
+                    } for m in members
+                ],
+            })
         out.append(head)
 
     if merged_alias:
         print(f"  别名归并 {merged_alias} 组（同一实体在不同批次用了不同名字）")
-    return out, id_map
+    merge_log = {
+        "schema_version": "1.0",
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "batch_count": len(batches),
+        "summary": {
+            "input_entities": sum(len(b.get("entities", [])) for _, b in batches),
+            "output_entities": len(out),
+            "merged_clusters": len(clusters_log),
+            "name_merges": len(name_merges),
+            "alias_merges": len(alias_merges),
+        },
+        "clusters": clusters_log,
+        "name_merges": name_merges,
+        "alias_merges": alias_merges,
+    }
+    return out, id_map, merge_log
 
 
 def normalize_groups(ents):
@@ -254,8 +311,9 @@ def merge_relations(batches, id_map):
     return list(best.values())
 
 
-def merge_chapters(batches, cm):
+def merge_chapters(batches, cm, id_map=None):
     """章节以 chunk-meta 为准补 words / volume；摘要等取模型结果。"""
+    id_map = id_map or {}
     meta_ch = {}
     for r in cm.get("chapters", []):
         if isinstance(r.get("ch"), int):
@@ -284,6 +342,15 @@ def merge_chapters(batches, cm):
         if c.get("emotion") not in ("爽", "压抑", "紧张", "温情", "悲", "平"):
             c["emotion"] = "平"
         c["summary"] = (c.get("summary") or "").strip()[:80]
+        # 早期批次把战斗参战方写成 s/t，统一成合同里的 a/b
+        for b in (c.get("battles") or []):
+            if b.get("a") is None and b.get("s") is not None:
+                b["a"] = b["s"]
+            if b.get("b") is None and b.get("t") is not None:
+                b["b"] = b["t"]
+            b.pop("s", None); b.pop("t", None)
+            b["a"] = id_map.get(b.get("a"), b.get("a"))
+            b["b"] = id_map.get(b.get("b"), b.get("b"))
         out.append(c)
     return out
 
@@ -331,11 +398,39 @@ def merge_foreshadows(batches, taken_ids=None):
     return out
 
 
+def attach_mentions(root, fores):
+    """把 mentions.json 的提及轨迹并入伏笔（若已跑过 mentions.py）。
+
+    有它之后，超期判定从「埋了多少章」升级为「多久没被提及」：
+    第 7 章埋、第 196 章还在提的主线伏笔不会被误报，而埋下就再没管的才会。
+    """
+    p = Path(root) / "mentions.json"
+    if not p.exists():
+        return 0
+    try:
+        m = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"  ⚠ mentions.json 解析失败：{e}")
+        return 0
+    n = 0
+    for f in fores:
+        rec = m.get(f.get("id"))
+        if not rec:
+            continue
+        f["last_mention_ch"] = rec.get("last_mention_ch")
+        f["keywords"] = rec.get("keywords") or []
+        n += 1
+    return n
+
+
 def apply_status(data):
     """按 schema 的派生规则重算 foreshadow.status（存储值不可信）。
 
-    阈值按**已分析到的章数**算，而不是全书总章数：只拆了前 100 章时，
+    阈值按**已分析到的章数**算，而不是全书总章数：只拆了前 200 章时，
     用 2443 章的 15%（366 章）做阈值会让所有坑永远不超期。
+
+    判定优先看 silent（距最后一次提及过了多久），没有提及数据时退回 span：
+    「埋了很久但一直在提」的伏笔不算超期，那是有意经营的长线。
     """
     meta = data["meta"]
     live = max((c["ch"] for c in data["chapters"]), default=0)
@@ -350,7 +445,11 @@ def apply_status(data):
         if payoff is not None and payoff < (f.get("plant_ch") or 0):
             f["payoff_ch"] = None         # 回收早于埋设，按未回收处理
             payoff = None
-        expect = "paid" if payoff else ("overdue" if live - (f.get("plant_ch") or 0) > thr else "planted")
+        if payoff and payoff != f.get("plant_ch"):
+            expect = "paid"
+        else:
+            last = f.get("last_mention_ch") or f.get("plant_ch") or 0
+            expect = "overdue" if live - last > thr else "planted"
         if f.get("status") != expect:
             f["status"] = expect
             changed += 1
@@ -606,9 +705,7 @@ def main():
     ap.add_argument("--genre", default="未标注")
     ap.add_argument("--platform", default="")
     ap.add_argument("--status", default="完结")
-    ap.add_argument("--model", default="manual-agent")
-    ap.add_argument("--cost", type=float, default=0.0, help="抽取花费（元），写入 meta.cost_cny")
-    ap.add_argument("--elapsed", type=int, default=0, help="抽取耗时（秒），写入 meta.elapsed_sec")
+    ap.add_argument("--elapsed", type=int, default=0, help="处理耗时（秒），写入 meta.elapsed_sec")
     args = ap.parse_args()
 
     root = Path(args.dir)
@@ -623,10 +720,10 @@ def main():
     cm_path = root / "chunk-meta.json"
     cm = json.loads(cm_path.read_text(encoding="utf-8")) if cm_path.exists() else {}
 
-    ents, id_map = merge_entities(batches)
+    ents, id_map, merge_log = merge_entities(batches)
     ents = normalize_groups(ents)
     rels = merge_relations(batches, id_map)
-    chaps = merge_chapters(batches, cm)
+    chaps = merge_chapters(batches, cm, id_map)
     fores = merge_foreshadows(batches, taken_ids={e["id"] for e in ents})
     places = merge_places(batches, taken_ids={e["id"] for e in ents} | {f["id"] for f in fores},
                           entity_names={e["id"]: e["name"] for e in ents})
@@ -636,6 +733,9 @@ def main():
     ents, pruned = prune_concept_duplicates(ents, rels, concepts)
     if pruned:
         print(f"  清理与设定重复的器物 {pruned} 个")
+    merge_log["summary"]["entity_merge_output"] = merge_log["summary"]["output_entities"]
+    merge_log["summary"]["pruned_item_concepts"] = pruned
+    merge_log["summary"]["output_entities"] = len(ents)
     realms, realm_ph = load_realms(root, batches)
 
     # realms.json 里的战力时间线是人工核过原文的，优先于批次模型结果
@@ -712,12 +812,13 @@ def main():
             "chars": book_chars if book_chars else cm.get("total_chars", 0),
             "chapters": total_chapters,
             "analyzed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "model": args.model,
-            "cost_cny": args.cost,
+            "model": "manual",
+            "cost_cny": 0,
             "elapsed_sec": args.elapsed,
             "coverage": {"chapters_done": len(chaps),
                          "chapters_skipped": max(total_chapters - len(chaps), 0)},
             "note": (f"分批抽取后合并；{len(ents)} 个实体经名称/别名归并"
+                     + "；原生抽取，未调用外部 API"
                      + ("" if book_chars else "；chars 仅为已切分章节字数")),
         },
         "volumes": build_volumes(cm, chaps),
@@ -731,10 +832,19 @@ def main():
         "concepts": concepts,
     }
 
+    n_m = attach_mentions(root, fores)
+    if n_m:
+        print(f"  提及轨迹 {n_m} 条（来自 mentions.json）")
+
     thr, changed = apply_status(data)
 
     out = Path(args.out) if args.out else root / "data.json"
     out.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    merge_log["summary"]["chapters_done"] = len(chaps)
+    merge_log["summary"]["relations_out"] = len(rels)
+    merge_log["summary"]["foreshadows_out"] = len(fores)
+    (out.parent / "merge-log.json").write_text(
+        json.dumps(merge_log, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"\n实体    {sum(len(b.get('entities', [])) for _, b in batches)} → {len(ents)}（去重）")
     print(f"关系    {sum(len(b.get('relations', [])) for _, b in batches)} → {len(rels)}（去重）")

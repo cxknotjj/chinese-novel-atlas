@@ -45,8 +45,8 @@
 | `chars` | int | ✓ | 正文字数 |
 | `chapters` | int | ✓ | 总章数 |
 | `analyzed_at` | string | ✓ | ISO 8601 UTC |
-| `model` | string | ✓ | 抽取所用模型；手工填 `"manual"` |
-| `cost_cny` | number | | 花费（元） |
+| `model` | string | ✓ | 抽取方式标记；当前由执行 agent 原生抽取，固定 `"manual"` |
+| `cost_cny` | number | | 兼容字段；当前固定 `0`，不参与分析 |
 | `elapsed_sec` | int | | 耗时（秒） |
 | `coverage` | object | ✓ | `{ chapters_done, chapters_skipped }` |
 | `note` | string | | 备注 |
@@ -101,7 +101,7 @@
 | 步骤 | 工具 | 产出 |
 |---|---|---|
 | 1. 全文扫描 | `scripts/realms.py <dir>` | 境界词、层级表述、功法层级的候选统计 |
-| 2. 人工/模型确认 | 核对原文关键章 | `output/<书名>/realms.json`（体系 + 修为时间线） |
+| 2. 人工/执行 agent 确认 | 核对原文关键章 | `output/<书名>/realms.json`（体系 + 修为时间线） |
 | 3. merge 注入 | `scripts/merge.py` | 权威定义覆盖批次数据，`power_history` 由实在原文的节点注入 |
 
 `realms.json` 结构：
@@ -253,7 +253,7 @@
    "gap": 2, "note": "越两个小境界取胜" }]
 ```
 
-`gap` = 双方境界 `order` 差（正数表示 a 更强）。**这是检测"战力崩坏"的原始数据**：主角越 5 个境界打赢，要么是爽点设计，要么是崩了，需要作者自己判断。
+`a` / `b` 必须是 `entities` 里已有的 id，不能是同一个人；旧字段 `s` / `t` 已废弃，校验器会直接拒绝。`gap` = 双方境界 `order` 差（正数表示 a 更强）。**这是检测"战力崩坏"的原始数据**：主角越 5 个境界打赢，要么是爽点设计，要么是崩了，需要作者自己判断。
 
 ### 派生指标（不存储，由 viewer / compare 现算）
 
@@ -295,6 +295,8 @@
 | `plant_quote` | string | | 坐标 `ch12:p8` |
 | `payoff_ch` | int \| null | | 回收章；未回收为 `null` |
 | `payoff_quote` | string | | 坐标 |
+| `last_mention_ch` | int \| null | | 最后一次被提及的章，由 `scripts/mentions.py` 生成 |
+| `keywords` | string[] | | 用于追踪提及的指纹词（自动挑选的稀有实体名） |
 | `status` | enum | | `planted` / `paid` / `overdue` / `dropped`。**派生字段**，见下 |
 | `thread` | string | | 所属线索，便于分组查看 |
 | `importance` | number | ✓ | 0–1，影响告警优先级 |
@@ -306,14 +308,29 @@
 
 | status | 条件 |
 |---|---|
-| `paid` | `payoff_ch` 非空 |
+| `paid` | `payoff_ch` 非空，且与 `plant_ch` 不同 |
 | `dropped` | 作者明确放弃（**唯一需要人工标注的状态**） |
-| `overdue` | `payoff_ch` 为空 **且** `当前分析到的最大章号 - plant_ch > 阈值` |
+| `overdue` | `payoff_ch` 为空 **且** `当前章 - 最后提及章 > 阈值` |
 | `planted` | 其余情况 |
 
-**阈值 = max(50, 已分析章数 × 0.15)**。全书分析时「已分析章数」就是总章数：1000 章的书阈值 150 章；120 回的名著阈值 50 回。只拆前 100 章时按 100 算，否则用总章数的 15% 会让所有坑永远不超期。
+**只有明确的回收章才算 `paid`。** 仅 `last_mention_ch` 更新、没有 `payoff_ch` 的，仍按沉默时长归入 `overdue` 或 `planted`；viewer 会把这类记作「最后提及 · 仅提及」，不会显示成已回收。
+
+**判超期看「沉默时长」，不看「埋了多久」。** 这是 v2.2 的关键修正：
+
+```
+span   = 当前章 - plant_ch        埋了多久
+silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
+```
+
+第 7 章埋、第 196 章还在提的主线伏笔（如《凡人修仙传》的神秘小瓶），跨度 190 章但不是遗忘；而第 20 章埋、第 73 章后再没提的支线（抽髓丸），沉默 127 章才是真问题。**只按 span 判会把 37 条判成超期，加上 silent 后降到 23 条，且剩下的是真该补的。**
+
+`last_mention_ch` 由 `scripts/mentions.py` 生成：从伏笔描述里提取实体名作关键词，按稀有度筛掉"韩立"这类满篇都有的名字，再回全文定位每次提及的章号。
+
+**阈值 = max(50, 已分析章数 × 0.15)**。全书分析时「已分析章数」就是总章数：1000 章的书阈值 150 章；120 回的名著阈值 50 回。只拆前 200 章时按 200 算，否则用总章数的 15% 会让所有坑永远不超期。
 
 **这个阈值必须动态**。固定值对短书太松、对长书太紧，告警就没人看了。
+
+**四处实现必须同一套公式**：`merge.py`、`validate.py`、`export.py`、`template/viewer.html`。曾经因为 view 用全书章数、脚本用已分析章数，界面显示 0 条超期而导出文件写 37 条，同一个数据两套结论。
 
 **为什么派生**：如果 `status` 是手写死的，作者每更新一章都要回头改一遍所有伏笔状态，必然漏。派生规则保证"当前章一推进，超期告警自动更新"。
 
@@ -425,3 +442,4 @@ v1.0 的古典小说样例已归档到 `samples/_archive/`，不再维护，不�
 | 1.0 | 初版。6 个顶层字段，8 类关系，古典小说样本（已归档） |
 | 2.0 | 面向中文网文。新增境界/伏笔/逐章/分卷/认知隔离；移除 events |
 | 2.1 | 境界体系改为**全局定义**（`realms.json` + `scripts/realms.py`）。禁止逐批建立 `realms`，`power_history` 须逐条对回原文 |
+| 2.2 | 伏笔新增 `last_mention_ch` / `keywords`。超期判定从「埋了多久」改为「多久没提」，四处实现统一口径 |
