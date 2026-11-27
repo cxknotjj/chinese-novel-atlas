@@ -22,3 +22,6 @@ Thumbs.db
 # 编辑器
 .vscode/
 .idea/
+
+# 原始小说文本（版权内容，绝不提交）
+novals/
