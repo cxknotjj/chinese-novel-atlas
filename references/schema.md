@@ -3,7 +3,7 @@
 面向**中文长篇网络小说**设计。不追求兼容古典小说——目标单一，字段才能贴紧网文的真实结构。
 
 - 参考实现：`samples/fictional/`（虚构网文《青云签到三十年》，覆盖全部字段）
-- 校验脚本：`scripts/lib/schema.py`
+- 校验脚本：`scripts/validate.py`
 - 版本规则：破坏性变更升主版本号；新增可选字段升次版本号
 
 **题材差异**：玄幻/仙侠的 `realms` 必填；都市/悬疑可为空数组。但 `chapters` 和 `foreshadows` 对所有网文类型都必填——**没有伏笔的长篇网文不存在**，只是埋得深浅不同。
@@ -266,6 +266,8 @@
 
 **这些是产品卖点，不是学术指标。** README 里要直接展示"你的钩子率 62%，番茄基准 80%"。
 
+**非全量分析**：`coverage.chapters_done` 记录**已分析的章数**，`chapters` 数组可以只存关键章。两者不一致时（`len(chapters) < chapters_done`），节奏指标必须标注"不完整"，也不能拿去跨书对比。
+
 ---
 
 ## foreshadows（伏笔台账）· 网文最痛的痛点
@@ -293,6 +295,8 @@
 | `plant_quote` | string | | 坐标 `ch12:p8` |
 | `payoff_ch` | int \| null | | 回收章；未回收为 `null` |
 | `payoff_quote` | string | | 坐标 |
+| `last_mention_ch` | int \| null | | 最后一次被提及的章，由 `scripts/mentions.py` 生成 |
+| `keywords` | string[] | | 用于追踪提及的指纹词（自动挑选的稀有实体名） |
 | `status` | enum | | `planted` / `paid` / `overdue` / `dropped`。**派生字段**，见下 |
 | `thread` | string | | 所属线索，便于分组查看 |
 | `importance` | number | ✓ | 0–1，影响告警优先级 |
@@ -306,12 +310,25 @@
 |---|---|
 | `paid` | `payoff_ch` 非空 |
 | `dropped` | 作者明确放弃（**唯一需要人工标注的状态**） |
-| `overdue` | `payoff_ch` 为空 **且** `当前分析到的最大章号 - plant_ch > 阈值` |
+| `overdue` | `payoff_ch` 为空 **且** `当前章 - 最后提及章 > 阈值` |
 | `planted` | 其余情况 |
 
-**阈值 = max(50, 总章数 × 0.15)**。1000 章的书阈值 150 章；120 回的名著阈值 50 回。
+**判超期看「沉默时长」，不看「埋了多久」。** 这是 v2.2 的关键修正：
+
+```
+span   = 当前章 - plant_ch        埋了多久
+silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
+```
+
+第 7 章埋、第 196 章还在提的主线伏笔（如《凡人修仙传》的神秘小瓶），跨度 190 章但不是遗忘；而第 20 章埋、第 73 章后再没提的支线（抽髓丸），沉默 127 章才是真问题。**只按 span 判会把 37 条判成超期，加上 silent 后降到 23 条，且剩下的是真该补的。**
+
+`last_mention_ch` 由 `scripts/mentions.py` 生成：从伏笔描述里提取实体名作关键词，按稀有度筛掉"韩立"这类满篇都有的名字，再回全文定位每次提及的章号。
+
+**阈值 = max(50, 已分析章数 × 0.15)**。全书分析时「已分析章数」就是总章数：1000 章的书阈值 150 章；120 回的名著阈值 50 回。只拆前 200 章时按 200 算，否则用总章数的 15% 会让所有坑永远不超期。
 
 **这个阈值必须动态**。固定值对短书太松、对长书太紧，告警就没人看了。
+
+**四处实现必须同一套公式**：`merge.py`、`validate.py`、`export.py`、`template/viewer.html`。曾经因为 view 用全书章数、脚本用已分析章数，界面显示 0 条超期而导出文件写 37 条，同一个数据两套结论。
 
 **为什么派生**：如果 `status` 是手写死的，作者每更新一章都要回头改一遍所有伏笔状态，必然漏。派生规则保证"当前章一推进，超期告警自动更新"。
 
@@ -396,7 +413,7 @@
 5. `realms.order` 唯一且从 1 连续递增
 6. `power_history[].ch` 严格递增，`stage` 必须在对应 `realms.stages` 内
 7. `places.parent` 与 `entities.parent` 各自不能成环
-8. `chapters[].ch` 唯一且覆盖 1..chapters，缺失的章节记入 `coverage.chapters_skipped`
+8. `chapters[].ch` 唯一且都落在 1..chapters；全量分析时须覆盖 1..已分析章数，摘要摘录时允许断档（校验器给警告）
 9. `foreshadows.payoff_ch` 若存在必须 ≥ `plant_ch`
 10. `coverage.chapters_done + chapters_skipped == chapters`
 
@@ -423,3 +440,4 @@ v1.0 的古典小说样例已归档到 `samples/_archive/`，不再维护，不�
 | 1.0 | 初版。6 个顶层字段，8 类关系，古典小说样本（已归档） |
 | 2.0 | 面向中文网文。新增境界/伏笔/逐章/分卷/认知隔离；移除 events |
 | 2.1 | 境界体系改为**全局定义**（`realms.json` + `scripts/realms.py`）。禁止逐批建立 `realms`，`power_history` 须逐条对回原文 |
+| 2.2 | 伏笔新增 `last_mention_ch` / `keywords`。超期判定从「埋了多久」改为「多久没提」，四处实现统一口径 |
