@@ -202,6 +202,7 @@ output/我的书/
 - [x] `mentions.py` 伏笔提及追踪（按「沉默时长」判超期，不按埋设跨度）
 - [x] `compare.py` 跨书指标对照（`metrics.md` / `compare.html` / `diff.json`）
 - [x] `novel_atlas/export` 五种导出（伏笔 CSV / Markdown 设定集 / 角色表 / 单文件 / 静态站）
+- [x] 人物 / 势力 / 器物 / 妖兽类型图标（图谱节点、百科、详情、图例、势力版图）
 - [ ] 别名消解进阶（网文的称号极多："剑尊""魔帝""老祖"都是同一个人）
 - [ ] 真实网文样例（需自备文本，版权原因不内置）
 - [ ] README 首屏 GIF

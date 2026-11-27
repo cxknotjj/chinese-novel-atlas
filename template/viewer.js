@@ -44,6 +44,36 @@
     kinship: '血亲', marriage: '婚姻', romance: '情感', service: '主从',
     mentorship: '师承', alliance: '同盟', conflict: '敌对', social: '交游'
   };
+
+  /* 实体类型图标：人物 / 势力 / 器物 / 妖兽，线稿 SVG 随文字颜色走 */
+  const TYPE_NAME = { character: '人物', org: '势力', item: '器物', creature: '妖兽' };
+  const ENTITY_ICON = {
+    character: `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <circle cx="10" cy="6.2" r="2.8"></circle>
+      <path d="M4.6 16.8c.4-3.8 2.5-5.8 5.4-5.8s5 2 5.4 5.8"></path>
+    </svg>`,
+    org: `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M3.4 8.2 10 3.8l6.6 4.4"></path>
+      <path d="M5.1 8.4v7.4M14.9 8.4v7.4M8 15.8v-4h4v4"></path>
+      <path d="M3.6 17.6h12.8"></path>
+    </svg>`,
+    item: `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M12.5 3.2 16.8 7.5 8.7 15.6H5.2v-3.5l7.3-7.3z"></path>
+      <path d="M10.6 5.1 14.9 9.4"></path>
+      <path d="M4 16.8 6.5 14.3"></path>
+    </svg>`,
+    creature: `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M6.1 12.2c-1.2 0-2.1.9-2.1 2 0 1.4 1.2 2 2.7 2h6.6c1.5 0 2.7-.6 2.7-2 0-1.1-.9-2-2.1-2H6.1z"></path>
+      <circle cx="5.6" cy="7.1" r="1.5"></circle>
+      <circle cx="9.8" cy="5.2" r="1.6"></circle>
+      <circle cx="14.4" cy="7.1" r="1.5"></circle>
+    </svg>`
+  };
+  function entityIcon(type, cls) {
+    if (!ENTITY_ICON[type]) return '';
+    const extra = cls ? ' ' + cls : '';
+    return `<span class="entity-icon entity-icon-${type}${extra}" title="${TYPE_NAME[type] || type}">${ENTITY_ICON[type]}</span>`;
+  }
   const STATUS_META = {
     overdue: { cn: '已超期', color: '#C0392B', bg: '#FDF1EF' },
     planted: { cn: '待回收', color: '#B8925A', bg: '#FBF5EA' },
@@ -692,6 +722,44 @@
     }
   }
 
+  // 节点内的小类型图标：只在大节点上画，避免小点糊成一团
+  function drawNodeTypeIcon(type, x, y, size) {
+    const s = size;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = type === 'item' ? '#B8925A' : type === 'org' ? '#3D6B7D' : '#FFFFFF';
+    ctx.lineWidth = Math.max(0.9, s * 0.075);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    if (type === 'character') {
+      ctx.arc(0, -s * 0.15, s * 0.16, 0, Math.PI * 2);
+      ctx.moveTo(-s * 0.32, s * 0.38);
+      ctx.quadraticCurveTo(-s * 0.3, s * 0.03, 0, s * 0.03);
+      ctx.quadraticCurveTo(s * 0.3, s * 0.03, s * 0.32, s * 0.38);
+    } else if (type === 'org') {
+      ctx.moveTo(-s * 0.4, -s * 0.04); ctx.lineTo(0, -s * 0.32); ctx.lineTo(s * 0.4, -s * 0.04);
+      ctx.moveTo(-s * 0.3, s * 0.02); ctx.lineTo(-s * 0.3, s * 0.38);
+      ctx.moveTo(s * 0.3, s * 0.02); ctx.lineTo(s * 0.3, s * 0.38);
+      ctx.moveTo(-s * 0.12, s * 0.38); ctx.lineTo(-s * 0.12, s * 0.16);
+      ctx.lineTo(s * 0.12, s * 0.16); ctx.lineTo(s * 0.12, s * 0.38);
+      ctx.moveTo(-s * 0.44, s * 0.43); ctx.lineTo(s * 0.44, s * 0.43);
+    } else if (type === 'item') {
+      ctx.moveTo(-s * 0.25, s * 0.34); ctx.lineTo(s * 0.27, -s * 0.32);
+      ctx.lineTo(s * 0.38, -s * 0.1); ctx.lineTo(-s * 0.06, s * 0.4); ctx.closePath();
+    } else if (type === 'creature') {
+      ctx.moveTo(-s * 0.3, s * 0.02);
+      ctx.quadraticCurveTo(-s * 0.44, s * 0.3, -s * 0.14, s * 0.34);
+      ctx.lineTo(s * 0.14, s * 0.34);
+      ctx.quadraticCurveTo(s * 0.44, s * 0.3, s * 0.3, s * 0.02);
+      ctx.moveTo(-s * 0.36, -s * 0.2); ctx.arc(-s * 0.36, -s * 0.2, s * 0.1, 0, Math.PI * 2);
+      ctx.moveTo(0, -s * 0.3); ctx.arc(0, -s * 0.3, s * 0.11, 0, Math.PI * 2);
+      ctx.moveTo(s * 0.36, -s * 0.2); ctx.arc(s * 0.36, -s * 0.2, s * 0.1, 0, Math.PI * 2);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function draw() {
     if (W <= 0) return;
     const now = performance.now();
@@ -769,6 +837,9 @@
           ctx.stroke();
         }
       }
+
+      if (rr >= 8.5 && type !== 'item') drawNodeTypeIcon(type, n.x, n.y, rr * 1.02);
+      else if (rr >= 11 && type === 'item') drawNodeTypeIcon(type, n.x, n.y, rr * 0.92);
 
       if (n.selT > 0.05) {
         nodePath(n, rr);
@@ -965,9 +1036,9 @@
       (f.note || '').includes(e.name));
 
     panelBody.innerHTML = `
-      <h2 class="ent-name">${e.name}</h2>
+      <h2 class="ent-name">${entityIcon(e.type, 'entity-icon-lg')}<span>${e.name}</span></h2>
       <div class="ent-meta">
-        第 ${e.first_ch} 章登场${e.last_ch ? ` · 第 ${e.last_ch} 章退场` : ''}
+        ${TYPE_NAME[e.type] || ''} · 第 ${e.first_ch} 章登场${e.last_ch ? ` · 第 ${e.last_ch} 章退场` : ''}
         ${power ? ` · 当前 ${powerFull(power)}` : ''}
       </div>
       <div class="chips">
@@ -983,7 +1054,7 @@
       ${neighbors.map(n => `
         <div class="rel-item" data-goto="${n.other.id}">
           <span class="rel-dot" style="background:${relColor(n.rel.type)}"></span>
-          <span class="rel-name">${n.other.name}</span>
+          <span class="rel-name">${entityIcon(n.other.ref.type, 'entity-icon-sm')}${n.other.name}</span>
           <span class="rel-label">${n.rel.label || REL_CN[n.rel.type] || ''}</span>
         </div>`).join('')}
       ${myForeshadows.length ? `<div class="sec-title" style="margin-top:18px">相关伏笔</div>` +
@@ -1026,8 +1097,8 @@
       <div class="sec-title" style="margin-top:16px">限制 / 代价</div>
       <div class="attrs" style="color:#A6314A">${r.limits.map(x => '· ' + x).join('<br>')}</div>` : '';
     panelBody.innerHTML = `
-      <h2 class="ent-name">${r.name}</h2>
-      <div class="ent-meta">${kindCn} · 第 ${r.first_ch || '?'} 章出现</div>
+      <h2 class="ent-name">${r.type ? entityIcon(r.type, 'entity-icon-lg') : ''}<span>${r.name}</span></h2>
+      <div class="ent-meta">${r.type ? TYPE_NAME[r.type] : kindCn} · 第 ${r.first_ch || '?'} 章出现</div>
       ${extra}
       <p class="ent-desc">${r.desc || ''}</p>
       ${rules}${limits}
@@ -1068,6 +1139,8 @@
   const WIKI_PAGE_SIZE = 24;
   let wikiCharPage = 0, wikiOtherPage = 0, wikiPlacePage = 0, wikiConceptPage = 0;
 
+  function renderWiki() {
+
   function pagerHTML(total, page, size, attr) {
     const pages = Math.max(1, Math.ceil(total / size));
     if (pages <= 1) return '';
@@ -1089,9 +1162,7 @@
     </div>`;
   }
 
-  const TYPE_NAME = { character: '人物', org: '势力', item: '器物', creature: '妖兽' };
-
-  function renderWiki() {
+  const WIKI_PAGE_SIZE = 24;
     const scrollTop = views.wiki.scrollTop;
     const chars = D.entities.filter(e => e.type === 'character');
     const others = D.entities.filter(e => e.type !== 'character');
@@ -1110,7 +1181,7 @@
         total: chars.length, page: wikiCharPage, attr: 'wchar', showType: false
       },
       {
-        title: '势力与器物', items: others.slice(wikiOtherPage * WIKI_PAGE_SIZE, (wikiOtherPage + 1) * WIKI_PAGE_SIZE),
+        title: '势力 / 器物 / 妖兽', items: others.slice(wikiOtherPage * WIKI_PAGE_SIZE, (wikiOtherPage + 1) * WIKI_PAGE_SIZE),
         total: others.length, page: wikiOtherPage, attr: 'wother', showType: true
       },
       { title: '境界体系', items: REALMS.map(r => ({ id: r.id, name: r.name, desc: r.desc })), total: REALMS.length, showType: false },
@@ -1129,8 +1200,8 @@
       <div class="grid">
         ${s.items.map(it => `
           <div class="card" data-id="${it.id}">
-            ${s.showType && it.type ? `<div class="card-type">${TYPE_NAME[it.type] || it.type}</div>` : ''}
-            <div class="n">${it.name}</div>
+            ${s.showType && it.type ? `<div class="card-type">${entityIcon(it.type)}<span>${TYPE_NAME[it.type] || it.type}</span></div>` : ''}
+            <div class="n">${!s.showType && it.type ? entityIcon(it.type, 'entity-icon-sm') : ''}${it.name}</div>
             <div class="d">${(it.desc || '').slice(0, 64)}</div>
           </div>`).join('')}
       </div>
@@ -1308,9 +1379,9 @@
 
       <div class="geo-sec-title">档案关联人物</div>
       <div class="geo-chip-row">${people.length
-        ? people.slice(0, 7).map(e => `<button class="geo-chip" data-ent="${e.id}">${escHtml(e.name)}</button>`).join('')
+        ? people.slice(0, 7).map(e => `<button class="geo-chip" data-ent="${e.id}">${entityIcon(e.type, 'entity-icon-sm')}${escHtml(e.name)}</button>`).join('')
         : sameGroup.length
-          ? sameGroup.map(e => `<button class="geo-chip" data-ent="${e.id}">${escHtml(e.name)}</button>`).join('')
+          ? sameGroup.map(e => `<button class="geo-chip" data-ent="${e.id}">${entityIcon(e.type, 'entity-icon-sm')}${escHtml(e.name)}</button>`).join('')
           : '<span class="geo-empty">档案里没有直接提到此地的人物。</span>'}</div>
       <div class="geo-empty" style="margin-top:6px">${people.length
         ? '按人物简介直接提到地名匹配；不等于此人在该地登场。'
@@ -1469,7 +1540,7 @@
             ${visibleRows.map(r => `
               <tr class="${r.places.length ? '' : 'power-gap-row'}">
                 <td>
-                  <button class="power-org" data-power-org="${r.org.id}">${escHtml(r.org.name)}</button>
+                  <button class="power-org" data-power-org="${r.org.id}">${entityIcon(r.org.type, 'entity-icon-sm')}${escHtml(r.org.name)}</button>
                   ${r.subs.length ? `<span class="power-sub">下辖：${r.subs.slice(0, 4).map(x => escHtml(x.name)).join('、')}${r.subs.length > 4 ? '…' : ''}</span>` : ''}
                 </td>
                 <td><div class="power-places">${r.places.length ? r.places.slice().sort(byFirstCh).map(placeChip).join('') : '<span class="power-gap">未记录据点（数据缺口）</span>'}</div></td>
@@ -1864,7 +1935,10 @@
   /* ================= 图例 ================= */
   document.getElementById('legend').innerHTML =
     `<div class="legend-types legend-types-row">
-      <span><b>●</b> 人物</span><span><b>■</b> 势力</span><span><b>◆</b> 器物</span><span><b>▲</b> 妖兽</span>
+      <span>${entityIcon('character')}人物</span>
+      <span>${entityIcon('org')}势力</span>
+      <span>${entityIcon('item')}器物</span>
+      <span>${entityIcon('creature')}妖兽</span>
     </div>` +
     `<div class="legend-types rel-legend">
       ${Object.keys(REL_STYLE).map(k => {
