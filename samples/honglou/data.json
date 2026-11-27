@@ -1,0 +1,2096 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "title": "红楼梦",
+    "title_en": "Dream of the Red Chamber",
+    "author": "曹雪芹",
+    "source_file": "hongloumeng.txt",
+    "chars": 730000,
+    "chapters": 120,
+    "analyzed_at": "2026-11-27T04:00:00Z",
+    "model": "manual",
+    "cost_cny": 0,
+    "elapsed_sec": 0,
+    "coverage": {
+      "chapters_done": 120,
+      "chapters_skipped": 0
+    },
+    "note": "手工构造的金标准样本，用于回归测试"
+  },
+  "entities": [
+    {
+      "id": "e_jiamu",
+      "name": "贾母",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "史太君",
+        "老祖宗",
+        "老太太"
+      ],
+      "desc": "荣国府最高长辈，史家出身，贾赦、贾政、贾敏之母。溺爱宝玉，是全家权力的真正中心。",
+      "first_ch": 2,
+      "last_ch": 110,
+      "attrs": {
+        "身份": "荣国公诰命夫人",
+        "结局": "寿终正寝"
+      }
+    },
+    {
+      "id": "e_jiashe",
+      "name": "贾赦",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "大老爷"
+      ],
+      "desc": "贾母长子，袭一等将军。好色贪财，逼娶鸳鸯未遂，与贾政一支不睦。",
+      "first_ch": 3,
+      "last_ch": 105,
+      "attrs": {
+        "身份": "荣国府长子",
+        "结局": "革职流放后遇赦"
+      }
+    },
+    {
+      "id": "e_xingfuren",
+      "name": "邢夫人",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "大太太"
+      ],
+      "desc": "贾赦继室，迎春名义上的母亲。禀性愚犟，只知奉承贾赦。",
+      "first_ch": 3,
+      "last_ch": 110,
+      "attrs": {
+        "身份": "贾赦妻",
+        "结局": "随贾赦流放"
+      }
+    },
+    {
+      "id": "e_jiazheng",
+      "name": "贾政",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "政老爷",
+        "存周"
+      ],
+      "desc": "贾母次子，工部员外郎。方正迂腐，崇尚科举，对宝玉极为严厉。",
+      "first_ch": 2,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "工部员外郎",
+        "结局": "复职后终老"
+      }
+    },
+    {
+      "id": "e_wangfuren",
+      "name": "王夫人",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "二太太"
+      ],
+      "desc": "贾政正妻，元春、贾珠、宝玉之母。表面慈善，实则手段强硬，逐晴雯、撵芳官皆出其手。",
+      "first_ch": 2,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾政妻",
+        "结局": "宝玉出家后终老"
+      }
+    },
+    {
+      "id": "e_baoyu",
+      "name": "贾宝玉",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "怡红公子",
+        "绛洞花主",
+        "宝二爷",
+        "无事忙",
+        "富贵闲人"
+      ],
+      "desc": "全书主角，衔通灵宝玉而生。鄙弃功名，视女子为清净，与黛玉相知，终娶宝钗后出家。",
+      "first_ch": 2,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾政次子",
+        "结局": "中举后出家"
+      }
+    },
+    {
+      "id": "e_yuanchun",
+      "name": "贾元春",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "元妃",
+        "贤德妃",
+        "贵妃"
+      ],
+      "desc": "贾政长女，入宫封贤德妃。省亲一回是大观园最盛之时，也是贾府由盛转衰的分水岭。",
+      "first_ch": 2,
+      "last_ch": 95,
+      "attrs": {
+        "身份": "贤德妃",
+        "结局": "薨逝于宫中"
+      }
+    },
+    {
+      "id": "e_jiazhu",
+      "name": "贾珠",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [],
+      "desc": "贾政长子，十四岁进学，不到二十岁病故。其早逝是李纨守寡、贾兰孤儿的根源。",
+      "first_ch": 2,
+      "last_ch": 2,
+      "attrs": {
+        "身份": "贾政长子",
+        "结局": "早逝"
+      }
+    },
+    {
+      "id": "e_liguan",
+      "name": "李纨",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "宫裁",
+        "稻香老农"
+      ],
+      "desc": "贾珠之妻，青年守寡，专心教子。诗社的裁判，也是全书最被压抑的人物之一。",
+      "first_ch": 3,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾珠妻",
+        "结局": "贾兰中举后诰命加身"
+      }
+    },
+    {
+      "id": "e_jialan",
+      "name": "贾兰",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [],
+      "desc": "贾珠与李纨之子。勤学不辍，最终中举，是贾府败落后唯一的复兴希望。",
+      "first_ch": 4,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾珠之子",
+        "结局": "中举"
+      }
+    },
+    {
+      "id": "e_yingchun",
+      "name": "贾迎春",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "二木头",
+        "菱洲"
+      ],
+      "desc": "贾赦之女，性格懦弱。误嫁孙绍祖，受虐而亡，是十二钗中最无声的悲剧。",
+      "first_ch": 3,
+      "last_ch": 109,
+      "attrs": {
+        "身份": "贾赦女",
+        "结局": "嫁孙绍祖后受虐身亡"
+      }
+    },
+    {
+      "id": "e_tanchun",
+      "name": "贾探春",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "蕉下客",
+        "三姑娘",
+        "玫瑰花"
+      ],
+      "desc": "贾政与赵姨娘之女。精明果决，理家兴利除弊，抄检大观园时怒斥王善保家的。远嫁海疆。",
+      "first_ch": 3,
+      "last_ch": 119,
+      "attrs": {
+        "身份": "贾政庶女",
+        "结局": "远嫁海疆"
+      }
+    },
+    {
+      "id": "e_zhaoyiniang",
+      "name": "赵姨娘",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "赵姨娘"
+      ],
+      "desc": "贾政之妾，探春与贾环生母。愚妄好妒，曾用魇魔法害宝玉凤姐，是府内倾轧的缩影。",
+      "first_ch": 20,
+      "last_ch": 112,
+      "attrs": {
+        "身份": "贾政妾",
+        "结局": "暴病而亡"
+      }
+    },
+    {
+      "id": "e_jiahuan",
+      "name": "贾环",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "环三爷"
+      ],
+      "desc": "贾政与赵姨娘之子。猥琐卑劣，曾推倒烛台烫伤宝玉，是嫡庶矛盾的直接受害者也加害者。",
+      "first_ch": 18,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾政庶子",
+        "结局": "随贾政复职"
+      }
+    },
+    {
+      "id": "e_jialian",
+      "name": "贾琏",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "琏二爷"
+      ],
+      "desc": "贾赦之子，王熙凤之夫。好色贪财，偷娶尤二姐，凤姐死后扶正平儿。",
+      "first_ch": 2,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾赦子",
+        "结局": "扶正平儿"
+      }
+    },
+    {
+      "id": "e_wangxifeng",
+      "name": "王熙凤",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [
+        "凤姐",
+        "凤辣子",
+        "琏二奶奶"
+      ],
+      "desc": "贾琏之妻，王夫人内侄女。手段泼辣，协理宁国府、弄权铁槛寺，最终机关算尽。",
+      "first_ch": 2,
+      "last_ch": 114,
+      "attrs": {
+        "身份": "贾琏妻",
+        "结局": "病亡，家败人散"
+      }
+    },
+    {
+      "id": "e_qiaojie",
+      "name": "巧姐",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [],
+      "desc": "贾琏与王熙凤之女。名字为刘姥姥所取，家败后险被卖，得刘姥姥救出。",
+      "first_ch": 21,
+      "last_ch": 119,
+      "attrs": {
+        "身份": "贾琏女",
+        "结局": "嫁乡绅之子"
+      }
+    },
+    {
+      "id": "e_pinger",
+      "name": "平儿",
+      "type": "character",
+      "group": "荣国府",
+      "aliases": [],
+      "desc": "王熙凤陪房，贾琏之妾。处事周全，常在凤姐与众人之间转圜，是府中难得的厚道人。",
+      "first_ch": 6,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾琏妾",
+        "结局": "凤姐死后被扶正"
+      }
+    },
+    {
+      "id": "e_jiajing",
+      "name": "贾敬",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [],
+      "desc": "宁国府族长，贾珍之父。一味好道，烧丹炼汞，不问家事，最终吞金丹而亡。",
+      "first_ch": 2,
+      "last_ch": 63,
+      "attrs": {
+        "身份": "宁国府族长",
+        "结局": "服丹中毒身亡"
+      }
+    },
+    {
+      "id": "e_jiazhen",
+      "name": "贾珍",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [
+        "珍大爷"
+      ],
+      "desc": "贾敬之子，宁国府实际掌权者。荒淫无度，与秦可卿关系暧昧，是全书道德崩坏的核心。",
+      "first_ch": 2,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "宁国府当家人",
+        "结局": "革职流放"
+      }
+    },
+    {
+      "id": "e_youshi",
+      "name": "尤氏",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [
+        "珍大奶奶"
+      ],
+      "desc": "贾珍继室。性情懦弱，明知丈夫与继妹之事亦不敢言，秦可卿丧事时托病不出。",
+      "first_ch": 5,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾珍妻",
+        "结局": "随贾珍流放"
+      }
+    },
+    {
+      "id": "e_jiarong",
+      "name": "贾蓉",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [
+        "蓉哥儿"
+      ],
+      "desc": "贾珍之子，秦可卿之夫。轻薄浮浪，与尤氏姐妹厮混，助父行恶。",
+      "first_ch": 5,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "贾珍子",
+        "结局": "革职"
+      }
+    },
+    {
+      "id": "e_qinkeqing",
+      "name": "秦可卿",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [
+        "可儿",
+        "蓉大奶奶"
+      ],
+      "desc": "贾蓉之妻。出身不明，容貌性情皆为十二钗之冠。早逝，丧事极尽奢华，死因是全书的隐秘。",
+      "first_ch": 5,
+      "last_ch": 13,
+      "attrs": {
+        "身份": "贾蓉妻",
+        "结局": "悬梁自尽（判词暗示）"
+      }
+    },
+    {
+      "id": "e_xichun",
+      "name": "贾惜春",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [
+        "藕榭",
+        "四姑娘"
+      ],
+      "desc": "贾敬之女，贾珍之妹，养在荣国府。冷心冷面，抄检大观园后逐走入画，最终出家。",
+      "first_ch": 3,
+      "last_ch": 118,
+      "attrs": {
+        "身份": "贾敬女",
+        "结局": "出家为尼"
+      }
+    },
+    {
+      "id": "e_youerjie",
+      "name": "尤二姐",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [],
+      "desc": "尤氏继母之女。被贾琏偷娶为妾，遭凤姐设计折磨，吞金自尽。",
+      "first_ch": 13,
+      "last_ch": 69,
+      "attrs": {
+        "身份": "贾琏妾",
+        "结局": "吞金自尽"
+      }
+    },
+    {
+      "id": "e_yousanjie",
+      "name": "尤三姐",
+      "type": "character",
+      "group": "宁国府",
+      "aliases": [],
+      "desc": "尤二姐之妹。性情刚烈，倾心柳湘莲五年，被退婚时刎剑自尽。",
+      "first_ch": 13,
+      "last_ch": 66,
+      "attrs": {
+        "身份": "柳湘莲未婚妻",
+        "结局": "刎剑自尽"
+      }
+    },
+    {
+      "id": "e_linruhai",
+      "name": "林如海",
+      "type": "character",
+      "group": "林家",
+      "aliases": [],
+      "desc": "林黛玉之父，前科探花，巡盐御史。膝下无子，黛玉七岁时送其入贾府，不久病故。",
+      "first_ch": 2,
+      "last_ch": 14,
+      "attrs": {
+        "身份": "巡盐御史",
+        "结局": "病故"
+      }
+    },
+    {
+      "id": "e_jiamin",
+      "name": "贾敏",
+      "type": "character",
+      "group": "林家",
+      "aliases": [],
+      "desc": "贾母之女，林如海之妻，黛玉之母。早逝，是黛玉入贾府的直接原因。",
+      "first_ch": 2,
+      "last_ch": 2,
+      "attrs": {
+        "身份": "林如海妻",
+        "结局": "早逝"
+      }
+    },
+    {
+      "id": "e_daiyu",
+      "name": "林黛玉",
+      "type": "character",
+      "group": "林家",
+      "aliases": [
+        "颦儿",
+        "潇湘妃子",
+        "林妹妹"
+      ],
+      "desc": "全书主角。母丧后寄居贾府，才情冠绝而体弱多病。与宝玉相知相爱，终不能成，焚稿而亡。",
+      "first_ch": 2,
+      "last_ch": 98,
+      "attrs": {
+        "身份": "林如海女",
+        "结局": "泪尽而逝"
+      }
+    },
+    {
+      "id": "e_xueyima",
+      "name": "薛姨妈",
+      "type": "character",
+      "group": "薛家",
+      "aliases": [],
+      "desc": "王夫人之妹，宝钗、薛蟠之母。客居贾府，性情随和，是金玉良缘的推动者之一。",
+      "first_ch": 4,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "薛家主母",
+        "结局": "薛家败落后依傍贾府"
+      }
+    },
+    {
+      "id": "e_baochai",
+      "name": "薛宝钗",
+      "type": "character",
+      "group": "薛家",
+      "aliases": [
+        "蘅芜君",
+        "宝姐姐"
+      ],
+      "desc": "全书主角。博学稳重，恪守礼教，随分从时。嫁宝玉后独守空闺，是金玉良缘的承受者。",
+      "first_ch": 4,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "薛姨妈女",
+        "结局": "嫁宝玉后守寡"
+      }
+    },
+    {
+      "id": "e_xuepan",
+      "name": "薛蟠",
+      "type": "character",
+      "group": "薛家",
+      "aliases": [
+        "呆霸王"
+      ],
+      "desc": "薛姨妈之子。纨绔粗鄙，为争香菱打死冯渊，后又打死张三，两次人命皆靠贾府权势了结。",
+      "first_ch": 4,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "薛家长子",
+        "结局": "获赦出狱"
+      }
+    },
+    {
+      "id": "e_xiangling",
+      "name": "香菱",
+      "type": "character",
+      "group": "薛家",
+      "aliases": [
+        "英莲",
+        "秋菱"
+      ],
+      "desc": "甄士隐之女，幼年被拐，后为薛蟠妾。学诗痴心，是全书命运最坎坷的女子。",
+      "first_ch": 1,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "薛蟠妾",
+        "结局": "难产而亡"
+      }
+    },
+    {
+      "id": "e_xiangyun",
+      "name": "史湘云",
+      "type": "character",
+      "group": "史家",
+      "aliases": [
+        "枕霞旧友",
+        "云妹妹"
+      ],
+      "desc": "贾母侄孙女。豪爽率真，醉眠芍药裀，是十二钗中最有生命力的一位。",
+      "first_ch": 5,
+      "last_ch": 118,
+      "attrs": {
+        "身份": "史家之女",
+        "结局": "嫁卫若兰后守寡"
+      }
+    },
+    {
+      "id": "e_wangziteng",
+      "name": "王子腾",
+      "type": "character",
+      "group": "王家",
+      "aliases": [],
+      "desc": "王夫人之兄，王熙凤叔父。官至京营节度使、九省都检点，是贾府在朝中最重要的政治靠山，其死直接导致贾府失势。",
+      "first_ch": 3,
+      "last_ch": 96,
+      "attrs": {
+        "身份": "九省都检点",
+        "结局": "升任途中病故"
+      }
+    },
+    {
+      "id": "e_xiren",
+      "name": "袭人",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [
+        "花珍珠",
+        "蕊珠"
+      ],
+      "desc": "宝玉贴身丫鬟。温柔和顺，暗中劝谏，是宝玉现实生活的照料者，最终嫁蒋玉菡。",
+      "first_ch": 3,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "宝玉丫鬟",
+        "结局": "嫁蒋玉菡"
+      }
+    },
+    {
+      "id": "e_qingwen",
+      "name": "晴雯",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [
+        "芙蓉女儿"
+      ],
+      "desc": "宝玉丫鬟。心比天高，口齿锋利，撕扇补裘皆见其性。被王夫人逐出后病死，宝玉作《芙蓉女儿诔》祭之。",
+      "first_ch": 5,
+      "last_ch": 78,
+      "attrs": {
+        "身份": "宝玉丫鬟",
+        "结局": "被逐后病死"
+      }
+    },
+    {
+      "id": "e_zijuan",
+      "name": "紫鹃",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [],
+      "desc": "黛玉贴身丫鬟。忠心耿耿，试玉一回见其智，黛玉死后随惜春出家。",
+      "first_ch": 3,
+      "last_ch": 118,
+      "attrs": {
+        "身份": "黛玉丫鬟",
+        "结局": "随惜春出家"
+      }
+    },
+    {
+      "id": "e_yinger",
+      "name": "莺儿",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [
+        "黄金莺"
+      ],
+      "desc": "宝钗丫鬟。手巧善编，金玉良缘之说最早由她口中说出。",
+      "first_ch": 7,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "宝钗丫鬟",
+        "结局": "随宝钗"
+      }
+    },
+    {
+      "id": "e_yuanyang",
+      "name": "鸳鸯",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [],
+      "desc": "贾母首席丫鬟，掌库房钥匙。抗婚贾赦，剪发明志，贾母死后悬梁殉主。",
+      "first_ch": 20,
+      "last_ch": 111,
+      "attrs": {
+        "身份": "贾母丫鬟",
+        "结局": "殉主自尽"
+      }
+    },
+    {
+      "id": "e_sijie",
+      "name": "司棋",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [],
+      "desc": "迎春丫鬟。性烈，与表弟潘又安私会事发被逐，撞墙而死。",
+      "first_ch": 7,
+      "last_ch": 92,
+      "attrs": {
+        "身份": "迎春丫鬟",
+        "结局": "被逐后撞墙自尽"
+      }
+    },
+    {
+      "id": "e_shishu",
+      "name": "侍书",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [],
+      "desc": "探春丫鬟。伶俐能干，抄检大观园时与探春配合默契。",
+      "first_ch": 7,
+      "last_ch": 100,
+      "attrs": {
+        "身份": "探春丫鬟",
+        "结局": "随探春远嫁"
+      }
+    },
+    {
+      "id": "e_jinchuan",
+      "name": "金钏",
+      "type": "character",
+      "group": "仆役",
+      "aliases": [],
+      "desc": "王夫人丫鬟。因与宝玉玩笑被王夫人掌掴撵出，投井自尽，成为宝玉挨打的导火索。",
+      "first_ch": 7,
+      "last_ch": 32,
+      "attrs": {
+        "身份": "王夫人丫鬟",
+        "结局": "投井自尽"
+      }
+    },
+    {
+      "id": "e_miaoyu",
+      "name": "妙玉",
+      "type": "character",
+      "group": "其他",
+      "aliases": [
+        "槛外人"
+      ],
+      "desc": "大观园栊翠庵尼姑。出身读书仕宦之家，气质高洁而孤僻，对宝玉有隐秘情愫。",
+      "first_ch": 17,
+      "last_ch": 112,
+      "attrs": {
+        "身份": "栊翠庵尼",
+        "结局": "被劫不知所终"
+      }
+    },
+    {
+      "id": "e_liulaolao",
+      "name": "刘姥姥",
+      "type": "character",
+      "group": "其他",
+      "aliases": [],
+      "desc": "王家的远亲，乡下老妪。三进荣国府，二进时游大观园成为全书最热闹的段落，家败后救出巧姐。",
+      "first_ch": 6,
+      "last_ch": 119,
+      "attrs": {
+        "身份": "王家远亲",
+        "结局": "救巧姐，得善终"
+      }
+    },
+    {
+      "id": "e_jiayucun",
+      "name": "贾雨村",
+      "type": "character",
+      "group": "其他",
+      "aliases": [
+        "贾化",
+        "时飞"
+      ],
+      "desc": "落魄书生，得甄士隐资助中举。曾任黛玉塾师，后夤缘复职，乱判葫芦案，是全书官场堕落的线索人物。",
+      "first_ch": 1,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "应天府尹",
+        "结局": "革职流放"
+      }
+    },
+    {
+      "id": "e_zhenshiyin",
+      "name": "甄士隐",
+      "type": "character",
+      "group": "其他",
+      "aliases": [],
+      "desc": "姑苏乡宦。梦识通灵，失女英莲，家道败落后随跛足道人出家。全书以他的故事开篇与收束。",
+      "first_ch": 1,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "乡宦",
+        "结局": "出家"
+      }
+    },
+    {
+      "id": "e_qinzhong",
+      "name": "秦钟",
+      "type": "character",
+      "group": "其他",
+      "aliases": [
+        "秦鲸卿"
+      ],
+      "desc": "秦可卿之弟。容貌秀美，与宝玉同学且情谊暧昧，早夭。",
+      "first_ch": 7,
+      "last_ch": 16,
+      "attrs": {
+        "身份": "秦可卿弟",
+        "结局": "早夭"
+      }
+    },
+    {
+      "id": "e_jiangyuhan",
+      "name": "蒋玉菡",
+      "type": "character",
+      "group": "其他",
+      "aliases": [
+        "琪官"
+      ],
+      "desc": "名伶。与宝玉交换汗巾，忠顺王府索人牵连宝玉挨打。后娶袭人。",
+      "first_ch": 28,
+      "last_ch": 120,
+      "attrs": {
+        "身份": "优伶",
+        "结局": "娶袭人"
+      }
+    },
+    {
+      "id": "e_liuxianglian",
+      "name": "柳湘莲",
+      "type": "character",
+      "group": "其他",
+      "aliases": [
+        "冷二郎"
+      ],
+      "desc": "世家子弟，豪侠任性。痛打薛蟠，与尤三姐定亲后又退婚，致其自尽，遂随道人出家。",
+      "first_ch": 47,
+      "last_ch": 66,
+      "attrs": {
+        "身份": "世家子",
+        "结局": "出家"
+      }
+    },
+    {
+      "id": "e_beijingwang",
+      "name": "北静王",
+      "type": "character",
+      "group": "其他",
+      "aliases": [
+        "水溶"
+      ],
+      "desc": "四王之一，年轻谦和。路祭秦可卿时见宝玉，赠鹡鸰香串，是宝玉在府外难得的知己。",
+      "first_ch": 14,
+      "last_ch": 105,
+      "attrs": {
+        "身份": "北静郡王",
+        "结局": "—"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "s": "e_jiamu",
+      "t": "e_jiashe",
+      "type": "kinship",
+      "label": "母子",
+      "weight": 0.9,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_jiamu",
+      "t": "e_jiazheng",
+      "type": "kinship",
+      "label": "母子",
+      "weight": 0.95,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_jiamu",
+      "t": "e_jiamin",
+      "type": "kinship",
+      "label": "母女",
+      "weight": 0.85,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p10"
+      ]
+    },
+    {
+      "s": "e_jiashe",
+      "t": "e_jialian",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.8,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p09"
+      ]
+    },
+    {
+      "s": "e_jiashe",
+      "t": "e_yingchun",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.75,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p09"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_baoyu",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.98,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_yuanchun",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.8,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_jiazhu",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.6,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_tanchun",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.7,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p15"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_jiahuan",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.6,
+      "first_ch": 18,
+      "evidence": [
+        "ch18:p05"
+      ]
+    },
+    {
+      "s": "e_wangfuren",
+      "t": "e_baoyu",
+      "type": "kinship",
+      "label": "母子",
+      "weight": 0.95,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_wangfuren",
+      "t": "e_yuanchun",
+      "type": "kinship",
+      "label": "母女",
+      "weight": 0.8,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_wangfuren",
+      "t": "e_jiazhu",
+      "type": "kinship",
+      "label": "母子",
+      "weight": 0.6,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_zhaoyiniang",
+      "t": "e_tanchun",
+      "type": "kinship",
+      "label": "母女",
+      "weight": 0.7,
+      "first_ch": 20,
+      "evidence": [
+        "ch20:p10"
+      ]
+    },
+    {
+      "s": "e_zhaoyiniang",
+      "t": "e_jiahuan",
+      "type": "kinship",
+      "label": "母子",
+      "weight": 0.85,
+      "first_ch": 20,
+      "evidence": [
+        "ch20:p10"
+      ]
+    },
+    {
+      "s": "e_jiamin",
+      "t": "e_daiyu",
+      "type": "kinship",
+      "label": "母女",
+      "weight": 0.9,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p12"
+      ]
+    },
+    {
+      "s": "e_linruhai",
+      "t": "e_daiyu",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.85,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p12"
+      ]
+    },
+    {
+      "s": "e_xueyima",
+      "t": "e_baochai",
+      "type": "kinship",
+      "label": "母女",
+      "weight": 0.9,
+      "first_ch": 4,
+      "evidence": [
+        "ch04:p06"
+      ]
+    },
+    {
+      "s": "e_xueyima",
+      "t": "e_xuepan",
+      "type": "kinship",
+      "label": "母子",
+      "weight": 0.85,
+      "first_ch": 4,
+      "evidence": [
+        "ch04:p06"
+      ]
+    },
+    {
+      "s": "e_jiajing",
+      "t": "e_jiazhen",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.8,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p11"
+      ]
+    },
+    {
+      "s": "e_jiajing",
+      "t": "e_xichun",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.6,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p11"
+      ]
+    },
+    {
+      "s": "e_jiazhen",
+      "t": "e_jiarong",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.85,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p11"
+      ]
+    },
+    {
+      "s": "e_jiazhu",
+      "t": "e_jialan",
+      "type": "kinship",
+      "label": "父子",
+      "weight": 0.5,
+      "first_ch": 4,
+      "evidence": [
+        "ch04:p02"
+      ]
+    },
+    {
+      "s": "e_jialian",
+      "t": "e_qiaojie",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.7,
+      "first_ch": 21,
+      "evidence": [
+        "ch21:p08"
+      ]
+    },
+    {
+      "s": "e_wangxifeng",
+      "t": "e_qiaojie",
+      "type": "kinship",
+      "label": "母女",
+      "weight": 0.8,
+      "first_ch": 21,
+      "evidence": [
+        "ch21:p08"
+      ]
+    },
+    {
+      "s": "e_zhenshiyin",
+      "t": "e_xiangling",
+      "type": "kinship",
+      "label": "父女",
+      "weight": 0.85,
+      "first_ch": 1,
+      "evidence": [
+        "ch01:p18"
+      ]
+    },
+    {
+      "s": "e_wangziteng",
+      "t": "e_wangfuren",
+      "type": "kinship",
+      "label": "兄妹",
+      "weight": 0.7,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p04"
+      ]
+    },
+    {
+      "s": "e_wangziteng",
+      "t": "e_wangxifeng",
+      "type": "kinship",
+      "label": "叔侄",
+      "weight": 0.7,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p04"
+      ]
+    },
+    {
+      "s": "e_wangfuren",
+      "t": "e_xueyima",
+      "type": "kinship",
+      "label": "姐妹",
+      "weight": 0.75,
+      "first_ch": 4,
+      "evidence": [
+        "ch04:p06"
+      ]
+    },
+    {
+      "s": "e_jiashe",
+      "t": "e_xingfuren",
+      "type": "marriage",
+      "label": "夫妻（继室）",
+      "weight": 0.8,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p02"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_wangfuren",
+      "type": "marriage",
+      "label": "夫妻",
+      "weight": 0.9,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_jiazheng",
+      "t": "e_zhaoyiniang",
+      "type": "marriage",
+      "label": "夫妻（妾）",
+      "weight": 0.6,
+      "first_ch": 20,
+      "evidence": [
+        "ch20:p10"
+      ]
+    },
+    {
+      "s": "e_jialian",
+      "t": "e_wangxifeng",
+      "type": "marriage",
+      "label": "夫妻",
+      "weight": 0.95,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p09"
+      ]
+    },
+    {
+      "s": "e_jialian",
+      "t": "e_pinger",
+      "type": "marriage",
+      "label": "夫妻（妾）",
+      "weight": 0.65,
+      "first_ch": 6,
+      "evidence": [
+        "ch06:p12"
+      ]
+    },
+    {
+      "s": "e_jialian",
+      "t": "e_youerjie",
+      "type": "marriage",
+      "label": "偷娶",
+      "weight": 0.7,
+      "first_ch": 64,
+      "evidence": [
+        "ch64:p14"
+      ]
+    },
+    {
+      "s": "e_jiazhen",
+      "t": "e_youshi",
+      "type": "marriage",
+      "label": "夫妻（继室）",
+      "weight": 0.8,
+      "first_ch": 5,
+      "evidence": [
+        "ch05:p02"
+      ]
+    },
+    {
+      "s": "e_jiarong",
+      "t": "e_qinkeqing",
+      "type": "marriage",
+      "label": "夫妻",
+      "weight": 0.85,
+      "first_ch": 5,
+      "evidence": [
+        "ch05:p05"
+      ]
+    },
+    {
+      "s": "e_jiazhu",
+      "t": "e_liguan",
+      "type": "marriage",
+      "label": "夫妻",
+      "weight": 0.75,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p08"
+      ]
+    },
+    {
+      "s": "e_linruhai",
+      "t": "e_jiamin",
+      "type": "marriage",
+      "label": "夫妻",
+      "weight": 0.8,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p12"
+      ]
+    },
+    {
+      "s": "e_xuepan",
+      "t": "e_xiangling",
+      "type": "marriage",
+      "label": "夫妻（妾）",
+      "weight": 0.7,
+      "first_ch": 4,
+      "evidence": [
+        "ch04:p08"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_baochai",
+      "type": "marriage",
+      "label": "成婚",
+      "weight": 0.9,
+      "first_ch": 97,
+      "evidence": [
+        "ch97:p18"
+      ]
+    },
+    {
+      "s": "e_yousanjie",
+      "t": "e_liuxianglian",
+      "type": "marriage",
+      "label": "婚约",
+      "weight": 0.75,
+      "first_ch": 65,
+      "evidence": [
+        "ch65:p20"
+      ]
+    },
+    {
+      "s": "e_xiren",
+      "t": "e_jiangyuhan",
+      "type": "marriage",
+      "label": "夫妻",
+      "weight": 0.6,
+      "first_ch": 120,
+      "evidence": [
+        "ch120:p12"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_daiyu",
+      "type": "romance",
+      "label": "木石前盟",
+      "weight": 1,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p20",
+        "ch23:p05",
+        "ch32:p08"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_baochai",
+      "type": "romance",
+      "label": "金玉良缘",
+      "weight": 0.8,
+      "first_ch": 8,
+      "evidence": [
+        "ch08:p10"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_xiangyun",
+      "type": "romance",
+      "label": "青梅竹马",
+      "weight": 0.55,
+      "first_ch": 20,
+      "evidence": [
+        "ch20:p06"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_qingwen",
+      "type": "romance",
+      "label": "知己",
+      "weight": 0.7,
+      "first_ch": 31,
+      "evidence": [
+        "ch31:p10"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_qinzhong",
+      "type": "romance",
+      "label": "同窗情谊",
+      "weight": 0.5,
+      "first_ch": 9,
+      "evidence": [
+        "ch09:p04"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_miaoyu",
+      "type": "romance",
+      "label": "微妙情愫",
+      "weight": 0.45,
+      "first_ch": 41,
+      "evidence": [
+        "ch41:p12"
+      ]
+    },
+    {
+      "s": "e_jiazhen",
+      "t": "e_qinkeqing",
+      "type": "romance",
+      "label": "暧昧（公媳）",
+      "weight": 0.6,
+      "first_ch": 5,
+      "evidence": [
+        "ch05:p16"
+      ]
+    },
+    {
+      "s": "e_yousanjie",
+      "t": "e_liuxianglian",
+      "type": "romance",
+      "label": "倾心五年",
+      "weight": 0.85,
+      "first_ch": 66,
+      "evidence": [
+        "ch66:p06"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_xiren",
+      "type": "romance",
+      "label": "初试云雨",
+      "weight": 0.6,
+      "first_ch": 6,
+      "evidence": [
+        "ch06:p20"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_xiren",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.9,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p12"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_qingwen",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.85,
+      "first_ch": 5,
+      "evidence": [
+        "ch05:p22"
+      ]
+    },
+    {
+      "s": "e_daiyu",
+      "t": "e_zijuan",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.9,
+      "first_ch": 3,
+      "evidence": [
+        "ch03:p18"
+      ]
+    },
+    {
+      "s": "e_baochai",
+      "t": "e_yinger",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.7,
+      "first_ch": 7,
+      "evidence": [
+        "ch07:p18"
+      ]
+    },
+    {
+      "s": "e_jiamu",
+      "t": "e_yuanyang",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.85,
+      "first_ch": 20,
+      "evidence": [
+        "ch20:p04"
+      ]
+    },
+    {
+      "s": "e_yingchun",
+      "t": "e_sijie",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.7,
+      "first_ch": 7,
+      "evidence": [
+        "ch07:p20"
+      ]
+    },
+    {
+      "s": "e_tanchun",
+      "t": "e_shishu",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.65,
+      "first_ch": 7,
+      "evidence": [
+        "ch07:p20"
+      ]
+    },
+    {
+      "s": "e_wangfuren",
+      "t": "e_jinchuan",
+      "type": "service",
+      "label": "主仆",
+      "weight": 0.75,
+      "first_ch": 7,
+      "evidence": [
+        "ch07:p14"
+      ]
+    },
+    {
+      "s": "e_wangxifeng",
+      "t": "e_pinger",
+      "type": "service",
+      "label": "主仆兼通房",
+      "weight": 0.85,
+      "first_ch": 6,
+      "evidence": [
+        "ch06:p12"
+      ]
+    },
+    {
+      "s": "e_jiayucun",
+      "t": "e_daiyu",
+      "type": "mentorship",
+      "label": "塾师",
+      "weight": 0.5,
+      "first_ch": 2,
+      "evidence": [
+        "ch02:p14"
+      ]
+    },
+    {
+      "s": "e_jiayucun",
+      "t": "e_zhenshiyin",
+      "type": "alliance",
+      "label": "受资助之恩",
+      "weight": 0.6,
+      "first_ch": 1,
+      "evidence": [
+        "ch01:p22"
+      ]
+    },
+    {
+      "s": "e_liulaolao",
+      "t": "e_qiaojie",
+      "type": "alliance",
+      "label": "相救之恩",
+      "weight": 0.8,
+      "first_ch": 119,
+      "evidence": [
+        "ch119:p08"
+      ]
+    },
+    {
+      "s": "e_liulaolao",
+      "t": "e_wangxifeng",
+      "type": "social",
+      "label": "远亲 / 打秋风",
+      "weight": 0.6,
+      "first_ch": 6,
+      "evidence": [
+        "ch06:p02"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_jiangyuhan",
+      "type": "social",
+      "label": "交换汗巾",
+      "weight": 0.55,
+      "first_ch": 28,
+      "evidence": [
+        "ch28:p16"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_beijingwang",
+      "type": "social",
+      "label": "忘年之交",
+      "weight": 0.5,
+      "first_ch": 14,
+      "evidence": [
+        "ch14:p20"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_liuxianglian",
+      "type": "social",
+      "label": "相交",
+      "weight": 0.4,
+      "first_ch": 47,
+      "evidence": [
+        "ch47:p10"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_qinzhong",
+      "type": "social",
+      "label": "同窗",
+      "weight": 0.6,
+      "first_ch": 9,
+      "evidence": [
+        "ch09:p04"
+      ]
+    },
+    {
+      "s": "e_xuepan",
+      "t": "e_liuxianglian",
+      "type": "social",
+      "label": "被痛打后结拜",
+      "weight": 0.55,
+      "first_ch": 47,
+      "evidence": [
+        "ch47:p18"
+      ]
+    },
+    {
+      "s": "e_zhaoyiniang",
+      "t": "e_baoyu",
+      "type": "conflict",
+      "label": "嫉恨 / 魇魔",
+      "weight": 0.7,
+      "first_ch": 25,
+      "evidence": [
+        "ch25:p10"
+      ]
+    },
+    {
+      "s": "e_zhaoyiniang",
+      "t": "e_wangxifeng",
+      "type": "conflict",
+      "label": "嫉恨 / 魇魔",
+      "weight": 0.7,
+      "first_ch": 25,
+      "evidence": [
+        "ch25:p10"
+      ]
+    },
+    {
+      "s": "e_jiahuan",
+      "t": "e_baoyu",
+      "type": "conflict",
+      "label": "嫡庶倾轧",
+      "weight": 0.65,
+      "first_ch": 25,
+      "evidence": [
+        "ch25:p06"
+      ]
+    },
+    {
+      "s": "e_qingwen",
+      "t": "e_xiren",
+      "type": "conflict",
+      "label": "暗中较劲",
+      "weight": 0.4,
+      "first_ch": 31,
+      "evidence": [
+        "ch31:p14"
+      ]
+    },
+    {
+      "s": "e_wangxifeng",
+      "t": "e_youerjie",
+      "type": "conflict",
+      "label": "设计逼死",
+      "weight": 0.85,
+      "first_ch": 68,
+      "evidence": [
+        "ch68:p16"
+      ]
+    },
+    {
+      "s": "e_jiashe",
+      "t": "e_yuanyang",
+      "type": "conflict",
+      "label": "逼婚未遂",
+      "weight": 0.7,
+      "first_ch": 46,
+      "evidence": [
+        "ch46:p08"
+      ]
+    },
+    {
+      "s": "e_jiazhen",
+      "t": "e_xichun",
+      "type": "conflict",
+      "label": "兄妹决裂",
+      "weight": 0.5,
+      "first_ch": 74,
+      "evidence": [
+        "ch74:p20"
+      ]
+    },
+    {
+      "s": "e_wangfuren",
+      "t": "e_qingwen",
+      "type": "conflict",
+      "label": "逐出",
+      "weight": 0.8,
+      "first_ch": 77,
+      "evidence": [
+        "ch77:p18"
+      ]
+    },
+    {
+      "s": "e_baoyu",
+      "t": "e_tanchun",
+      "type": "social",
+      "label": "兄妹 / 诗社",
+      "weight": 0.5,
+      "first_ch": 37,
+      "evidence": [
+        "ch37:p10"
+      ]
+    },
+    {
+      "s": "e_daiyu",
+      "t": "e_baochai",
+      "type": "social",
+      "label": "金兰契",
+      "weight": 0.7,
+      "first_ch": 45,
+      "evidence": [
+        "ch45:p06"
+      ]
+    },
+    {
+      "s": "e_daiyu",
+      "t": "e_xiangyun",
+      "type": "social",
+      "label": "诗社社友",
+      "weight": 0.5,
+      "first_ch": 37,
+      "evidence": [
+        "ch37:p12"
+      ]
+    },
+    {
+      "s": "e_baochai",
+      "t": "e_xiangyun",
+      "type": "social",
+      "label": "诗社社友 / 资助",
+      "weight": 0.55,
+      "first_ch": 37,
+      "evidence": [
+        "ch37:p14"
+      ]
+    },
+    {
+      "s": "e_liguan",
+      "t": "e_tanchun",
+      "type": "social",
+      "label": "诗社主盟 / 理家搭档",
+      "weight": 0.6,
+      "first_ch": 37,
+      "evidence": [
+        "ch37:p08"
+      ]
+    },
+    {
+      "s": "e_liguan",
+      "t": "e_baoyu",
+      "type": "social",
+      "label": "嫂子",
+      "weight": 0.45,
+      "first_ch": 37,
+      "evidence": [
+        "ch37:p08"
+      ]
+    },
+    {
+      "s": "e_xichun",
+      "t": "e_miaoyu",
+      "type": "social",
+      "label": "棋友 / 同好",
+      "weight": 0.4,
+      "first_ch": 87,
+      "evidence": [
+        "ch87:p10"
+      ]
+    },
+    {
+      "s": "e_xiangyun",
+      "t": "e_baoyu",
+      "type": "social",
+      "label": "诗社社友",
+      "weight": 0.5,
+      "first_ch": 37,
+      "evidence": [
+        "ch37:p12"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "ch": 1,
+      "title": "甄士隐梦幻识通灵",
+      "summary": "甄士隐梦中听见僧道谈论通灵宝玉，醒后抱女儿英莲上街，遇僧道预言其命运。",
+      "tension": 0.35,
+      "entities": [
+        "e_zhenshiyin",
+        "e_xiangling"
+      ]
+    },
+    {
+      "ch": 2,
+      "title": "冷子兴演说荣国府",
+      "summary": "贾雨村在村肆遇冷子兴，借其口交代贾府谱系与现状，是全书人物关系的总纲。",
+      "tension": 0.2,
+      "entities": [
+        "e_jiayucun",
+        "e_jiamu",
+        "e_baoyu",
+        "e_daiyu"
+      ]
+    },
+    {
+      "ch": 3,
+      "title": "林黛玉抛父进京都",
+      "summary": "黛玉入贾府，初见贾母、王熙凤，与宝玉初见即觉眼熟，宝玉摔玉。",
+      "tension": 0.75,
+      "entities": [
+        "e_daiyu",
+        "e_jiamu",
+        "e_baoyu",
+        "e_wangxifeng"
+      ]
+    },
+    {
+      "ch": 4,
+      "title": "葫芦僧乱判葫芦案",
+      "summary": "贾雨村徇情枉法，放走打死冯渊的薛蟠，香菱归薛家。护官符由此引出。",
+      "tension": 0.5,
+      "entities": [
+        "e_jiayucun",
+        "e_xuepan",
+        "e_xiangling"
+      ]
+    },
+    {
+      "ch": 5,
+      "title": "贾宝玉神游太虚境",
+      "summary": "宝玉在秦可卿房中入睡，入太虚幻境，见金陵十二钗判词，听《红楼梦曲》。全书命运的预言。",
+      "tension": 0.9,
+      "entities": [
+        "e_baoyu",
+        "e_qinkeqing",
+        "e_miaoyu"
+      ]
+    },
+    {
+      "ch": 13,
+      "title": "秦可卿死封龙禁尉",
+      "summary": "秦可卿暴亡，贾珍极尽奢华办丧事，王熙凤协理宁国府，展露治家才干。",
+      "tension": 0.85,
+      "entities": [
+        "e_qinkeqing",
+        "e_jiazhen",
+        "e_wangxifeng"
+      ]
+    },
+    {
+      "ch": 17,
+      "title": "大观园试才题对额",
+      "summary": "工程告竣，贾政带宝玉游园题匾，宝玉才情初显，大观园格局由此定型。",
+      "tension": 0.45,
+      "entities": [
+        "e_baoyu",
+        "e_jiazheng"
+      ]
+    },
+    {
+      "ch": 18,
+      "title": "皇恩重元妃省父母",
+      "summary": "元春省亲，大观园最盛之夜。元春命诸姐妹题诗，叹皇宫是「不得见人的去处」。",
+      "tension": 0.8,
+      "entities": [
+        "e_yuanchun",
+        "e_baoyu",
+        "e_jiamu"
+      ]
+    },
+    {
+      "ch": 23,
+      "title": "西厢记妙词通戏语",
+      "summary": "宝玉与黛玉共读《西厢》，以戏文互诉心意，是二人情感最明朗的一刻。",
+      "tension": 0.7,
+      "entities": [
+        "e_baoyu",
+        "e_daiyu"
+      ]
+    },
+    {
+      "ch": 27,
+      "title": "埋香冢飞燕泣残红",
+      "summary": "黛玉葬花，作《葬花吟》。芒种饯花之期，也是最著名的独白段落。",
+      "tension": 0.8,
+      "entities": [
+        "e_daiyu",
+        "e_baoyu"
+      ]
+    },
+    {
+      "ch": 32,
+      "title": "手足耽耽小动唇舌",
+      "summary": "金钏投井事发、贾环进谗，贾政盛怒之下痛打宝玉，几至殒命。",
+      "tension": 0.95,
+      "entities": [
+        "e_baoyu",
+        "e_jiazheng",
+        "e_wangfuren",
+        "e_jinchuan"
+      ]
+    },
+    {
+      "ch": 40,
+      "title": "史太君两宴大观园",
+      "summary": "刘姥姥二进荣国府，游大观园闹出诸多笑话，是全书最热闹的喜剧段落。",
+      "tension": 0.4,
+      "entities": [
+        "e_liulaolao",
+        "e_jiamu",
+        "e_wangxifeng",
+        "e_daiyu"
+      ]
+    },
+    {
+      "ch": 74,
+      "title": "抄检大观园",
+      "summary": "王夫人下令抄检，探春怒斥，司棋被逐，晴雯被撵。大观园的秩序与人心同时崩解。",
+      "tension": 0.9,
+      "entities": [
+        "e_tanchun",
+        "e_wangfuren",
+        "e_sijie",
+        "e_qingwen",
+        "e_xichun"
+      ]
+    },
+    {
+      "ch": 97,
+      "title": "林黛玉焚稿断痴情",
+      "summary": "宝玉误娶宝钗之夜，黛玉焚毁诗稿与旧帕，斩断痴情。",
+      "tension": 1,
+      "entities": [
+        "e_daiyu",
+        "e_baoyu",
+        "e_baochai"
+      ]
+    },
+    {
+      "ch": 98,
+      "title": "苦绛珠魂归离恨天",
+      "summary": "黛玉泪尽而逝，应了「还泪」之说。宝玉痴傻，宝钗成婚。",
+      "tension": 1,
+      "entities": [
+        "e_daiyu",
+        "e_baoyu"
+      ]
+    },
+    {
+      "ch": 120,
+      "title": "甄士隐详说太虚情",
+      "summary": "宝玉中举后随僧道出家，贾府复起。甄士隐再出，为全书作结。",
+      "tension": 0.7,
+      "entities": [
+        "e_baoyu",
+        "e_zhenshiyin",
+        "e_jialan"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "p_rongguofu",
+      "name": "荣国府",
+      "parent": null,
+      "desc": "贾赦、贾政两支居所，位于街西。全书主要舞台。",
+      "first_ch": 2,
+      "attrs": {
+        "所属": "贾府"
+      }
+    },
+    {
+      "id": "p_ningguofu",
+      "name": "宁国府",
+      "parent": null,
+      "desc": "贾敬、贾珍一支居所，位于街东。秦可卿丧事、抄家皆在此。",
+      "first_ch": 2,
+      "attrs": {
+        "所属": "贾府"
+      }
+    },
+    {
+      "id": "p_daguanyuan",
+      "name": "大观园",
+      "parent": "p_rongguofu",
+      "desc": "为元春省亲所建，园内分置诸钗居所。是全书最核心的空间。",
+      "first_ch": 16,
+      "attrs": {
+        "所属": "荣国府",
+        "建造": "为省亲建"
+      }
+    },
+    {
+      "id": "p_yihongyuan",
+      "name": "怡红院",
+      "parent": "p_daguanyuan",
+      "desc": "宝玉居所，因院内芭蕉海棠得名。",
+      "first_ch": 17,
+      "attrs": {
+        "主人": "贾宝玉"
+      }
+    },
+    {
+      "id": "p_xiaoxiangguan",
+      "name": "潇湘馆",
+      "parent": "p_daguanyuan",
+      "desc": "黛玉居所，遍植翠竹，取其清冷孤高。",
+      "first_ch": 17,
+      "attrs": {
+        "主人": "林黛玉"
+      }
+    },
+    {
+      "id": "p_hengwuyuan",
+      "name": "蘅芜苑",
+      "parent": "p_daguanyuan",
+      "desc": "宝钗居所，院中无花，唯蔓草香藤，暗合其「冷」性。",
+      "first_ch": 17,
+      "attrs": {
+        "主人": "薛宝钗"
+      }
+    },
+    {
+      "id": "p_daoxiangcun",
+      "name": "稻香村",
+      "parent": "p_daguanyuan",
+      "desc": "李纨居所，仿农家院落，宝玉曾嫌其「矫揉造作」。",
+      "first_ch": 17,
+      "attrs": {
+        "主人": "李纨"
+      }
+    },
+    {
+      "id": "p_qiushuangzhai",
+      "name": "秋爽斋",
+      "parent": "p_daguanyuan",
+      "desc": "探春居所，陈设阔朗，见其胸襟。",
+      "first_ch": 17,
+      "attrs": {
+        "主人": "贾探春"
+      }
+    },
+    {
+      "id": "p_longcuian",
+      "name": "栊翠庵",
+      "parent": "p_daguanyuan",
+      "desc": "妙玉修行之所，园中唯一庵堂。",
+      "first_ch": 17,
+      "attrs": {
+        "主人": "妙玉"
+      }
+    },
+    {
+      "id": "p_taixu",
+      "name": "太虚幻境",
+      "parent": null,
+      "desc": "宝玉梦中所入之境，司人间风情月债，藏金陵十二钗册页。",
+      "first_ch": 5,
+      "attrs": {
+        "性质": "梦境 / 神话空间"
+      }
+    }
+  ],
+  "concepts": [
+    {
+      "id": "c_tongling",
+      "name": "通灵宝玉",
+      "desc": "宝玉衔之而生的玉石，正面刻「莫失莫忘，仙寿恒昌」，与宝钗金锁上的「不离不弃，芳龄永继」相对，是金玉良缘的物证。",
+      "first_ch": 1
+    },
+    {
+      "id": "c_mushi",
+      "name": "木石前盟",
+      "desc": "绛珠仙草（黛玉前身）与神瑛侍者（宝玉前身）的宿缘——以一生眼泪还灌溉之恩。",
+      "first_ch": 1
+    },
+    {
+      "id": "c_jinyu",
+      "name": "金玉良缘",
+      "desc": "宝钗金锁与宝玉通灵玉的配对之说，与木石前盟构成全书的核心张力。",
+      "first_ch": 8
+    },
+    {
+      "id": "c_panci",
+      "name": "金陵十二钗判词",
+      "desc": "太虚幻境薄命司册页中的诗谜，预示十二位女子的命运。",
+      "first_ch": 5
+    },
+    {
+      "id": "c_huguanfu",
+      "name": "护官符",
+      "desc": "贾史王薛四大家族的权势写照：「贾不假，白玉为堂金作马」云云。",
+      "first_ch": 4
+    },
+    {
+      "id": "c_shishe",
+      "name": "海棠诗社",
+      "desc": "大观园诸钗结社作诗，先后有海棠社、桃花社。是全书最明亮的群体段落。",
+      "first_ch": 37
+    }
+  ]
+}

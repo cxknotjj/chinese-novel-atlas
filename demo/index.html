@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>红楼梦 · 人物图谱</title>
+<style>
+  :root {
+    --paper: #FAF9F5;
+    --ink: #2B2A26;
+    --ink-2: #6B675E;
+    --ink-3: #9A9488;
+    --line: #E3DFD5;
+    --crimson: #A6314A;
+    --indigo: #3D6B7D;
+    --gold: #B8925A;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 22px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(250,249,245,0.92);
+    backdrop-filter: blur(8px);
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; flex: none; }
+  .brand h1 { font-size: 17px; font-weight: 500; margin: 0; letter-spacing: 0.02em; white-space: nowrap; }
+  .brand .sub { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+  .stats { display: flex; gap: 16px; font-size: 12px; color: var(--ink-2); flex: none; }
+  .stats b { font-weight: 500; color: var(--ink); }
+  .stats span { white-space: nowrap; }
+
+  .tabs { display: flex; gap: 2px; margin-left: auto; flex: none; }
+  .tab {
+    padding: 6px 13px; font-size: 13px; color: var(--ink-2);
+    background: none; border: none; border-radius: 6px; cursor: pointer;
+    font-family: inherit; white-space: nowrap;
+  }
+  .tab:hover { background: rgba(0,0,0,0.035); }
+  .tab.on { background: var(--ink); color: #fff; }
+
+  main { display: flex; height: calc(100% - 58px); position: relative; }
+  #stage { flex: 1; position: relative; min-width: 0; }
+
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+
+  /* 图例 */
+  #legend {
+    position: absolute; left: 18px; bottom: 18px;
+    display: flex; flex-wrap: wrap; gap: 5px 12px; max-width: 340px;
+    font-size: 11px; color: var(--ink-2); pointer-events: none;
+  }
+  #legend span { display: inline-flex; align-items: center; gap: 5px; }
+  #legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  /* 提示 */
+  #hint {
+    position: absolute; right: 18px; bottom: 18px;
+    font-size: 11px; color: var(--ink-3); text-align: right; line-height: 1.7;
+    pointer-events: none;
+  }
+
+  /* 右侧面板 */
+  /* 右侧面板（浮层，不挤压画布） */
+  aside {
+    display: none;
+    position: absolute; top: 0; right: 0; bottom: 0; width: 350px;
+    background: #fff; border-left: 1px solid var(--line);
+    box-shadow: -10px 0 30px rgba(43,42,38,0.06);
+    overflow-y: auto; padding: 22px 22px 40px;
+    z-index: 5;
+  }
+  aside.open { display: block; }
+  aside::-webkit-scrollbar { width: 8px; }
+  aside::-webkit-scrollbar-thumb { background: #E0DCD2; border-radius: 4px; }
+
+  .empty { color: var(--ink-3); font-size: 13px; line-height: 1.9; padding-top: 8px; }
+  .empty kbd {
+    background: #F2EFE7; border: 1px solid var(--line); border-radius: 4px;
+    padding: 1px 5px; font-size: 11px; font-family: inherit;
+  }
+
+  .ent-name { font-size: 21px; font-weight: 500; margin: 0 0 4px; }
+  .ent-meta { font-size: 12px; color: var(--ink-3); margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .chip {
+    font-size: 11px; padding: 3px 9px; border-radius: 20px;
+    background: #F4F1E9; color: var(--ink-2);
+  }
+  .chip.grp { color: #fff; }
+  .ent-desc { font-size: 13.5px; line-height: 1.85; color: #45423B; margin-bottom: 18px; }
+
+  .sec-title {
+    font-size: 11px; letter-spacing: 0.08em; color: var(--ink-3);
+    text-transform: uppercase; margin: 0 0 10px; font-weight: 500;
+  }
+  .rel-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 0; border-bottom: 1px dashed #EFEBE1;
+    font-size: 13px; cursor: pointer;
+  }
+  .rel-item:hover .rel-name { color: var(--crimson); }
+  .rel-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .rel-name { color: var(--ink); }
+  .rel-label { color: var(--ink-3); font-size: 11.5px; margin-left: auto; }
+
+  .attrs { font-size: 12.5px; line-height: 2; color: var(--ink-2); }
+  .attrs b { color: var(--ink); font-weight: 500; }
+
+  /* 百科视图 */
+  #wiki { padding: 26px 30px; overflow-y: auto; height: 100%; }
+  #wiki h2 { font-size: 13px; font-weight: 500; color: var(--ink-2); margin: 26px 0 12px; }
+  #wiki h2:first-child { margin-top: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .card {
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+    background: #fff; cursor: pointer; transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: #C9C2B2; transform: translateY(-1px); }
+  .card .n { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .card .d { font-size: 11.5px; color: var(--ink-3); line-height: 1.5;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+  /* 时间线 */
+  #timeline { padding: 26px 30px; overflow-y: auto; height: 100%; }
+  .tl-item { display: grid; grid-template-columns: 62px 1fr; gap: 16px; padding-bottom: 4px; }
+  .tl-ch { font-size: 11px; color: var(--ink-3); padding-top: 3px; text-align: right; }
+  .tl-body { border-left: 2px solid var(--line); padding: 0 0 22px 18px; position: relative; }
+  .tl-body::before {
+    content: ''; position: absolute; left: -5px; top: 4px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--line);
+  }
+  .tl-item.hot .tl-body::before { background: var(--crimson); }
+  .tl-title { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+  .tl-sum { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; }
+  .bar { height: 3px; background: #EFEBE1; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--crimson); border-radius: 2px; }
+
+  input[type=search] {
+    font-family: inherit; font-size: 13px; padding: 6px 11px; width: 150px;
+    flex: none;
+    border: 1px solid var(--line); border-radius: 7px; background: #fff;
+    color: var(--ink); outline: none; transition: border-color .15s, width .2s;
+  }
+  input[type=search]:focus { border-color: var(--gold); width: 190px; }
+
+  @media (max-width: 1000px) {
+    .stats span:nth-child(n+3) { display: none; }
+  }
+  @media (max-width: 780px) {
+    .brand .sub, .stats { display: none; }
+    input[type=search] { width: 118px; }
+  }
+  @media (max-width: 760px) {
+    aside { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1 id="title">红楼梦</h1>
+    <span class="sub" id="subtitle">人物图谱</span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="tabs">
+    <button class="tab on" data-view="graph">图谱</button>
+    <button class="tab" data-view="wiki">百科</button>
+    <button class="tab" data-view="timeline">时间线</button>
+  </div>
+  <input type="search" id="search" placeholder="搜索人物 / 别名">
+</header>
+
+<main>
+  <div id="stage">
+    <canvas id="canvas"></canvas>
+    <div id="legend"></div>
+    <div id="hint">拖拽节点 · 滚轮缩放 · 点击查看</div>
+  </div>
+
+  <div id="wiki" hidden></div>
+  <div id="timeline" hidden></div>
+
+  <aside id="panel">
+    <div class="empty" id="panelEmpty">
+      点击左侧任意节点查看详情。<br><br>
+      <kbd>拖拽</kbd> 移动节点，<kbd>滚轮</kbd> 缩放，<kbd>双击</kbd> 重置视图。
+    </div>
+    <div id="panelBody" hidden></div>
+  </aside>
+</main>
+
+<script src="../samples/honglou/data.js"></script>
+<script>
+(function () {
+  const D = window.ATLAS_DATA;
+  if (!D) { document.body.innerHTML = '<p style="padding:40px">未找到数据文件 samples/honglou/data.js</p>'; return; }
+
+  /* ---------- 基础常量 ---------- */
+  const GROUP_COLOR = {
+    '荣国府': '#A6314A',
+    '宁国府': '#6B4A7A',
+    '林家':   '#3D6B7D',
+    '薛家':   '#B8925A',
+    '史家':   '#5A7A5E',
+    '王家':   '#7A6A5A',
+    '仆役':   '#9A9488',
+    '其他':   '#7A8A9A'
+  };
+  const REL_STYLE = {
+    kinship:   { color: '#C9C2B2', width: 1.2, dash: [] },
+    marriage:  { color: '#C0A06E', width: 1.8, dash: [] },
+    romance:   { color: '#C97A8C', width: 1.6, dash: [5, 4] },
+    service:   { color: '#D8D2C4', width: 1.0, dash: [2, 3] },
+    mentorship:{ color: '#9FB3BC', width: 1.2, dash: [6, 3] },
+    alliance:  { color: '#A8B79C', width: 1.3, dash: [] },
+    conflict:  { color: '#C25A5A', width: 1.6, dash: [1, 3] },
+    social:    { color: '#D5CFC2', width: 0.9, dash: [] }
+  };
+  const REL_CN = {
+    kinship: '血亲', marriage: '婚姻', romance: '情感', service: '主从',
+    mentorship: '师承', alliance: '同盟', conflict: '敌对', social: '交游'
+  };
+
+  /* ---------- 建索引 ---------- */
+  const byId = new Map();
+  D.entities.forEach(e => byId.set(e.id, e));
+  const allById = new Map();
+  D.entities.forEach(e => allById.set(e.id, Object.assign({ _kind: 'entity' }, e)));
+  D.places.forEach(p => allById.set(p.id, Object.assign({ _kind: 'place' }, p)));
+  D.concepts.forEach(c => allById.set(c.id, Object.assign({ _kind: 'concept' }, c)));
+  const deg = new Map();
+  D.relations.forEach(r => {
+    deg.set(r.s, (deg.get(r.s) || 0) + 1);
+    deg.set(r.t, (deg.get(r.t) || 0) + 1);
+  });
+
+  /* ---------- 顶栏统计 ---------- */
+  const statsEl = document.getElementById('stats');
+  statsEl.innerHTML =
+    `<span><b>${(D.meta.chars / 10000).toFixed(0)}</b> 万字</span>` +
+    `<span><b>${D.entities.length}</b> 人物</span>` +
+    `<span><b>${D.relations.length}</b> 关系</span>`;
+
+  /* ---------- 图例 ---------- */
+  const legendEl = document.getElementById('legend');
+  const usedGroups = [...new Set(D.entities.map(e => e.group))];
+  legendEl.innerHTML = usedGroups.map(g =>
+    `<span><i style="background:${GROUP_COLOR[g] || '#999'}"></i>${g}</span>`
+  ).join('');
+
+  /* ================= 力导向图 ================= */
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  const nodes = D.entities.map(e => {
+    const d = deg.get(e.id) || 0;
+    return {
+      id: e.id, ref: e, name: e.name,
+      r: 5.5 + Math.min(d, 26) * 0.62,
+      d,
+      x: 0, y: 0, vx: 0, vy: 0, fixed: false
+    };
+  });
+  const nodeById = new Map(nodes.map(n => [n.id, n]));
+
+  // 按阵营给初始位置，避免全挤在中心
+  const groups = [...new Set(nodes.map(n => n.ref.group))];
+  groups.forEach((g, gi) => {
+    const a = (gi / groups.length) * Math.PI * 2;
+    const cx = Math.cos(a) * 170, cy = Math.sin(a) * 150;
+    nodes.filter(n => n.ref.group === g).forEach((n, i) => {
+      const t = (i / Math.max(1, nodes.filter(m => m.ref.group === g).length)) * Math.PI * 2;
+      n.x = cx + Math.cos(t) * 40 + (Math.random() - .5) * 20;
+      n.y = cy + Math.sin(t) * 40 + (Math.random() - .5) * 20;
+    });
+  });
+
+  const links = D.relations.map(r => ({
+    s: nodeById.get(r.s), t: nodeById.get(r.t), ref: r,
+    w: r.weight || 0.5, type: r.type
+  })).filter(l => l.s && l.t);
+
+  // 邻接表，用于高亮
+  const adj = new Map();
+  links.forEach(l => {
+    if (!adj.has(l.s.id)) adj.set(l.s.id, new Set());
+    if (!adj.has(l.t.id)) adj.set(l.t.id, new Set());
+    adj.get(l.s.id).add(l.t.id);
+    adj.get(l.t.id).add(l.s.id);
+  });
+
+  let view = { x: 0, y: 0, k: 1 };
+  let hoverId = null, selectId = null;
+  let alpha = 1;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function tick() {
+    if (alpha < 0.008) return;
+    // 向心力指向视口中心（换算到世界坐标，缩放平移后仍正确）
+    const cx = (W / 2 - view.x) / view.k;
+    const cy = (H / 2 - view.y) / view.k;
+    const k = 0.0022 * alpha;
+
+    // 斥力
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1) { d2 = 1; dx = Math.random() - .5; dy = Math.random() - .5; }
+        const d = Math.sqrt(d2);
+        const f = (1750 * alpha) / d2;
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
+    }
+    // 弹簧
+    links.forEach(l => {
+      const dx = l.t.x - l.s.x, dy = l.t.y - l.s.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const target = 78 + (1 - l.w) * 46;
+      const f = (d - target) * 0.035 * l.w * alpha;
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      l.s.vx += fx; l.s.vy += fy;
+      l.t.vx -= fx; l.t.vy -= fy;
+    });
+    // 向心 + 积分
+    nodes.forEach(n => {
+      if (n.fixed) { n.vx = n.vy = 0; return; }
+      n.vx += (cx - n.x) * k * 0.8;
+      n.vy += (cy - n.y) * k * 0.8;
+      n.vx *= 0.86; n.vy *= 0.86;
+      n.x += n.vx; n.y += n.vy;
+    });
+    alpha *= 0.994;
+  }
+
+  /* 让内容自动居中并填满视口 */
+  function fitView(pad) {
+    if (!nodes.length) return;
+    pad = pad || 48;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodes.forEach(n => {
+      minX = Math.min(minX, n.x - n.r); maxX = Math.max(maxX, n.x + n.r);
+      minY = Math.min(minY, n.y - n.r); maxY = Math.max(maxY, n.y + n.r);
+    });
+    const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+    const k = Math.max(0.42, Math.min((W - pad * 2) / w, (H - pad * 2) / h, 1.4));
+    view.k = k;
+    view.x = W / 2 - (minX + maxX) / 2 * k;
+    view.y = H / 2 - (minY + maxY) / 2 * k;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(view.x, view.y);
+    ctx.scale(view.k, view.k);
+
+    // 高亮集合
+    let hot = null;
+    const focus = hoverId || selectId;
+    if (focus) {
+      hot = new Set([focus, ...(adj.get(focus) || [])]);
+    }
+
+    // 边
+    links.forEach(l => {
+      const st = REL_STYLE[l.type] || REL_STYLE.social;
+      const active = !focus || (hot.has(l.s.id) && hot.has(l.t.id));
+      ctx.beginPath();
+      ctx.strokeStyle = active ? st.color : '#EFEBE1';
+      ctx.lineWidth = st.width * (active ? 1 : 0.7);
+      ctx.setLineDash(st.dash);
+      ctx.moveTo(l.s.x, l.s.y);
+      ctx.lineTo(l.t.x, l.t.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // 节点
+    nodes.forEach(n => {
+      const dim = focus && !hot.has(n.id);
+      const color = GROUP_COLOR[n.ref.group] || '#999';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = dim ? '#EDE9E0' : color;
+      ctx.fill();
+      if (n.id === selectId) {
+        ctx.lineWidth = 2.5; ctx.strokeStyle = '#2B2A26'; ctx.stroke();
+      }
+      // 标签
+      if (!dim && (n.d >= 3 || view.k > 1.3)) {
+        ctx.font = `${Math.min(12, 9 + n.d * 0.12)}px -apple-system, "PingFang SC", sans-serif`;
+        ctx.fillStyle = dim ? '#BDB7AA' : '#2B2A26';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, n.x, n.y + n.r + 12);
+      }
+    });
+    ctx.restore();
+  }
+
+  function loop() {
+    tick(); draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- 命中检测 ---------- */
+  function toWorld(px, py) {
+    return { x: (px - view.x) / view.k, y: (py - view.y) / view.k };
+  }
+  function pick(px, py) {
+    const p = toWorld(px, py);
+    let best = null, bestD = Infinity;
+    nodes.forEach(n => {
+      const d = Math.hypot(n.x - p.x, n.y - p.y);
+      if (d < n.r + 6 && d < bestD) { bestD = d; best = n; }
+    });
+    return best;
+  }
+
+  /* ---------- 交互 ---------- */
+  let dragNode = null, panning = false, last = null, moved = false, clickedEmpty = false;
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const n = pick(e.clientX - rect.left, e.clientY - rect.top);
+    moved = false;
+    clickedEmpty = !n;
+    if (n) { dragNode = n; n.fixed = true; n._px = e.clientX; n._py = e.clientY; }
+    else { panning = true; last = { x: e.clientX, y: e.clientY }; }
+    canvas.classList.add('dragging');
+  });
+
+  window.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+
+    if (dragNode) {
+      const p = toWorld(mx, my);
+      if (Math.hypot(e.clientX - dragNode._px, e.clientY - dragNode._py) > 3) moved = true;
+      dragNode.x = p.x; dragNode.y = p.y;
+      alpha = Math.max(alpha, 0.28);
+      return;
+    }
+    if (panning && last) {
+      view.x += e.clientX - last.x;
+      view.y += e.clientY - last.y;
+      last = { x: e.clientX, y: e.clientY };
+      moved = true;
+      return;
+    }
+    if (mx < 0 || my < 0 || mx > W || my > H) { hoverId = null; return; }
+    const n = pick(mx, my);
+    hoverId = n ? n.id : null;
+    canvas.style.cursor = n ? 'pointer' : 'grab';
+  });
+
+  window.addEventListener('mouseup', e => {
+    if (dragNode) {
+      const n = dragNode;
+      // 以 mouseup 时的实际位移判定是点击还是拖拽，不依赖 mousemove 是否触发
+      const dist = Math.hypot(e.clientX - n._px, e.clientY - n._py);
+      if (dist < 6) { select(n.id); }
+      else { n.fixed = false; }
+    } else if (clickedEmpty && !moved) {
+      // 点空白 → 取消聚焦
+      selectId = null;
+      asideEl.classList.remove('open');
+      panelBody.hidden = true;
+      panelEmpty.hidden = false;
+    }
+    dragNode = null; panning = false; last = null; clickedEmpty = false;
+    canvas.classList.remove('dragging');
+  });
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const before = toWorld(mx, my);
+    const k = Math.min(3.2, Math.max(0.35, view.k * (e.deltaY < 0 ? 1.1 : 0.9)));
+    view.k = k;
+    const after = toWorld(mx, my);
+    view.x += (after.x - before.x) * k;
+    view.y += (after.y - before.y) * k;
+  }, { passive: false });
+
+  canvas.addEventListener('dblclick', () => {
+    nodes.forEach(n => { n.fixed = false; });
+    alpha = 0.5;
+    setTimeout(fitView, 60);
+  });
+
+  /* ================= 详情面板 ================= */
+  const panelEmpty = document.getElementById('panelEmpty');
+  const panelBody = document.getElementById('panelBody');
+  const asideEl = document.querySelector('aside');
+
+  function relColor(t) { return (REL_STYLE[t] || REL_STYLE.social).color; }
+
+  /* 地点 / 概念的详情面板 */
+  function renderLite(r) {
+    selectId = null;
+    asideEl.classList.add('open');
+    panelEmpty.hidden = true;
+    panelBody.hidden = false;
+    const kindCn = r._kind === 'place' ? '地点' : '设定';
+    const parent = r.parent ? allById.get(r.parent) : null;
+    panelBody.innerHTML = `
+      <h2 class="ent-name">${r.name}</h2>
+      <div class="ent-meta">${kindCn} · 第 ${r.first_ch || '?'} 回出现</div>
+      ${parent ? `<div class="chips"><span class="chip">上级：${parent.name}</span></div>`
+               : '<div style="height:6px"></div>'}
+      <p class="ent-desc">${r.desc || ''}</p>
+      ${r.attrs ? `<div class="sec-title">档案</div><div class="attrs">${
+        Object.entries(r.attrs).map(([k, v]) => `<b>${k}</b> · ${v}`).join('<br>')
+      }</div>` : ''}
+    `;
+  }
+
+  function select(id) {
+    const rec = allById.get(id);
+    if (!rec) return;
+    if (rec._kind !== 'entity') { renderLite(rec); return; }
+    selectId = id;
+    asideEl.classList.add('open');
+    const e = rec;
+    const neighbors = links.filter(l => l.s.id === id || l.t.id === id)
+      .map(l => {
+        const other = l.s.id === id ? l.t : l.s;
+        return { other, rel: l.ref };
+      })
+      .sort((a, b) => (b.rel.weight || 0) - (a.rel.weight || 0));
+
+    panelEmpty.hidden = true;
+    panelBody.hidden = false;
+    panelBody.innerHTML = `
+      <h2 class="ent-name">${e.name}</h2>
+      <div class="ent-meta">第 ${e.first_ch} 回登场 · ${deg.get(id) || 0} 条关系</div>
+      <div class="chips">
+        <span class="chip grp" style="background:${GROUP_COLOR[e.group] || '#999'}">${e.group}</span>
+        ${(e.aliases || []).map(a => `<span class="chip">${a}</span>`).join('')}
+      </div>
+      <p class="ent-desc">${e.desc || ''}</p>
+      ${e.attrs ? `<div class="sec-title">档案</div><div class="attrs">${
+        Object.entries(e.attrs).map(([k, v]) => `<b>${k}</b> · ${v}`).join('<br>')
+      }</div>` : ''}
+      <div class="sec-title" style="margin-top:22px">关系 · ${neighbors.length}</div>
+      ${neighbors.map(n => `
+        <div class="rel-item" data-goto="${n.other.id}">
+          <span class="rel-dot" style="background:${relColor(n.rel.type)}"></span>
+          <span class="rel-name">${n.other.name}</span>
+          <span class="rel-label">${n.rel.label || REL_CN[n.rel.type] || ''}</span>
+        </div>`).join('')}
+    `;
+    panelBody.querySelectorAll('[data-goto]').forEach(el => {
+      el.addEventListener('click', () => {
+        const t = el.getAttribute('data-goto');
+        select(t);
+        const n = nodeById.get(t);
+        if (n) { view.x = W / 2 - n.x * view.k; view.y = H / 2 - n.y * view.k; }
+      });
+    });
+  }
+
+  /* ================= 视图切换 ================= */
+  const stage = document.getElementById('stage');
+  const wiki = document.getElementById('wiki');
+  const timeline = document.getElementById('timeline');
+  let curView = 'graph';
+
+  function setView(v) {
+    curView = v;
+    stage.hidden = v !== 'graph';
+    wiki.hidden = v !== 'wiki';
+    timeline.hidden = v !== 'timeline';
+    document.querySelectorAll('.tab').forEach(t =>
+      t.classList.toggle('on', t.dataset.view === v));
+    if (v === 'graph') { resize(); alpha = Math.max(alpha, 0.35); }
+  }
+  document.querySelectorAll('.tab').forEach(t =>
+    t.addEventListener('click', () => setView(t.dataset.view)));
+
+  /* ================= 百科 ================= */
+  function renderWiki() {
+    const secs = [
+      { title: '人物', items: D.entities.filter(e => e.type === 'character') },
+      { title: '地点', items: D.places },
+      { title: '概念与器物', items: D.concepts }
+    ];
+    wiki.innerHTML = secs.map(s => `
+      <h2>${s.title} · ${s.items.length}</h2>
+      <div class="grid">
+        ${s.items.map(it => `
+          <div class="card" data-id="${it.id}">
+            <div class="n">${it.name}</div>
+            <div class="d">${(it.desc || '').slice(0, 46)}…</div>
+          </div>`).join('')}
+      </div>`).join('');
+    wiki.querySelectorAll('[data-id]').forEach(c => {
+      c.addEventListener('click', () => {
+        const id = c.dataset.id;
+        const rec = allById.get(id);
+        if (rec && rec._kind === 'entity') {
+          setView('graph');
+          select(id);
+          const n = nodeById.get(id);
+          if (n) { view.x = W / 2 - n.x * view.k; view.y = H / 2 - n.y * view.k; }
+        } else {
+          select(id);
+        }
+      });
+    });
+  }
+
+  /* ================= 时间线 ================= */
+  function renderTimeline() {
+    timeline.innerHTML = D.events.map(ev => `
+      <div class="tl-item ${ev.tension >= 0.8 ? 'hot' : ''}">
+        <div class="tl-ch">第 ${ev.ch} 回</div>
+        <div class="tl-body">
+          <div class="tl-title">${ev.title}</div>
+          <div class="tl-sum">${ev.summary}</div>
+          <div class="bar"><i style="width:${(ev.tension * 100).toFixed(0)}%"></i></div>
+        </div>
+      </div>`).join('');
+  }
+
+  /* ================= 搜索 ================= */
+  const searchEl = document.getElementById('search');
+  searchEl.addEventListener('input', () => {
+    const q = searchEl.value.trim().toLowerCase();
+    if (!q) { hoverId = null; return; }
+    const hit = D.entities.find(e =>
+      e.name.toLowerCase().includes(q) ||
+      (e.aliases || []).some(a => a.toLowerCase().includes(q)));
+    if (hit) {
+      if (curView !== 'graph') setView('graph');
+      select(hit.id);
+      const n = nodeById.get(hit.id);
+      if (n) { view.x = W / 2 - n.x * view.k; view.y = H / 2 - n.y * view.k; }
+    }
+  });
+
+  /* ================= 启动 ================= */
+  document.getElementById('title').textContent = D.meta.title;
+  document.getElementById('subtitle').textContent =
+    `${D.meta.author} · 人物图谱`;
+
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+  renderWiki();
+  renderTimeline();
+  requestAnimationFrame(loop);
+
+  // 让初始布局先跑够帧数收敛，再自动适配视口
+  for (let i = 0; i < 560; i++) tick();
+  fitView();
+  alpha = 0.03;   // 基本静止，避免 fitView 之后继续漂移出界
+})();
+</script>
+</body>
+</html>
