@@ -330,7 +330,7 @@ silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
 
 **这个阈值必须动态**。固定值对短书太松、对长书太紧，告警就没人看了。
 
-**四处实现必须同一套公式**：`merge.py`、`validate.py`、`export.py`、`template/viewer.html`。曾经因为 view 用全书章数、脚本用已分析章数，界面显示 0 条超期而导出文件写 37 条，同一个数据两套结论。
+**四处实现必须同一套公式**：`scripts/novel_atlas/merge/foreshadows.py`、`validate.py`、`scripts/novel_atlas/export/common.py`、`template/viewer.js`。曾经因为 view 用全书章数、脚本用已分析章数，界面显示 0 条超期而导出文件写 37 条，同一个数据两套结论。
 
 **为什么派生**：如果 `status` 是手写死的，作者每更新一章都要回头改一遍所有伏笔状态，必然漏。派生规则保证"当前章一推进，超期告警自动更新"。
 

@@ -118,4 +118,4 @@ atlas-analyze → data.json ─┬→ atlas-ask
 
 ## 扩展点
 
-想加新格式（PDF、Notion、Obsidian vault），在 `scripts/export.py` 里加一个 `export_<format>()` 函数，并在 `main()` 的 `formats` 分支注册。**不要改核心数据结构。**
+想加新格式（PDF、Notion、Obsidian vault），在 `novel_atlas/export/` 下新建一个导出模块，实现 `export_<format>(data, out_dir)`，再到 `scripts/export.py` 的 `exporters` 字典和 `--format` choices 里注册。**不要改核心数据结构。**
