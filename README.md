@@ -66,6 +66,8 @@ npx skills add cxknotjj/chinese-novel-atlas
 
 装完在 Claude Code / Codex / DeepSeek Harness / OpenCode 里直接用。
 
+抽取要一个 OpenAI 兼容接口的 key：设置 `DEEPSEEK_API_KEY`（或 `QWEN_API_KEY` / `OPENAI_API_KEY`），也可以把 `data/config.example.json` 复制成 `data/config.json` 再填。
+
 ---
 
 ## 用法
@@ -161,7 +163,7 @@ output/我的书/
 - [x] `realms.py` 境界骨架扫描 + 战力体系校验
 - [x] `validate.py` schema 全量校验
 - [x] `build.py` 单文件出图（demo 与 `atlas.html` 同源）
-- [ ] `extract.py` 批量抽取 + 断点续跑 + 预算熔断
+- [x] `extract.py` 批量抽取 + 断点续跑 + 预算熔断 + 每批自检
 - [ ] 别名消解进阶（网文的称号极多："剑尊""魔帝""老祖"都是同一个人）
 - [ ] 真实网文样例（需自备文本，版权原因不内置）
 - [ ] README 首屏 GIF

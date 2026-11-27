@@ -59,12 +59,17 @@ python scripts/chunk.py "<文件路径>" --out output/{书名}/
 
 ### 第 2 步 · 逐章抽取
 
-**当前没有 `extract.py`**，由 agent 自己按 10 章一批调用模型，每批结果写 `out/batch-XX.json`（字段见 schema 的 entities / relations / chapters / foreshadows / realms）。
+```bash
+python scripts/extract.py --dir output/{书名}/ --concurrency 4 --max-cost 5
+```
 
-- 每批只读这 10 章的 `chapters/*.txt`，**不要把整本读进上下文**
-- 已存在的 `batch-XX.json` 自动跳过（断点续跑）
-- 单批失败重试 2 次，仍失败标记跳过并在最后报告
-- 执行期间每隔约 30 秒向用户报一次进度
+- 每批 10 章（`--batch-size`），结果写 `out/batch-XX.json`；已存在且章号完全对得上就跳过
+- 每批请求都附带「已登场实体目录 + 权威境界体系 + 未回收伏笔」，避免同一角色多 id、境界各自编号、回收的坑没人认领
+- 每批产出先过 schema 自检，不合法自动重试 2 次；仍失败写 `batch-XX.failed.json` 留证
+- 累计花费达到 `--max-cost` 立即停止提交新批次；重跑只补失败/缺失批次
+- 接口走 OpenAI 兼容协议，支持 DeepSeek / 通义 / OpenAI；key 从环境变量或 `data/config.json` 读
+
+抽取期间每隔约 30 秒向用户报一次进度。
 
 ### 第 3 步 · 合并与境界
 
@@ -165,9 +170,10 @@ python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 | 视图模板 `template/viewer.html` | ✅ 完成（五视图，单文件可开） |
 | `scripts/chunk.py` | ✅ 分章 + 编码探测 + 模式打分 + 兜底 |
 | `scripts/realms.py` | ✅ 境界扫描 / 候选生成 / 体系校验 |
+| `scripts/extract.py` | ✅ 分批抽取 + 断点续跑 + 预算熔断 + 每批自检 |
 | `scripts/merge.py` | ✅ 归并 + 别名消解 + 伏笔去重 + status 派生 |
 | `scripts/validate.py` | ✅ schema 全量校验 |
 | `scripts/build.py` | ✅ 单文件内嵌 / 外链 data.js |
-| `scripts/extract.py` `estimate.py` | ⬜ 未实现，抽取暂由 agent 分批执行 |
+| `scripts/estimate.py` | ⬜ 未实现，成本按实测口径估算 |
 
 **当前阶段**：契约、视图、分章/合并/校验/出图已可用；自动抽取脚本待补。

@@ -54,15 +54,19 @@ def sim(a, b):
 
 
 def load_batches(d):
-    files = sorted(Path(d).glob("out/batch-*.json"))
+    files = sorted(Path(d).glob("batch-*.json"))
     if not files:
-        raise SystemExit(f"{d}/out/ 下没有 batch-*.json")
+        raise SystemExit(f"{d} 下没有 batch-*.json")
     batches = []
     for f in files:
+        if f.name.endswith(".failed.json"):
+            continue
         try:
             batches.append((f.name, json.loads(f.read_text(encoding="utf-8"))))
         except json.JSONDecodeError as e:
             print(f"  ⚠ 跳过 {f.name}：JSON 解析失败（{e}）")
+    if not batches:
+        raise SystemExit(f"{d} 下没有可用的 batch-*.json")
     return batches
 
 
@@ -383,18 +387,154 @@ def load_realms(root, batches):
     return collected, {}
 
 
+def merge_places(batches, taken_ids=None, entity_names=None):
+    """地点按名字归并，parent 允许写名字或 id，统一解析成 id。
+
+    模型常把"宗门"写成 entity（e_qixuanmen）再拿它当地点父节点。
+    这种情况不硬造一个同名地点，而是把势力名记进 attrs.所属势力，parent 置空。
+    """
+    pool, order = {}, []
+    for _, b in batches:
+        for p in b.get("places") or []:
+            key = norm(p.get("name", ""))
+            if not key:
+                continue
+            if key in pool:
+                cur = pool[key]
+                if len(p.get("desc") or "") > len(cur.get("desc") or ""):
+                    cur["desc"] = p["desc"]
+                fc = p.get("first_ch")
+                if isinstance(fc, int) and (cur.get("first_ch") is None or fc < cur["first_ch"]):
+                    cur["first_ch"] = fc
+                if p.get("parent") and not cur.get("parent"):
+                    cur["parent"] = p["parent"]
+                if p.get("attrs"):
+                    cur.setdefault("attrs", {}).update(p["attrs"])
+            else:
+                pool[key] = dict(p)
+                order.append(key)
+
+    taken = set(taken_ids or ())
+    ids, name_to_id = {}, {}
+    for i, key in enumerate(order, 1):
+        p = pool[key]
+        base = p.get("id") or f"p_{i:03d}"
+        final, n = base, 2
+        while final in taken:
+            final = f"{base}_{n}"
+            n += 1
+        taken.add(final)
+        p["id"] = final
+        ids[key] = final
+        name_to_id[key] = final
+
+    place_ids = set(ids.values())
+    for key in order:
+        p = pool[key]
+        parent = p.get("parent")
+        if parent and parent not in place_ids:
+            resolved = name_to_id.get(norm(parent))
+            if resolved:
+                p["parent"] = resolved
+            elif entity_names and parent in entity_names:
+                p.setdefault("attrs", {}).setdefault("所属势力", entity_names[parent])
+                p["parent"] = None
+            else:
+                p["parent"] = None
+    return [pool[k] for k in order]
+
+
+def merge_concepts(batches, taken_ids=None):
+    """功法 / 金手指 / 品阶这类设定按 (kind, name) 归并。"""
+    pool, order = {}, []
+    for _, b in batches:
+        for c in b.get("concepts") or []:
+            key = (c.get("kind") or "technique", norm(c.get("name", "")))
+            if not key[1]:
+                continue
+            if key in pool:
+                cur = pool[key]
+                if len(c.get("desc") or "") > len(cur.get("desc") or ""):
+                    cur["desc"] = c["desc"]
+                for field in ("rules", "limits"):
+                    cur[field] = list(dict.fromkeys((cur.get(field) or []) + (c.get(field) or [])))
+                fc = c.get("first_ch")
+                if isinstance(fc, int) and (cur.get("first_ch") is None or fc < cur["first_ch"]):
+                    cur["first_ch"] = fc
+            else:
+                pool[key] = dict(c)
+                order.append(key)
+
+    taken = set(taken_ids or ())
+    out = []
+    for i, key in enumerate(order, 1):
+        c = pool[key]
+        base = c.get("id") or f"c_{i:03d}"
+        final, n = base, 2
+        while final in taken:
+            final = f"{base}_{n}"
+            n += 1
+        taken.add(final)
+        c["id"] = final
+        out.append(c)
+    return out
+
+
+def prune_concept_duplicates(ents, rels, concepts):
+    """同一件东西既被抽成 item 又被抽成 concept 时，删掉没有关系的那个 item。
+
+    典型：无名口诀、火弹术被模型当器物建了实体，同时又在 concepts 里出现。
+    只在 item 没有任何关系边时删除——有关系的说明它参与了剧情，保留。
+    """
+    degree = Counter()
+    for r in rels:
+        degree[r["s"]] += 1
+        degree[r["t"]] += 1
+    names = {norm(c.get("name", "")) for c in concepts}
+    drop = {e["id"] for e in ents
+            if e.get("type") == "item" and degree[e["id"]] == 0
+            and norm(e.get("name", "")) in names}
+    if not drop:
+        return ents, 0
+    return [e for e in ents if e["id"] not in drop], len(drop)
+
+
 def build_volumes(cm, chapters):
-    vols, seen = [], set()
+    """只从**已分析章节**归卷，避免只拆前 100 章时把第 3 卷写成 101..100。"""
+    names = {}
     for r in cm.get("chapters", []):
         v = r.get("vol")
-        if v and v not in seen:
-            seen.add(v)
-            vols.append({"id": f"v{v}", "name": r.get("vol_name") or f"第{v}卷",
-                         "ch_start": r["ch"], "ch_end": None, "summary": ""})
-    for i in range(len(vols) - 1):
-        vols[i]["ch_end"] = vols[i + 1]["ch_start"] - 1
-    if vols and chapters:
-        vols[-1]["ch_end"] = max(c["ch"] for c in chapters)
+        if v:
+            names.setdefault(v, r.get("vol_name") or f"第{v}卷")
+
+    groups = {}
+    for c in chapters:
+        v = c.get("volume")
+        if not v:
+            continue
+        num = v[1:] if str(v).startswith("v") else str(v)
+        groups.setdefault(num, []).append(c["ch"])
+
+    vols = []
+    for num in sorted(groups, key=lambda x: int(x) if str(x).isdigit() else 999):
+        chs = groups[num]
+        label = names.get(int(num)) if str(num).isdigit() else None
+        label = label or names.get(num) or f"第{num}卷"
+        vols.append({"id": f"v{num}", "name": label,
+                     "ch_start": min(chs), "ch_end": max(chs), "summary": ""})
+
+    if not vols:                      # 章节没标卷时退回 chunk-meta，但仍以已分析章号为界
+        live = max((c["ch"] for c in chapters), default=0)
+        for r in cm.get("chapters", []):
+            v = r.get("vol")
+            if not v or r["ch"] > live:
+                continue
+            if vols and vols[-1]["id"] == f"v{v}":
+                vols[-1]["ch_end"] = max(vols[-1]["ch_end"], r["ch"])
+            elif not vols or vols[-1]["id"] != f"v{v}":
+                if all(x["id"] != f"v{v}" for x in vols):
+                    vols.append({"id": f"v{v}", "name": r.get("vol_name") or f"第{v}卷",
+                                 "ch_start": r["ch"], "ch_end": r["ch"], "summary": ""})
     return vols
 
 
@@ -445,17 +585,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("dir")
     ap.add_argument("--out", default="")
+    ap.add_argument("--batches", default="", help="批次目录，默认 <dir>/out")
     ap.add_argument("--title", default="", help="覆盖书名（默认从源文件名解析）")
     ap.add_argument("--author", default="", help="覆盖作者")
     ap.add_argument("--genre", default="未标注")
     ap.add_argument("--platform", default="")
     ap.add_argument("--status", default="完结")
     ap.add_argument("--model", default="manual-agent")
+    ap.add_argument("--cost", type=float, default=0.0, help="抽取花费（元），写入 meta.cost_cny")
+    ap.add_argument("--elapsed", type=int, default=0, help="抽取耗时（秒），写入 meta.elapsed_sec")
     args = ap.parse_args()
 
     root = Path(args.dir)
-    batches = load_batches(root)
-    print(f"读入 {len(batches)} 个批次")
+    if args.batches:
+        bd = Path(args.batches)
+        batch_dir = bd if bd.is_absolute() else root / bd
+    else:
+        batch_dir = root / "out"
+    batches = load_batches(batch_dir)
+    print(f"读入 {len(batches)} 个批次（{batch_dir}）")
 
     cm_path = root / "chunk-meta.json"
     cm = json.loads(cm_path.read_text(encoding="utf-8")) if cm_path.exists() else {}
@@ -465,6 +613,14 @@ def main():
     rels = merge_relations(batches, id_map)
     chaps = merge_chapters(batches, cm)
     fores = merge_foreshadows(batches, taken_ids={e["id"] for e in ents})
+    places = merge_places(batches, taken_ids={e["id"] for e in ents} | {f["id"] for f in fores},
+                          entity_names={e["id"]: e["name"] for e in ents})
+    concepts = merge_concepts(
+        batches,
+        taken_ids={e["id"] for e in ents} | {f["id"] for f in fores} | {p["id"] for p in places})
+    ents, pruned = prune_concept_duplicates(ents, rels, concepts)
+    if pruned:
+        print(f"  清理与设定重复的器物 {pruned} 个")
     realms, realm_ph = load_realms(root, batches)
 
     # realms.json 里的战力时间线是人工核过原文的，优先于批次模型结果
@@ -542,8 +698,8 @@ def main():
             "chapters": total_chapters,
             "analyzed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "model": args.model,
-            "cost_cny": 0,
-            "elapsed_sec": 0,
+            "cost_cny": args.cost,
+            "elapsed_sec": args.elapsed,
             "coverage": {"chapters_done": len(chaps),
                          "chapters_skipped": max(total_chapters - len(chaps), 0)},
             "note": (f"分批抽取后合并；{len(ents)} 个实体经名称/别名归并"
@@ -556,8 +712,8 @@ def main():
         "chapters": chaps,
         "foreshadows": fores,
         "knowledge": [],
-        "places": [],
-        "concepts": [],
+        "places": places,
+        "concepts": concepts,
     }
 
     thr, changed = apply_status(data)
@@ -571,6 +727,7 @@ def main():
     print(f"伏笔    {sum(len(b.get('foreshadows', [])) for _, b in batches)} → {len(fores)}（去重），"
           f"超期阈值 {thr} 章")
     print(f"境界    {len(realms)}")
+    print(f"地点    {len(places)}　设定 {len(concepts)}")
     print(f"字数    {data['meta']['chars']:,}")
     print(f"输出    {out}")
 
