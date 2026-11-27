@@ -59,7 +59,7 @@ ls output/*/data.json
 python scripts/seek.py --dir output/{书名}/ --keyword "云纹玉佩" --context 2
 ```
 
-只返回命中位置前后 2 段，**不要整章加载**。
+只返回命中位置前后各 2 段，附带 `chN:pM` 坐标，**不要整章加载**。可加 `--chapter-range 1-200` 限定范围，`--json` 供程序消费。
 
 ## 输出格式
 
