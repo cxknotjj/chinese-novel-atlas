@@ -3,6 +3,8 @@
 > 一本书读完了，人物关系在脑子里是一团浆糊。
 > Novel Atlas 把它画出来。
 
+**[→ 在线试玩：红楼梦人物图谱](http://deerfect.me/chinese-novel-atlas/demo/)**（不用装，打开就能逛）
+
 给它一本小说，它给你一张图：
 
 **《红楼梦》· 120 回 · 73 万字**
@@ -146,7 +148,9 @@ mentorship 师承 · alliance 同盟 · conflict 敌对 · social 交游
 
 ## Demo
 
-[demo/index.html](./demo/index.html) —— 下载后直接双击打开，不需要装任何东西。
+**在线看** → [deerfect.me/chinese-novel-atlas/demo](http://deerfect.me/chinese-novel-atlas/demo/)
+
+**本地看** → 下载仓库后双击 `demo/index.html`，不需要装任何东西。
 
 ---
 
