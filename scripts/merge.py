@@ -296,10 +296,12 @@ def merge_foreshadows(batches, taken_ids=None):
             content = f.get("content", "")
             dup = None
             for ex in pool:
-                if sim(content, ex.get("content", "")) <= 0.62:
+                score = sim(content, ex.get("content", ""))
+                if score <= 0.62:
                     continue
-                # 线索不同时先不合并，避免把两条并行的坑揉成一条
-                if (f.get("thread") and ex.get("thread")
+                # 线索不同时先不合并，避免把两条并行的坑揉成一条；
+                # 但文字几乎一模一样（>=0.92）时，线索标签不同也视为同一条
+                if (score < 0.92 and f.get("thread") and ex.get("thread")
                         and norm(f["thread"]) != norm(ex["thread"])):
                     continue
                 dup = ex
