@@ -193,8 +193,9 @@
   .gantt-row { display: grid; grid-template-columns: 62px 1fr 76px; gap: 10px; align-items: center; height: 26px; }
   .gantt-name { font-size: 11.5px; color: var(--ink-2); text-align: right; padding-right: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .gantt-name:hover { color: var(--crimson); }
-  .gantt-track { position: relative; height: 14px; background: #F7F5EF; border-radius: 3px; }
-  .gantt-seg { position: absolute; top: 0; height: 14px; border-radius: 3px; cursor: pointer; }
+  .gantt-row.main .gantt-name { color: var(--ink); font-weight: 500; }
+  .gantt-track { position: relative; height: 14px; background: #EDE9DF; border-radius: 3px; overflow: hidden; }
+  .gantt-seg { position: absolute; top: 0; height: 14px; cursor: pointer; box-shadow: inset -1px 0 0 rgba(255,255,255,0.85); }
   .gantt-seg:hover { outline: 1.5px solid var(--crimson); outline-offset: 1px; }
   .gantt-now { font-size: 11px; color: var(--ink); padding-left: 8px; white-space: nowrap; }
   .gantt-axis { position: relative; height: 18px; margin-top: 4px; margin-left: 72px; margin-right: 86px; }
@@ -957,9 +958,13 @@
 
   /* ================= 境界 ================= */
   function renderRealms() {
+    // 主角（关系最多者）置顶，其余按最终修为降序
+    const mainId = [...deg.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
     const chars = D.entities
       .filter(e => e.type === 'character' && (e.power_history || []).length)
       .sort((a, b) => {
+        if (a.id === mainId) return -1;
+        if (b.id === mainId) return 1;
         const pa = a.power_history[a.power_history.length - 1];
         const pb = b.power_history[b.power_history.length - 1];
         return levelNum(pb) - levelNum(pa);
@@ -997,8 +1002,9 @@
           background:${realmColorOf(p)}" title="${powerFull(p)} · 第${from}章${p.note ? ' · ' + p.note : ''}"></div>`;
       }).join('');
       const latest = h[h.length - 1];
-      return `<div class="gantt-row">
-        <div class="gantt-name" data-ent="${e.id}">${e.name}</div>
+      const isMain = e.id === mainId;
+      return `<div class="gantt-row${isMain ? ' main' : ''}">
+        <div class="gantt-name" data-ent="${e.id}">${e.name}${isMain ? ' ★' : ''}</div>
         <div class="gantt-track">${segs}</div>
         <div class="gantt-now">${powerFull(latest)}</div>
       </div>`;
