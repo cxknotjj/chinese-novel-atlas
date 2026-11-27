@@ -174,6 +174,6 @@ python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 | `scripts/merge.py` | ✅ 归并 + 别名消解 + 伏笔去重 + status 派生 |
 | `scripts/validate.py` | ✅ schema 全量校验 |
 | `scripts/build.py` | ✅ 单文件内嵌 / 外链 data.js |
-| `scripts/estimate.py` | ⬜ 未实现，成本按实测口径估算 |
+| `scripts/estimate.py` | ✅ 按 chunk-meta 实际字数估批次 / token / 费用 |
 
-**当前阶段**：契约、视图、分章/合并/校验/出图已可用；自动抽取脚本待补。
+**当前阶段**：契约、视图、分章 / 抽取 / 合并 / 校验 / 出图 / 估算均已可用；续跑只受模型 key 余额限制。

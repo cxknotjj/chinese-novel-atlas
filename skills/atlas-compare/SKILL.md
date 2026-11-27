@@ -46,7 +46,7 @@ python scripts/compare.py \
   --out output/_compare/
 ```
 
-> `compare.py` 尚未实现。当前可先按上面的指标口径手算成表（`metrics.md`），确认两本书 `schema_version` 一致、`coverage` 都接近全量后再下结论。
+> 脚本会校验两本 `schema_version` 一致（只支持 2.0）；任一本未覆盖全书时，`metrics.md` 会追加"抽样数据，只能看趋势"的警告。
 
 产出：
 

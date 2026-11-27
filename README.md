@@ -164,6 +164,10 @@ output/我的书/
 - [x] `validate.py` schema 全量校验
 - [x] `build.py` 单文件出图（demo 与 `atlas.html` 同源）
 - [x] `extract.py` 批量抽取 + 断点续跑 + 预算熔断 + 每批自检
+- [x] `estimate.py` 成本预估（按分章实际字数，不拍脑袋）
+- [x] `seek.py` 原文定向检索（返回命中段 + `chN:pM` 坐标，不整章入上下文）
+- [x] `compare.py` 跨书指标对照（`metrics.md` / `compare.html` / `diff.json`）
+- [x] `export.py` 五种导出（伏笔 CSV / Markdown 设定集 / 角色表 / 单文件 / 静态站）
 - [ ] 别名消解进阶（网文的称号极多："剑尊""魔帝""老祖"都是同一个人）
 - [ ] 真实网文样例（需自备文本，版权原因不内置）
 - [ ] README 首屏 GIF

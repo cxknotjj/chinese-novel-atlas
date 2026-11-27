@@ -18,7 +18,7 @@ python scripts/export.py --dir output/青云签到三十年/ --format site
 python scripts/export.py --dir output/青云签到三十年/ --format single
 ```
 
-> `export.py` 尚未实现。当前先按下面的格式手写 `export/` 目录；`single` 可以直接用 `scripts/build.py --data ... --out export/ --name 设定集.html` 生成单文件视图。
+`--format all` 一次产出五种；`--out` 可改输出目录（默认 `export/`）。
 
 | format | 产出 | 给谁用 |
 |---|---|---|
@@ -31,13 +31,13 @@ python scripts/export.py --dir output/青云签到三十年/ --format single
 ## `fs` — 伏笔清单（作者最需要）
 
 ```csv
-id,内容,埋设章,回收章,状态,跨度,线索,重要度
-f_yupei,"父亲留下的云纹玉佩，系统无法鉴定",3,87,已回收,84,身世之谜,1.0
-f_xitong,"签到系统的来源与代价",1,,已超期,119,金手指,0.9
-f_canye,"阿福枕下的半张残页，只剩「血刀门」三字",11,,已超期,109,血刀门,0.85
+id,内容,埋设章,回收章,状态,跨度,线索,重要度,备注
+f_yupei,"父亲留下的云纹玉佩，系统无法鉴定",3,87,已回收,84,身世之谜,1.0,
+f_xitong,"签到系统的来源与代价",1,,已超期,119,金手指,0.9,
+f_canye,"阿福枕下的半张残页，只剩「血刀门」三字",11,,已超期,109,血刀门,0.85,
 ```
 
-按状态排序（超期在前），超期的行末加一列"距今年限"方便判断优先级。
+按状态排序（超期 → 待回收 → 已回收 → 已放弃），跨度 = 回收章（未回收则按已分析章数）− 埋设章。文件用 UTF-8 BOM，Excel 双击不乱码。
 
 **用途**：作者可以直接把这个 CSV 拖进 Excel，当作改稿清单，一条条划掉。
 
@@ -77,7 +77,7 @@ f_canye,"阿福枕下的半张残页，只剩「血刀门」三字",11,,已超�
 ## 伏笔台账（12）
 ```
 
-按 `group` 分组，组内按 `degree` 降序——重要的排前面。
+按关系数（degree）降序——重要的排前面，卡片上标 `group` 阵营。
 
 角色条目必须带**境界轨迹**，这是网文设定集和古典小说设定集最大的区别。
 
@@ -85,13 +85,14 @@ f_canye,"阿福枕下的半张残页，只剩「血刀门」三字",11,,已超�
 
 ```
 export/site/
-  index.html          总览（图谱缩略 + 统计）
+  index.html          总览 + 伏笔总表（按阵营分组的角色卡片）
+  style.css
   character/
-    e_linyun.html     每人一页
+    e_linyun.html     人物 / 势力各一页
   place/
+    p_qingyun.html    地点一页
   concept/
-  foreshadow.html     伏笔总表
-  assets/
+    c_xitong.html     设定一页
 ```
 
 每人一页的好处：**能被搜索引擎收录**。网文同人搜"林云 境界"时，可能落到你的页面上。
@@ -115,4 +116,4 @@ atlas-analyze → data.json ─┬→ atlas-ask
 
 ## 扩展点
 
-想加新格式（PDF、Notion、Obsidian vault），在 `scripts/export.py` 加一个 `export_<format>()` 函数，注册到 `FORMATS` 字典即可。**不要改核心数据结构。**
+想加新格式（PDF、Notion、Obsidian vault），在 `scripts/export.py` 里加一个 `export_<format>()` 函数，并在 `main()` 的 `formats` 分支注册。**不要改核心数据结构。**

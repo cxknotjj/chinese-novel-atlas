@@ -27,6 +27,10 @@ GENERIC_ALIASES = {
     "长老", "前辈", "道友", "老祖", "大人", "公子", "姑娘", "小姐",
     "掌门", "宗主", "陛下", "殿下", "阁下", "兄台", "老大",
 }
+# 序数称谓（二夫人、三娘、五小姐……）指向位份而非具体人，不能拿来归并
+GENERIC_ALIAS_RE = re.compile(r"^[一二三四五六七八九十]+(夫人|太太|奶奶|娘|姨|小姐|公子|少爷|爷)$")
+# 姓氏+氏（李氏、王氏）重名极多，不能只凭名字跨阵营合并
+GENERIC_NAME_RE = re.compile(r"^[\u4e00-\u9fa5]{1,2}氏$")
 
 
 def norm(s):
@@ -114,6 +118,11 @@ def merge_entities(batches):
                 continue
             key = (name, e.get("type") or "character")
             if key in index:
+                cur = pool[index[key]]
+                if GENERIC_NAME_RE.match(name) and (e.get("group") or "") != (cur.get("group") or ""):
+                    pool.append(_new_record(e))       # 同名的“李氏”分属两府，各留各的
+                    index[key] = len(pool) - 1
+                    continue
                 _absorb(pool[index[key]], e)
             else:
                 index[key] = len(pool)
@@ -141,7 +150,7 @@ def merge_entities(batches):
     for i, e in enumerate(pool):
         for a in e.get("aliases") or []:
             an = norm(a)
-            if not an or len(an) < 2 or an in GENERIC_ALIASES:
+            if not an or len(an) < 2 or an in GENERIC_ALIASES or GENERIC_ALIAS_RE.match(an) or GENERIC_NAME_RE.match(an):
                 continue
             alias_owner.setdefault(an, set()).add(i)
 
