@@ -18,6 +18,8 @@ python scripts/export.py --dir output/青云签到三十年/ --format site
 python scripts/export.py --dir output/青云签到三十年/ --format single
 ```
 
+> `export.py` 尚未实现。当前先按下面的格式手写 `export/` 目录；`single` 可以直接用 `scripts/build.py --data ... --out export/ --name 设定集.html` 生成单文件视图。
+
 | format | 产出 | 给谁用 |
 |---|---|---|
 | **`fs`** | `export/伏笔清单.csv` | **作者改稿对照**，最重要的一种 |

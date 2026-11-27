@@ -2,8 +2,13 @@
 """merge.py — 把分批抽取的结果合并成一份 data.json。
 
 难点在**实体消解**：同一个角色在不同批次里可能被起成不同的 id
-（"韩立" → e_hanli / e_han_li / e_hanli2）。这里按 name 归并，
-关系边跟着重映射，避免出现孤立节点。
+（"韩立" → e_hanli / e_han_li / e_hanli2）。这里做两级归并：
+
+1. 正名归并：归一化后同名（且类型相同）的实体直接合并
+2. 别名归并：A 的别名等于 B 的正名时，把 A 并进 B
+   （"韩老魔" 是 "韩立" 的别名，两个批次各建了一条，合并后只留一条）
+
+通用的尊称（"师兄""长老""老祖"）不参与别名归并，否则会把半个宗门并成一个人。
 
 用法：
     python scripts/merge.py output/凡人修仙传/ --out output/凡人修仙传/data.json
@@ -12,8 +17,16 @@
 import argparse
 import json
 import re
-from collections import Counter, defaultdict
+from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
+
+# 这些别名指向的是"身份"而不是"某个人"，参与归并会误伤
+GENERIC_ALIASES = {
+    "师兄", "师姐", "师弟", "师妹", "师父", "师傅", "师叔", "师伯",
+    "长老", "前辈", "道友", "老祖", "大人", "公子", "姑娘", "小姐",
+    "掌门", "宗主", "陛下", "殿下", "阁下", "兄台", "老大",
+}
 
 
 def norm(s):
@@ -53,87 +66,138 @@ def load_batches(d):
     return batches
 
 
-def merge_entities(batches):
-    """按 name 归并实体，返回 (entities, id_map)。"""
-    pool = []          # [{id, name, ...}]
-    by_name = {}       # 归一化名字 → pool 下标
+def _new_record(e):
+    rec = dict(e)
+    rec.setdefault("parent", None)
+    rec.setdefault("attrs", {})
+    rec.setdefault("power_history", [])
+    rec.setdefault("aliases", [])
+    rec["_groups"] = Counter([e.get("group") or "其他"])
+    rec["_ids"] = {e.get("id")} - {None}
+    return rec
 
+
+def _absorb(cur, e):
+    """把 e 的信息补进 cur（保留更全的那份）。"""
+    if len(e.get("desc") or "") > len(cur.get("desc") or ""):
+        cur["desc"] = e["desc"]
+    cur["aliases"] = list(dict.fromkeys(
+        (cur.get("aliases") or []) + (e.get("aliases") or [])))
+    fc = e.get("first_ch")
+    if isinstance(fc, int) and (cur.get("first_ch") is None or fc < cur["first_ch"]):
+        cur["first_ch"] = fc
+    lc = e.get("last_ch")
+    if isinstance(lc, int) and (cur.get("last_ch") is None or lc > cur["last_ch"]):
+        cur["last_ch"] = lc
+    if e.get("attrs"):
+        cur.setdefault("attrs", {}).update(e["attrs"])
+    for p in (e.get("power_history") or []):
+        if isinstance(p.get("ch"), int) and p not in cur.setdefault("power_history", []):
+            cur["power_history"].append(p)
+    if e.get("parent") and not cur.get("parent"):
+        cur["parent"] = e["parent"]
+    cur.setdefault("_groups", Counter())[e.get("group") or "其他"] += 1
+    cur.setdefault("_ids", set()).update({e.get("id")} - {None})
+
+
+def merge_entities(batches):
+    """按 (正名, 类型) 归并，再按别名做第二级归并。返回 (entities, id_map)。"""
+    pool, index = [], {}
     for _, b in batches:
         for e in b.get("entities", []):
             name = norm(e.get("name", ""))
             if not name:
                 continue
-            if name in by_name:
-                i = by_name[name]
-                cur = pool[i]
-                # 补全信息：desc 取更长的，别名取并集，first_ch 取更小
-                if len(e.get("desc") or "") > len(cur.get("desc") or ""):
-                    cur["desc"] = e["desc"]
-                cur["aliases"] = list(dict.fromkeys(
-                    (cur.get("aliases") or []) + (e.get("aliases") or [])))
-                fc = e.get("first_ch")
-                if isinstance(fc, int) and (cur.get("first_ch") is None or fc < cur["first_ch"]):
-                    cur["first_ch"] = fc
-                lc = e.get("last_ch")
-                if isinstance(lc, int) and (cur.get("last_ch") is None or lc > cur["last_ch"]):
-                    cur["last_ch"] = lc
-                if e.get("attrs"):
-                    cur.setdefault("attrs", {}).update(e["attrs"])
-                for p in (e.get("power_history") or []):
-                    if p not in cur.setdefault("power_history", []):
-                        cur["power_history"].append(p)
-                cur.setdefault("_groups", Counter())[e.get("group") or "其他"] += 1
-                cur.setdefault("_ids", set()).add(e.get("id"))
+            key = (name, e.get("type") or "character")
+            if key in index:
+                _absorb(pool[index[key]], e)
             else:
-                rec = dict(e)
-                rec.setdefault("parent", None)
-                rec.setdefault("attrs", {})
-                rec.setdefault("power_history", [])
-                rec["_groups"] = Counter([e.get("group") or "其他"])
-                rec["_ids"] = {e.get("id")}
-                by_name[name] = len(pool)
-                pool.append(rec)
+                index[key] = len(pool)
+                pool.append(_new_record(e))
 
-    # 第二遍：别名也能对上（"韩老魔" 归到 "韩立"）
-    alias_map = {}
+    # ---- 第二级：别名归并（union-find）----
+    parent = list(range(len(pool)))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[max(ra, rb)] = min(ra, rb)
+
+    name_to_idx = {}
+    for i, e in enumerate(pool):
+        name_to_idx.setdefault(norm(e.get("name", "")), i)
+
+    alias_owner = {}   # 别名 → {可能指向的实体下标}
     for i, e in enumerate(pool):
         for a in e.get("aliases") or []:
             an = norm(a)
-            if an and an not in by_name:
-                alias_map.setdefault(an, i)
-
-    id_map = {}
-    for e in pool:
-        primary = e["id"]
-        for old in e["_ids"]:
-            if old:
-                id_map[old] = primary
-        for a in e.get("aliases") or []:
-            if norm(a) in alias_map and alias_map[norm(a)] != pool.index(e):
+            if not an or len(an) < 2 or an in GENERIC_ALIASES:
                 continue
+            alias_owner.setdefault(an, set()).add(i)
 
-    out = []
-    for e in pool:
-        e["group"] = e["_groups"].most_common(1)[0][0]
-        e["aliases"] = [a for a in e.get("aliases", []) if norm(a) != norm(e["name"])]
-        e["power_history"] = sorted(e.get("power_history", []), key=lambda x: x.get("ch", 0))
-        for k in ("_groups", "_ids"):
-            e.pop(k, None)
-        out.append(e)
+    merged_alias = 0
+    for an, owners in alias_owner.items():
+        target = name_to_idx.get(an)
+        if target is None:
+            continue          # 这个别名不是任何实体的正名，无从归并
+        if len(owners) > 1:
+            continue          # 同一个别名挂在多个人身上，说明是通用称号，跳过
+        if owners == {target}:
+            continue
+        union(next(iter(owners)), target)
+        merged_alias += 1
+
+    # ---- 按簇合并 ----
+    clusters = {}
+    for i in range(len(pool)):
+        clusters.setdefault(find(i), []).append(i)
+
+    out, id_map = [], {}
+    for root, members in sorted(clusters.items(), key=lambda kv: min(kv[1])):
+        members = sorted(members)
+        head = pool[members[0]]          # 最早出现的那条当主记录
+        for i in members[1:]:
+            _absorb(head, pool[i])
+        head["group"] = head["_groups"].most_common(1)[0][0]
+        head["aliases"] = [a for a in dict.fromkeys(head.get("aliases", []))
+                           if norm(a) != norm(head["name"])]
+        head["power_history"] = sorted(
+            [p for p in head.get("power_history", []) if isinstance(p.get("ch"), int)],
+            key=lambda x: x["ch"])
+        ids = set(head.pop("_ids", set()))
+        head.pop("_groups", None)
+        # 全局 id 唯一：主记录沿用最早那批的 id，冲突时加后缀
+        base = head.get("id") or f"e_{len(out) + 1:03d}"
+        final, n = base, 2
+        while any(x["id"] == final for x in out):
+            final = f"{base}_{n}"
+            n += 1
+        head["id"] = final
+        for old in ids:
+            id_map[old] = final
+        id_map.setdefault(base, final)
+        out.append(head)
+
+    if merged_alias:
+        print(f"  别名归并 {merged_alias} 组（同一实体在不同批次用了不同名字）")
     return out, id_map
 
 
-def normalize_groups(ents, rels):
+def normalize_groups(ents):
     """修正 group：分批抽取时模型容易把"所属人物"当成"阵营"填。
 
     规则：
-    1. group 等于某个实体的 name → 说明误填了人名，改为该实体自己的 group 或"其他"
+    1. group 等于某个角色名 → 说明误填了人名，改为该角色自己的 group 或"其他"
     2. "无"/"不明"/空 → "其他"
-    3. 阵营数超过 8 个时，把只含 1 个成员的并入"其他"
+    3. 阵营数超过 8 个时，只保留成员数最多的 8 个，其余并入"其他"
     """
-    names = {norm(e["name"]) for e in ents}
     by_name = {norm(e["name"]): e for e in ents}
-    # 只有"人物名"被当成 group 才算误填；组织名自成阵营是合法的
     person_names = {norm(e["name"]) for e in ents if e.get("type") == "character"}
 
     for e in ents:
@@ -147,9 +211,7 @@ def normalize_groups(ents, rels):
             e["group"] = og if og and norm(og) not in person_names and og not in ("无", "不明") else "其他"
 
     counts = Counter(e["group"] for e in ents)
-    mains = [g for g, n in counts.items() if n >= 3]
-    if len(mains) > 8:
-        mains = [g for g, _ in counts.most_common(8)]
+    mains = [g for g, _ in counts.most_common(8)]
     for e in ents:
         if e["group"] not in mains:
             e["group"] = "其他"
@@ -166,138 +228,268 @@ def merge_relations(batches, id_map):
             if not s or not t or s == t:
                 continue
             key = (s, t, r.get("type"))
-            w = r.get("weight") or 0.5
-            if key not in best or w > (best[key].get("weight") or 0):
-                rec = dict(r)
-                rec["s"], rec["t"] = s, t
+            w = r.get("weight")
+            w = 0.5 if not isinstance(w, (int, float)) else max(0.0, min(1.0, float(w)))
+            rec = dict(r)
+            rec["s"], rec["t"], rec["weight"] = s, t, w
+            if key not in best or w > best[key]["weight"]:
                 best[key] = rec
     return list(best.values())
 
 
-def merge_chapters(batches):
+def merge_chapters(batches, cm):
+    """章节以 chunk-meta 为准补 words / volume；摘要等取模型结果。"""
+    meta_ch = {}
+    for r in cm.get("chapters", []):
+        if isinstance(r.get("ch"), int):
+            meta_ch[r["ch"]] = r
+
     by_ch = {}
     for _, b in batches:
         for c in b.get("chapters", []):
             ch = c.get("ch")
             if isinstance(ch, int) and ch not in by_ch:
                 by_ch[ch] = c
-    return [by_ch[k] for k in sorted(by_ch)]
+
+    out = []
+    for ch in sorted(by_ch):
+        c = dict(by_ch[ch])
+        m = meta_ch.get(ch)
+        if m:
+            c["words"] = m.get("words") or c.get("words", 0)
+            if m.get("vol"):
+                c["volume"] = f"v{m['vol']}"
+        c.setdefault("words", 0)
+        t = c.get("tension")
+        c["tension"] = max(0.0, min(1.0, float(t))) if isinstance(t, (int, float)) else 0.0
+        if c.get("hook_type") not in ("悬念", "反转", "冲突", "危机", "爽点", "无"):
+            c["hook_type"] = "无"
+        if c.get("emotion") not in ("爽", "压抑", "紧张", "温情", "悲", "平"):
+            c["emotion"] = "平"
+        c["summary"] = (c.get("summary") or "").strip()[:80]
+        out.append(c)
+    return out
 
 
-def merge_foreshadows(batches, id_map):
-    """按内容相似度归并同一条伏笔。"""
+def merge_foreshadows(batches, taken_ids=None):
+    """按内容相似度归并同一条伏笔；id 保证全局唯一。"""
     pool = []
     for _, b in batches:
         for f in b.get("foreshadows", []):
             content = f.get("content", "")
             dup = None
             for ex in pool:
-                if sim(content, ex.get("content", "")) > 0.62:
-                    dup = ex
-                    break
+                if sim(content, ex.get("content", "")) <= 0.62:
+                    continue
+                # 线索不同时先不合并，避免把两条并行的坑揉成一条
+                if (f.get("thread") and ex.get("thread")
+                        and norm(f["thread"]) != norm(ex["thread"])):
+                    continue
+                dup = ex
+                break
             if dup:
                 if len(f.get("note") or "") > len(dup.get("note") or ""):
                     dup["note"] = f["note"]
                 if f.get("payoff_ch") and not dup.get("payoff_ch"):
                     dup["payoff_ch"] = f["payoff_ch"]
                     dup["payoff_quote"] = f.get("payoff_quote")
-                dup["importance"] = max(dup.get("importance", 0.5), f.get("importance", 0.5))
+                dup["importance"] = max(dup.get("importance") or 0.5,
+                                        f.get("importance") or 0.5)
             else:
                 pool.append(dict(f))
+
+    taken = set(taken_ids or ())
+    out = []
     for i, f in enumerate(pool, 1):
-        f["id"] = f.get("id") or f"f_{i:03d}"
-    return pool
+        base = f.get("id") or f"f_{i:03d}"
+        final, n = base, 2
+        while final in taken:
+            final = f"{base}_{n}"
+            n += 1
+        taken.add(final)
+        f["id"] = final
+        out.append(f)
+    return out
 
 
-def load_realm_spec(root):
-    """读取全局境界体系定义 realms.json（若有）。
+def apply_status(data):
+    """按 schema 的派生规则重算 foreshadow.status（存储值不可信）。
 
-    境界是全局概念，不能由逐批抽取各自建立——批次只看 10 章，
-    各批 order 独立编号，合并后必然错乱（曾出现「筑基」被排成 order=1）。
-    因此体系由 realms.json 权威定义，批次内联的 realms 仅作补充。
+    阈值按**已分析到的章数**算，而不是全书总章数：只拆了前 100 章时，
+    用 2443 章的 15%（366 章）做阈值会让所有坑永远不超期。
     """
-    p = Path(root) / "realms.json"
-    if not p.exists():
-        return None
-    try:
-        return json.loads(p.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"  realms.json 解析失败：{e}")
-        return None
+    meta = data["meta"]
+    live = max((c["ch"] for c in data["chapters"]), default=0)
+    total = meta.get("chapters") or live
+    span = live if live else total
+    thr = max(50, int(span * 0.15))
+    changed = 0
+    for f in data["foreshadows"]:
+        if f.get("status") == "dropped":
+            continue                      # 唯一允许人工标注的状态
+        payoff = f.get("payoff_ch")
+        if payoff is not None and payoff < (f.get("plant_ch") or 0):
+            f["payoff_ch"] = None         # 回收早于埋设，按未回收处理
+            payoff = None
+        expect = "paid" if payoff else ("overdue" if live - (f.get("plant_ch") or 0) > thr else "planted")
+        if f.get("status") != expect:
+            f["status"] = expect
+            changed += 1
+    return thr, changed
 
 
-def merge_realms(batches, spec=None):
-    out, seen = [], set()
+def load_realms(root, batches):
+    """境界体系以全文扫描出的 realms.json 为权威；没有就退回批次并集。"""
+    spec = root / "realms.json"
+    if spec.exists():
+        raw = json.loads(spec.read_text(encoding="utf-8"))
+        realms = raw["realms"] if isinstance(raw, dict) else raw
+        orders = [r.get("order") for r in realms]
+        if orders != list(range(1, len(realms) + 1)):
+            raise SystemExit(f"{spec} 的 order 必须从 1 连续递增，当前 {orders}")
+        # 用批次里的信息补 first_ch / desc
+        seen = {norm(r.get("name", "")): r for r in realms}
+        for _, b in batches:
+            for r in b.get("realms", []):
+                t = seen.get(norm(r.get("name", "")))
+                if t is None:
+                    continue
+                if not t.get("first_ch") and r.get("first_ch"):
+                    t["first_ch"] = r["first_ch"]
+                if not t.get("desc") and r.get("desc"):
+                    t["desc"] = r["desc"]
+        print(f"  境界体系 {len(realms)} 级（来自 realms.json）")
+        ph = raw.get("power_history") if isinstance(raw, dict) else {}
+        return realms, (ph or {})
 
-    # 1) 权威定义优先
-    if spec and spec.get("realms"):
-        for r in spec["realms"]:
-            key = norm(r.get("name", ""))
-            if key and key not in seen:
-                seen.add(key)
-                out.append(dict(r))
-
-    # 2) 批次补充 spec 里没有的境界（保持声明顺序，排在最后）
-    extra = []
+    # 没有权威文件：批次各自编号，冲突必然发生
+    seen, collected = set(), []
     for _, b in batches:
         for r in b.get("realms", []):
             key = norm(r.get("name", ""))
             if key and key not in seen:
                 seen.add(key)
-                extra.append(dict(r))
+                collected.append(dict(r))
+    if len(collected) < 2:
+        if collected:
+            print("  ⚠ 只抽到 1 个境界，无法构成有序体系，realms 留空。"
+                  "请先跑 scripts/realms.py 生成 realms.json")
+        return [], {}
+    orders = sorted({r.get("order") for r in collected})
+    if len(orders) != len(collected):
+        print("  ⚠ 批次间 order 冲突，realms 留空。请先跑 scripts/realms.py 确认体系")
+        return [], {}
+    collected.sort(key=lambda x: x.get("order", 99))
+    return collected, {}
 
-    if extra:
-        print(f"  批次补充境界 {len(extra)} 个：{', '.join(r['name'] for r in extra)}")
-        # 补充项按批次的 order 排序后接在权威序列之后
-        extra.sort(key=lambda x: x.get("order", 99))
-        out.extend(extra)
 
-    # 3) order 重新编号为连续序列
-    for i, r in enumerate(out, 1):
-        r["order"] = i
-    return out
+def build_volumes(cm, chapters):
+    vols, seen = [], set()
+    for r in cm.get("chapters", []):
+        v = r.get("vol")
+        if v and v not in seen:
+            seen.add(v)
+            vols.append({"id": f"v{v}", "name": r.get("vol_name") or f"第{v}卷",
+                         "ch_start": r["ch"], "ch_end": None, "summary": ""})
+    for i in range(len(vols) - 1):
+        vols[i]["ch_end"] = vols[i + 1]["ch_start"] - 1
+    if vols and chapters:
+        vols[-1]["ch_end"] = max(c["ch"] for c in chapters)
+    return vols
 
 
-def apply_power_history(ents, spec):
-    """把 realms.json 里按原文核实的修为时间线注入实体。
+def parse_source_name(source):
+    """《凡人修仙传》【精校全本】作者：忘语.txt → (书名, 作者)"""
+    stem = Path(source).stem
+    stem = re.sub(r"【[^】]*】", "", stem).strip()
+    author = ""
+    m = re.search(r"作者[：:]\s*(.*)$", stem)
+    if m:
+        author = m.group(1).strip()
+        stem = stem[:m.start()].strip()
+    title = stem.strip("《》 ").strip()
+    return title or "未知书名", author
 
-    抽取产物的 attrs 里常有「修为: 长春功第八层」这类自由文本，
-    但结构化时间线（第几章到第几层）跨批次不可靠，故由人工核实后覆盖。
-    """
-    if not spec or not spec.get("power_history"):
-        return 0
-    by_id = {e["id"]: e for e in ents}
-    n = 0
-    for eid, hist in spec["power_history"].items():
-        e = by_id.get(eid)
-        if not e:
-            print(f"  警告：realms.json 指向不存在的实体 {eid}")
+
+def find_source_file(root, name):
+    """在 book 目录的上级 / novals/ 里找原始 txt，用于统计全书字数。"""
+    if not name:
+        return None
+    cands = [
+        root.parent / name,
+        root.parent / "novals" / name,
+        root.parent.parent / "novals" / name,
+        Path.cwd() / "novals" / name,
+        Path.cwd() / name,
+    ]
+    for p in cands:
+        if p.is_file():
+            return p
+    return None
+
+
+def count_chars(path):
+    raw = Path(path).read_bytes()
+    for enc in ("utf-8-sig", "utf-8", "gb18030", "gbk", "big5", "utf-16"):
+        try:
+            text = raw.decode(enc)
+        except (UnicodeDecodeError, LookupError):
             continue
-        e["power_history"] = sorted(hist, key=lambda x: x.get("ch", 0))
-        n += 1
-    return n
+        sample = text[:8000]
+        if sample and sum(1 for c in sample if "\u4e00" <= c <= "\u9fff") / len(sample) > 0.15:
+            return len(re.sub(r"\s", "", text))
+    return None
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("dir")
     ap.add_argument("--out", default="")
+    ap.add_argument("--title", default="", help="覆盖书名（默认从源文件名解析）")
+    ap.add_argument("--author", default="", help="覆盖作者")
+    ap.add_argument("--genre", default="未标注")
+    ap.add_argument("--platform", default="")
+    ap.add_argument("--status", default="完结")
+    ap.add_argument("--model", default="manual-agent")
     args = ap.parse_args()
 
     root = Path(args.dir)
     batches = load_batches(root)
     print(f"读入 {len(batches)} 个批次")
 
+    cm_path = root / "chunk-meta.json"
+    cm = json.loads(cm_path.read_text(encoding="utf-8")) if cm_path.exists() else {}
+
     ents, id_map = merge_entities(batches)
-    ents = normalize_groups(ents, [])
+    ents = normalize_groups(ents)
     rels = merge_relations(batches, id_map)
-    chaps = merge_chapters(batches)
-    fores = merge_foreshadows(batches, id_map)
-    spec = load_realm_spec(root)
-    realms = merge_realms(batches, spec)
-    if spec:
-        k = apply_power_history(ents, spec)
-        print(f"  修为时间线注入 {k} 个实体（来自 realms.json）")
+    chaps = merge_chapters(batches, cm)
+    fores = merge_foreshadows(batches, taken_ids={e["id"] for e in ents})
+    realms, realm_ph = load_realms(root, batches)
+
+    # realms.json 里的战力时间线是人工核过原文的，优先于批次模型结果
+    if realm_ph:
+        by_id = {e["id"]: e for e in ents}
+        applied = 0
+        for old_id, timeline in realm_ph.items():
+            target = by_id.get(id_map.get(old_id, old_id)) or by_id.get(old_id)
+            if not target:
+                print(f"  ⚠ realms.json 里的 {old_id} 在实体表中不存在，跳过")
+                continue
+            order = {r["id"]: r.get("order", 99) for r in realms}
+            stages = {r["id"]: set(r.get("stages") or []) for r in realms}
+            clean = []
+            for p in timeline:
+                if p.get("realm") not in order:
+                    print(f"  ⚠ {target['name']}: 境界 {p.get('realm')} 不在体系中，跳过")
+                    continue
+                if p.get("stage") and stages[p["realm"]] and p["stage"] not in stages[p["realm"]]:
+                    print(f"  ⚠ {target['name']}: 小阶段 {p['stage']} 不属于 {p['realm']}，跳过")
+                    continue
+                clean.append({k: v for k, v in p.items() if k in ("ch", "realm", "stage", "note")})
+            target["power_history"] = sorted(clean, key=lambda x: x["ch"])
+            applied += 1
+        print(f"  战力时间线 {applied} 人（来自 realms.json）")
 
     # 丢掉指向不存在实体的关系
     alive = {e["id"] for e in ents}
@@ -306,47 +498,58 @@ def main():
     if before != len(rels):
         print(f"  清理断链关系 {before - len(rels)} 条")
 
-    # 补 group：出现在关系里但没抽到的实体
-    # meta 从 chunk-meta.json 取章节信息
-    cm_path = root / "chunk-meta.json"
-    cm = json.loads(cm_path.read_text(encoding="utf-8")) if cm_path.exists() else {}
-    title = "未知书名"
-    if cm.get("source"):
-        title = re.sub(r"【[^】]*】", "", cm["source"]).split(".")[0].strip()
+    # 引用不到实体的 id 从章节里剔除，否则校验器直接报错
+    fs_ids = {f["id"] for f in fores}
+    for c in chaps:
+        c["new_entities"] = [x for x in (c.get("new_entities") or []) if x in alive]
+        c["new_foreshadows"] = [x for x in (c.get("new_foreshadows") or []) if x in fs_ids]
 
-    total_chars = cm.get("total_chars") or sum(c.get("words", 0) for c in chaps)
-    vols, seen_v = [], set()
-    for r in cm.get("chapters", []):
-        v = r.get("vol")
-        if v and v not in seen_v:
-            seen_v.add(v)
-            vols.append({"id": f"v{v}", "name": r.get("vol_name") or f"第{v}卷",
-                         "ch_start": r["ch"], "ch_end": None, "summary": ""})
-    for i in range(len(vols) - 1):
-        vols[i]["ch_end"] = vols[i + 1]["ch_start"] - 1
-    if vols:
-        vols[-1]["ch_end"] = max(c.get("ch", 0) for c in chaps) if chaps else None
+    # 势力树断链：parent 指向不存在实体时清空
+    for e in ents:
+        if e.get("parent") and e["parent"] not in alive:
+            e["parent"] = None
 
+    # parent 成环检测：成环的直接断开
+    parent_of = {e["id"]: e.get("parent") for e in ents}
+    for e in ents:
+        seen, cur = set(), e["id"]
+        while cur and cur in parent_of and cur not in seen:
+            seen.add(cur)
+            cur = parent_of[cur]
+            if cur == e["id"]:
+                e["parent"] = None
+                print(f"  ⚠ {e['name']} 的 parent 链成环，已断开")
+                break
+
+    title, author = parse_source_name(cm.get("source", ""))
+    title = args.title or title
+    author = args.author or author or "未知"
+    source_file = cm.get("source", "")
+    src_path = find_source_file(root, source_file)
+    book_chars = count_chars(src_path) if src_path else None
+
+    total_chapters = cm.get("chapters_found") or len(chaps)
     data = {
         "meta": {
             "schema_version": "2.0",
             "title": title,
-            "author": "忘语" if "忘语" in (cm.get("source") or "") else "未知",
-            "genre": "仙侠",
-            "platform": "起点",
-            "status": "完结",
-            "source_file": cm.get("source", ""),
-            "chars": total_chars,
-            "chapters": cm.get("chapters_found") or len(chaps),
-            "analyzed_at": "2026-11-27T05:30:00Z",
-            "model": "manual-agent",
+            "author": author,
+            "genre": args.genre,
+            "platform": args.platform,
+            "status": args.status,
+            "source_file": source_file,
+            "chars": book_chars if book_chars else cm.get("total_chars", 0),
+            "chapters": total_chapters,
+            "analyzed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "model": args.model,
             "cost_cny": 0,
             "elapsed_sec": 0,
             "coverage": {"chapters_done": len(chaps),
-                         "chapters_skipped": max((cm.get("chapters_found") or len(chaps)) - len(chaps), 0)},
-            "note": f"分批抽取后合并；{len(ents)} 个实体经名称归并",
+                         "chapters_skipped": max(total_chapters - len(chaps), 0)},
+            "note": (f"分批抽取后合并；{len(ents)} 个实体经名称/别名归并"
+                     + ("" if book_chars else "；chars 仅为已切分章节字数")),
         },
-        "volumes": vols,
+        "volumes": build_volumes(cm, chaps),
         "realms": realms,
         "entities": ents,
         "relations": rels,
@@ -357,14 +560,18 @@ def main():
         "concepts": [],
     }
 
+    thr, changed = apply_status(data)
+
     out = Path(args.out) if args.out else root / "data.json"
     out.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"\n实体    {sum(len(b.get('entities', [])) for _, b in batches)} → {len(ents)}（去重）")
     print(f"关系    {sum(len(b.get('relations', [])) for _, b in batches)} → {len(rels)}（去重）")
-    print(f"章节    {len(chaps)}")
-    print(f"伏笔    {sum(len(b.get('foreshadows', [])) for _, b in batches)} → {len(fores)}（去重）")
+    print(f"章节    {len(chaps)} / {total_chapters}（覆盖 {len(chaps) / max(total_chapters, 1):.1%}）")
+    print(f"伏笔    {sum(len(b.get('foreshadows', [])) for _, b in batches)} → {len(fores)}（去重），"
+          f"超期阈值 {thr} 章")
     print(f"境界    {len(realms)}")
+    print(f"字数    {data['meta']['chars']:,}")
     print(f"输出    {out}")
 
 

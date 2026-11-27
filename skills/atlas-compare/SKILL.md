@@ -46,6 +46,8 @@ python scripts/compare.py \
   --out output/_compare/
 ```
 
+> `compare.py` 尚未实现。当前可先按上面的指标口径手算成表（`metrics.md`），确认两本书 `schema_version` 一致、`coverage` 都接近全量后再下结论。
+
 产出：
 
 ```

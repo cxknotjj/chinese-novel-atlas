@@ -298,8 +298,6 @@ def main():
 
     total_found = len(chunks)   # 全书识别到的章数（limit 之前）
 
-    total_found = len(chunks)   # 全书识别到的章数（limit 之前）
-
     if args.limit:
         chunks = [c for c in chunks if c["num"] <= args.limit]
 
@@ -334,7 +332,6 @@ def main():
         "detected_desc": desc,
         "used_fallback": used_fallback,
         "candidates": diag,
-        "chapters_found": total_found,
         "chapters_found": total_found,
         "chapters_written": len(records),
         "chapters_skipped": skipped,

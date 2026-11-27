@@ -1,6 +1,6 @@
 ---
 name: atlas-analyze
-version: 0.1.0
+version: 0.2.0
 description: "把一部长篇小说拆成可点击、可查询的世界地图。产出结构化 JSON（人物 / 关系 / 事件 / 地点 / 概念）和一个自包含 HTML，双击即可浏览。支持百万字级长篇，可断点续跑、可按预算熔断。触发词：拆书、拆这本书、拆《XXX》、分析这本小说、分析这本书、生成人物图谱、做个人物关系图、整理这本书的设定、做个设定集、读懂这本书、小说图谱、novel atlas。"
 ---
 
@@ -9,8 +9,8 @@ description: "把一部长篇小说拆成可点击、可查询的世界地图。
 把一本小说拆成一张图。产出两个文件：
 
 ```
-output/{书名}/data.json     结构化数据（schema v1.0）
-output/{书名}/atlas.html    自包含视图，双击打开
+output/{书名}/data.json     结构化数据（schema v2.0）
+output/{书名}/atlas.html    单文件视图，双击打开
 ```
 
 ---
@@ -29,35 +29,19 @@ output/{书名}/atlas.html    自包含视图，双击打开
 
 ## 执行流程
 
-严格按四步走，**不要跳步，不要自己改流程**。
+严格按五步走，**不要跳步，不要自己改流程**。
 
 ### 第 0 步 · 前置检查
-
-```bash
-python scripts/check_env.py
-```
 
 确认三件事，任何一项不满足就停下来告诉用户：
 
 | 检查项 | 不满足时怎么做 |
 |---|---|
 | Python 3.9+ | 提示安装 |
-| `data/config.json` 里有 API key | 提示用 `--api-key` 参数或写配置文件 |
 | 目标文件存在且是文本 | 提示支持的格式 |
+| 预估花费可接受 | 见下 |
 
-然后**估算成本并告知用户**：
-
-```bash
-python scripts/estimate.py "<文件路径>"
-```
-
-输出形如：
-
-```
-预计 300 章 / 92 万字
-输入 token ≈ 138 万，输出 ≈ 9 万
-预计花费 ≈ 1.8 元，耗时 ≈ 9 分钟（8 并发）
-```
+**估算成本并告知用户**（按 README 的实测口径：100 章约 1 元 / 15 分钟，300 万字约 6 元 / 40 分钟）：先跑 `chunk.py` 拿到真实章数与字数，再按「每 100 章 ≈ 1 元」外推。
 
 **如果预估超过 5 元，必须先问用户确认再继续。** 不要默认跑。
 
@@ -67,69 +51,38 @@ python scripts/estimate.py "<文件路径>"
 python scripts/chunk.py "<文件路径>" --out output/{书名}/
 ```
 
-纯字符处理，零 LLM 调用。产出 `chapters/ch-001.txt` …
+纯字符处理，零 LLM 调用。产出 `chapters/ch-001.txt` … 和 `chunk-meta.json`。
 
-支持 5 种章节标题：`第一章` / `第1章` / `Chapter 1` / `1.` / `一、`
+支持 7 种章节模式自动探测：`第X卷 第Y章` / `第X章` / `第X节` / `第X卷` / `一、` / `1.` / `Chapter 1`，全都不中时按字数兜底。
 
 如果识别出的章数明显不对（比如整本只切出 1 章），停下来问用户章节格式，**不要猜**。
 
-### 第 1.5 步 · 境界体系扫描（**不能跳过**）
-
-```bash
-python scripts/realms.py output/{书名}/
-```
-
-**为什么单独一步**：境界是全局概念。逐批抽取时每批只看十几章，各批 `order` 独立编号，合并后必然错乱——实测出现过「筑基」被排成 `order:1`、105 个实体 `power_history` 全空的严重错误。
-
-扫描器输出三类候选：
-
-| 信号 | 强度 | 说明 |
-|---|---|---|
-| 「第 X 层 / 重 / 品」 | **强** | 网文常用功法层数代替境界名，这是最可靠的骨架 |
-| 标准境界词（练气/筑基/金丹…） | 弱 | 假阳性高，「后天」「心动」「融合」在中文里都是普通词 |
-| 功法名 + 层数（长春功第六层） | 中 | 区分不同体系（如外功的象甲功 vs 内功的长春功） |
-
-据结果写 `output/{书名}/realms.json`（结构见 `references/schema.md`），**每条 `power_history` 都要对回原文具体章号**。若作者用功法层数代境界，`realms.name` 用通用境界名、`stages` 直接装层数，并在 `mapping` 说明换算依据。
-
-写完校验：
-
-```bash
-python scripts/realms.py output/{书名}/ --check output/{书名}/realms.json
-```
-
 ### 第 2 步 · 逐章抽取
 
-```bash
-python scripts/extract.py --dir output/{书名}/ --concurrency 8 --max-cost 5
-```
+**当前没有 `extract.py`**，由 agent 自己按 10 章一批调用模型，每批结果写 `out/batch-XX.json`（字段见 schema 的 entities / relations / chapters / foreshadows / realms）。
 
-**这是唯一大量消耗 token 的步骤。** 关键行为：
+- 每批只读这 10 章的 `chapters/*.txt`，**不要把整本读进上下文**
+- 已存在的 `batch-XX.json` 自动跳过（断点续跑）
+- 单批失败重试 2 次，仍失败标记跳过并在最后报告
+- 执行期间每隔约 30 秒向用户报一次进度
 
-- 每个章节独立调用模型，结果直接写 `out/ch-XXX.json`
-- **不要把每章结果打印到对话里**，只报告进度
-- 已存在的 `out/ch-XXX.json` 自动跳过（断点续跑）
-- 单章失败重试 2 次，仍失败标记 `skipped` 继续
-- 累计花费超过 `--max-cost` 立即停止，返回已完成部分
-
-执行期间每隔约 30 秒向用户报一次进度：
-
-```
-已完成 120/300 章 · 已花 0.72 元 · 预计还需 6 分钟
-```
-
-### 第 3 步 · 归约与消解
+### 第 3 步 · 合并与境界
 
 ```bash
-python scripts/reduce.py --dir output/{书名}/
+python scripts/merge.py output/{书名}/ --genre 仙侠 --platform 起点
 ```
 
-三件事：
+`merge.py` 做四件事：正名 + 别名归并（`韩老魔 → 韩立`）、关系重映射、伏笔去重与 id 唯一化、按派生规则重算 `status`。
 
-1. **分卷归约**：每 50 章合并一次实体表（控制比较规模）
-2. **别名消解**：字符串相似 + 共现统计出候选，模型只裁边界情况
-3. **产出 `data.json`**
+境界必须先有权威表，否则各批次各自编号，`筑基` 会被排成第一境：
 
-跑完必须校验：
+```bash
+python scripts/realms.py output/{书名}/ --write   # 扫描候选
+# 人工/模型核对后写 realms.json（含 realms 与 power_history）
+python scripts/merge.py output/{书名}/            # 重跑，以此为准
+```
+
+### 第 4 步 · 校验
 
 ```bash
 python scripts/validate.py output/{书名}/data.json
@@ -137,20 +90,21 @@ python scripts/validate.py output/{书名}/data.json
 
 校验失败则报告具体哪条不合法，**不要自行"修一下"**。
 
-### 第 4 步 · 构建视图
+### 第 5 步 · 构建视图
 
 ```bash
-python scripts/build.py --dir output/{书名}/
+python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 ```
 
-把 `data.json` 注入 `template/viewer.html`，产出 `atlas.html`。
+把 `data.json` 内嵌进 `template/viewer.html`，产出单文件 `atlas.html`。
+加 `--external` 则改为同目录 `data.js` 外链（数据大、要反复重建时用）。
 
 完成后告诉用户：
 
 ```
 已生成：
   output/青云签到三十年/data.json      35.2 KB
-  output/青云签到三十年/atlas.html     448 KB  ← 双击打开
+  output/青云签到三十年/atlas.html     449 KB  ← 双击打开
 
 覆盖 120/300 章，识别 18 个角色、25 条关系、4 级境界、12 条伏笔。
 其中 7 条伏笔已超期。
@@ -185,8 +139,8 @@ python scripts/build.py --dir output/{书名}/
 | 情况 | 处理 |
 |---|---|
 | 分章数明显错误 | 停下问用户章节格式 |
-| 单章抽取连续失败 | 标记 skipped，最后报告"共 N 章失败" |
-| 别名消解召回率低 | 报告给用户，建议改用 `--per-volume`（按卷消解，牺牲全局一致性换准确率） |
+| 单批抽取连续失败 | 标记跳过，最后报告"共 N 批失败" |
+| 别名消解召回率低 | 报告给用户，人工补 aliases 后重跑 merge |
 | 预算熔断 | 保留已完成部分，告知如何续跑 |
 | 校验失败 | 报告具体字段，不自行修改 |
 
@@ -198,6 +152,7 @@ python scripts/build.py --dir output/{书名}/
 - 别名消解在人物超过 500 个时准确率会下降
 - 古文 / 半文言作品的实体抽取质量明显低于现代白话
 - 第一版不支持 epub 里的图片和注释
+- 只拆部分章节时，`status` 的"超期"按已拆章数判定，不是全书章数
 
 ---
 
@@ -207,7 +162,12 @@ python scripts/build.py --dir output/{书名}/
 |---|---|
 | 数据契约 `references/schema.md` | ✅ 完成（v2.0） |
 | 虚构样例 `samples/fictional/` | ✅ 完成（18 角色 / 25 关系 / 12 伏笔） |
-| 视图模板 `template/viewer.html` | 🚧 开发中 |
-| `scripts/*.py` | ⬜ 待实现 |
+| 视图模板 `template/viewer.html` | ✅ 完成（五视图，单文件可开） |
+| `scripts/chunk.py` | ✅ 分章 + 编码探测 + 模式打分 + 兜底 |
+| `scripts/realms.py` | ✅ 境界扫描 / 候选生成 / 体系校验 |
+| `scripts/merge.py` | ✅ 归并 + 别名消解 + 伏笔去重 + status 派生 |
+| `scripts/validate.py` | ✅ schema 全量校验 |
+| `scripts/build.py` | ✅ 单文件内嵌 / 外链 data.js |
+| `scripts/extract.py` `estimate.py` | ⬜ 未实现，抽取暂由 agent 分批执行 |
 
-**当前阶段**：契约与样本已定，脚本按此契约实现。
+**当前阶段**：契约、视图、分章/合并/校验/出图已可用；自动抽取脚本待补。

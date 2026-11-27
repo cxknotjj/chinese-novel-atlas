@@ -61,6 +61,8 @@ python scripts/seek.py --dir output/{书名}/ --keyword "云纹玉佩" --context
 
 只返回命中位置前后 2 段，**不要整章加载**。
 
+> `seek.py` 尚未实现。临时替代：用 Grep 在 `chapters/` 里定位命中文件与行号，只读命中行前后各 2 段，仍然不要整章塞进上下文。
+
 ## 输出格式
 
 ```

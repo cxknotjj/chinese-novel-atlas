@@ -3,7 +3,7 @@
 面向**中文长篇网络小说**设计。不追求兼容古典小说——目标单一，字段才能贴紧网文的真实结构。
 
 - 参考实现：`samples/fictional/`（虚构网文《青云签到三十年》，覆盖全部字段）
-- 校验脚本：`scripts/lib/schema.py`
+- 校验脚本：`scripts/validate.py`
 - 版本规则：破坏性变更升主版本号；新增可选字段升次版本号
 
 **题材差异**：玄幻/仙侠的 `realms` 必填；都市/悬疑可为空数组。但 `chapters` 和 `foreshadows` 对所有网文类型都必填——**没有伏笔的长篇网文不存在**，只是埋得深浅不同。
@@ -266,6 +266,8 @@
 
 **这些是产品卖点，不是学术指标。** README 里要直接展示"你的钩子率 62%，番茄基准 80%"。
 
+**非全量分析**：`coverage.chapters_done` 记录**已分析的章数**，`chapters` 数组可以只存关键章。两者不一致时（`len(chapters) < chapters_done`），节奏指标必须标注"不完整"，也不能拿去跨书对比。
+
 ---
 
 ## foreshadows（伏笔台账）· 网文最痛的痛点
@@ -309,7 +311,7 @@
 | `overdue` | `payoff_ch` 为空 **且** `当前分析到的最大章号 - plant_ch > 阈值` |
 | `planted` | 其余情况 |
 
-**阈值 = max(50, 总章数 × 0.15)**。1000 章的书阈值 150 章；120 回的名著阈值 50 回。
+**阈值 = max(50, 已分析章数 × 0.15)**。全书分析时「已分析章数」就是总章数：1000 章的书阈值 150 章；120 回的名著阈值 50 回。只拆前 100 章时按 100 算，否则用总章数的 15% 会让所有坑永远不超期。
 
 **这个阈值必须动态**。固定值对短书太松、对长书太紧，告警就没人看了。
 
@@ -396,7 +398,7 @@
 5. `realms.order` 唯一且从 1 连续递增
 6. `power_history[].ch` 严格递增，`stage` 必须在对应 `realms.stages` 内
 7. `places.parent` 与 `entities.parent` 各自不能成环
-8. `chapters[].ch` 唯一且覆盖 1..chapters，缺失的章节记入 `coverage.chapters_skipped`
+8. `chapters[].ch` 唯一且都落在 1..chapters；全量分析时须覆盖 1..已分析章数，摘要摘录时允许断档（校验器给警告）
 9. `foreshadows.payoff_ch` 若存在必须 ≥ `plant_ch`
 10. `coverage.chapters_done + chapters_skipped == chapters`
 
