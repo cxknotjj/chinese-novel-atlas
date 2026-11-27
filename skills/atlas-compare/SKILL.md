@@ -46,6 +46,8 @@ python scripts/compare.py \
   --out output/_compare/
 ```
 
+> 脚本会校验两本 `schema_version` 一致（只支持 2.0）；任一本未覆盖全书时，`metrics.md` 会追加"抽样数据，只能看趋势"的警告。
+
 产出：
 
 ```
