@@ -350,7 +350,7 @@
     const d = deg.get(e.id) || 0;
     return {
       id: e.id, ref: e, name: e.name,
-      r: 5.5 + Math.min(d, 22) * 0.62,
+      r: 6.8 + Math.min(d, 22) * 0.58,
       d, x: 0, y: 0, vx: 0, vy: 0, fixed: false,
       dimT: 0, selT: 0        // 变暗 / 选中的过渡进度，0→1 插值用
     };
@@ -722,13 +722,14 @@
     }
   }
 
-  // 节点内的小类型图标：只在大节点上画，避免小点糊成一团
+  // 节点内的小类型图标：四类一律绘制；size 给最小可辨尺寸，笔画随节点自适应
   function drawNodeTypeIcon(type, x, y, size) {
-    const s = size;
+    const s = Math.max(size, 6.2);
     ctx.save();
     ctx.translate(x, y);
-    ctx.strokeStyle = type === 'item' ? '#B8925A' : type === 'org' ? '#3D6B7D' : '#FFFFFF';
-    ctx.lineWidth = Math.max(0.9, s * 0.075);
+    // item 节点底色偏浅，金色描边加深一档保证对比；org 用墨青，人物/妖兽用白
+    ctx.strokeStyle = type === 'item' ? '#8F6B33' : type === 'org' ? '#3D6B7D' : '#FFFFFF';
+    ctx.lineWidth = Math.max(0.85, s * 0.08);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
@@ -838,8 +839,8 @@
         }
       }
 
-      if (rr >= 8.5 && type !== 'item') drawNodeTypeIcon(type, n.x, n.y, rr * 1.02);
-      else if (rr >= 11 && type === 'item') drawNodeTypeIcon(type, n.x, n.y, rr * 0.92);
+      // character / org / item / creature 四类一律绘制类型图标，不再按度数分两套阈值
+      drawNodeTypeIcon(type, n.x, n.y, Math.max(rr * 0.96, 6.4));
 
       if (n.selT > 0.05) {
         nodePath(n, rr);
@@ -1113,6 +1114,7 @@
     graph: stage,
     wiki: document.getElementById('wiki'),
     geo: document.getElementById('geo'),
+    map: document.getElementById('map'),
     power: document.getElementById('power'),
     rhythm: document.getElementById('rhythm'),
     realms: document.getElementById('realms'),
@@ -1127,6 +1129,7 @@
       t.classList.toggle('on', t.dataset.view === v));
     if (v === 'graph') { resize(); alpha = Math.max(alpha, 0.3); }
     if (v === 'geo') renderGeo();
+    if (v === 'map') renderMap();
     if (v === 'power') renderPower();
     if (v === 'rhythm') renderRhythm();
     if (v === 'realms') renderRealms();
@@ -1139,8 +1142,7 @@
   const WIKI_PAGE_SIZE = 24;
   let wikiCharPage = 0, wikiOtherPage = 0, wikiPlacePage = 0, wikiConceptPage = 0;
 
-  function renderWiki() {
-
+  // 分页片段：百科 / 节奏 / 伏笔三处复用，放在模块作用域
   function pagerHTML(total, page, size, attr) {
     const pages = Math.max(1, Math.ceil(total / size));
     if (pages <= 1) return '';
@@ -1161,6 +1163,8 @@
       <span>共 ${total} 条</span>
     </div>`;
   }
+
+  function renderWiki() {
 
   const WIKI_PAGE_SIZE = 24;
     const scrollTop = views.wiki.scrollTop;
@@ -1457,6 +1461,638 @@
     geoSelected = id;
     setView('geo');
   }
+
+  /* ================= 地图视图（M1 拓扑 / M2 证据化示意） ================= */
+  // 空间关系可选：缺失或空 list 时 M2 自动回退 M1，不算错误
+  const SPATIAL = Array.isArray(D.spatial_relations) ? D.spatial_relations : [];
+  const SPATIAL_KIND_CN = {
+    direction: '方位', distance: '距离', contain: '包含', adjacent: '相邻',
+    portal: '传送', travel_path: '航线/路径', road: '道路', river: '河流',
+    separated_by: '相隔', in_between: '介于'
+  };
+  const CONF_CN = { high: '高置信', medium: '中置信', low: '低置信' };
+  const CONF_COLOR = { high: '#5A7A5E', medium: '#B8925A', low: '#9A9488' };
+  const M2_KINDS = new Set(['direction', 'distance', 'contain', 'adjacent']);
+  // 方向语义统一为「s 位于 t 的该方位」；向量 [x, y]，x 东正、y 南正
+  const DIR_VEC = {
+    north_of: [0, -1], south_of: [0, 1], west_of: [-1, 0], east_of: [1, 0],
+    northeast_of: [1, -1], northwest_of: [-1, -1],
+    southeast_of: [1, 1], southwest_of: [-1, 1]
+  };
+
+  let mapMode = 'm1';
+  let mapLayer = 'all';
+  let mapModel = null;
+  let mapHoverNode = null, mapHoverEdge = null;
+  let mapView = { x: 0, y: 0, k: 1 };
+  let mapDragNode = null, mapPanning = false, mapLast = null, mapMoved = false;
+
+  const mapSubtreeCache = new Map();
+  function mapSubtree(rootId) {
+    if (mapSubtreeCache.has(rootId)) return mapSubtreeCache.get(rootId);
+    const out = new Set([rootId]);
+    const walk = id => (placeChildren.get(id) || []).forEach(c => { out.add(c.id); walk(c.id); });
+    walk(rootId);
+    mapSubtreeCache.set(rootId, out);
+    return out;
+  }
+  function mapLayerList() {
+    const roots = placeRoots.map(p => ({ id: p.id, name: p.name, count: mapSubtree(p.id).size }));
+    roots.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'zh'));
+    return [{ id: 'all', name: '全部', count: PLACES.length }, ...roots];
+  }
+  function mapRootOf(id) {
+    let cur = placeById.get(id), seen = new Set();
+    while (cur && cur.parent && placeById.has(cur.parent) && !seen.has(cur.id)) {
+      seen.add(cur.id); cur = placeById.get(cur.parent);
+    }
+    return cur ? cur.id : id;
+  }
+  const mapRootColor = new Map();
+  function mapColorOf(rootId) {
+    if (!mapRootColor.has(rootId)) mapRootColor.set(rootId, PALETTE[mapRootColor.size % PALETTE.length]);
+    return mapRootColor.get(rootId);
+  }
+  function mapLayerNodeIds() {
+    if (mapLayer === 'all') return new Set(PLACES.map(p => p.id));
+    return mapSubtree(mapLayer);
+  }
+  function mapRelsFor(ids) {
+    const m2 = [], aux = [];
+    SPATIAL.forEach(r => {
+      if (!placeById.has(r.s) || !placeById.has(r.t) || r.s === r.t) return;
+      if (!ids.has(r.s) && !ids.has(r.t)) return;
+      if (M2_KINDS.has(r.kind)) m2.push(r); else aux.push(r);
+    });
+    return { m2, aux };
+  }
+
+  /* ---------- M1：层级 / 拓扑图 ---------- */
+  function buildM1Model(ids, aux) {
+    const nodes = [...ids].map(id => {
+      const p = placeById.get(id);
+      return {
+        id, ref: p, name: p.name, kids: (placeChildren.get(id) || []).length,
+        ch: p.first_ch || 9999, x: 0, y: 0, r: 7, rootId: mapRootOf(id)
+      };
+    });
+    const byIdM = new Map(nodes.map(n => [n.id, n]));
+    const edges = [];
+    nodes.forEach(n => {
+      (placeChildren.get(n.id) || []).forEach(c => {
+        if (byIdM.has(c.id)) edges.push({ s: n.id, t: c.id, kind: 'parent', ref: null });
+      });
+    });
+    aux.forEach(r => {
+      if (byIdM.has(r.s) && byIdM.has(r.t)) edges.push({ s: r.s, t: r.t, kind: r.kind, ref: r });
+    });
+
+    // 确定性树形布局：叶子按 DFS 顺序排槽位，父节点取孩子中点；坐标只用于避让
+    const roots = nodes.filter(n => {
+      const p = placeById.get(n.id);
+      return !p.parent || !byIdM.has(p.parent);
+    });
+    let slot = 0;
+    const levelH = 76, slotW = 66;
+    const assign = (pid, depth) => {
+      const n = byIdM.get(pid);
+      const kids = (placeChildren.get(pid) || []).filter(c => byIdM.has(c.id));
+      if (!kids.length) { n.x = slot * slotW; n.y = depth * levelH; slot++; return; }
+      kids.forEach(c => assign(c.id, depth + 1));
+      const xs = kids.map(c => byIdM.get(c.id).x);
+      n.x = (Math.min(...xs) + Math.max(...xs)) / 2;
+      n.y = depth * levelH;
+    };
+    roots.forEach(r => assign(r.id, 0));
+    nodes.forEach(n => { n.r = 6.5 + Math.min(n.kids, 8) * 1.1; });
+    return { nodes, edges, unknown: [], sat: null, fallback: null };
+  }
+
+  /* ---------- M2：证据化示意地图 ---------- */
+  function buildM2Model(ids) {
+    const { m2 } = mapRelsFor(ids);
+    const nodeIds = new Set(ids);
+    m2.forEach(r => { nodeIds.add(r.s); nodeIds.add(r.t); });
+
+    const dirRels = m2.filter(r => r.kind === 'direction');
+    const distRels = m2.filter(r => r.kind === 'distance');
+    const evidenceN = dirRels.length + distRels.length;
+    // 层内方向/距离约束不足 3 条：不画任何坐标，回退 M1
+    if (evidenceN < 3) {
+      return {
+        nodes: [], edges: [], unknown: [], sat: null,
+        fallback: { reason: `该层方位证据不足（${evidenceN} 条方向/距离约束），已回退到 M1 拓扑图` }
+      };
+    }
+
+    const nodes = [...nodeIds].map(id => {
+      const p = placeById.get(id);
+      return {
+        id, ref: p, name: p.name, kids: (placeChildren.get(id) || []).length,
+        x: 50, y: 50, r: 7, unknown: false, inLayer: ids.has(id), rootId: mapRootOf(id)
+      };
+    });
+    const byIdM = new Map(nodes.map(n => [n.id, n]));
+    const hasDir = new Set(), hasDist = new Set();
+    m2.forEach(r => {
+      if (r.kind === 'direction') { hasDir.add(r.s); hasDir.add(r.t); }
+      if (r.kind === 'distance') { hasDist.add(r.s); hasDist.add(r.t); }
+    });
+    // 没有任何 direction / distance 证据的节点一律进方位未知区，绝不落进四象限
+    nodes.forEach(n => { n.unknown = !hasDir.has(n.id) && !hasDist.has(n.id); });
+
+    // 确定性初值：黄金角圆周，无随机种子
+    const GOLD = Math.PI * (3 - Math.sqrt(5));
+    nodes.forEach((n, i) => {
+      const a = i * GOLD;
+      n.x = 50 + Math.cos(a) * 26;
+      n.y = 50 + Math.sin(a) * 26;
+    });
+    const active = nodes.filter(n => !n.unknown);
+
+    // 轻量约束松弛：固定轮次迭代，结果确定、无漂移
+    for (let round = 0; round < 140; round++) {
+      m2.forEach(r => {
+        if (r.kind !== 'direction') return;
+        const a = byIdM.get(r.s), b = byIdM.get(r.t);
+        if (!a || !b || a.unknown || b.unknown) return;
+        const v = DIR_VEC[r.value];
+        if (!v) return;
+        a.x += v[0] * 1.6; a.y += v[1] * 1.6;
+        b.x -= v[0] * 1.6; b.y -= v[1] * 1.6;
+      });
+      m2.forEach(r => {
+        if (r.kind !== 'contain') return;
+        const parent = byIdM.get(r.s), child = byIdM.get(r.t);
+        if (!parent || !child || child.unknown) return;
+        // contain 只把子节点拉进父节点区域，不锁象限
+        child.x += (parent.x - child.x) * 0.12;
+        child.y += (parent.y - child.y) * 0.12;
+      });
+      m2.forEach(r => {
+        if (r.kind !== 'adjacent') return;
+        const a = byIdM.get(r.s), b = byIdM.get(r.t);
+        if (!a || !b || a.unknown || b.unknown) return;
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+        if (d > 22) { a.x += dx / d * 0.5; a.y += dy / d * 0.5; b.x -= dx / d * 0.5; b.y -= dy / d * 0.5; }
+      });
+      m2.forEach(r => {
+        if (r.kind !== 'distance') return;
+        const a = byIdM.get(r.s), b = byIdM.get(r.t);
+        if (!a || !b || a.unknown || b.unknown) return;
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+        // distance 只作弱分离力，不把「百余里」折算成像素比例
+        if (d < 14) { const push = (14 - d) / d * 0.4; a.x -= dx * push; a.y -= dy * push; b.x += dx * push; b.y += dy * push; }
+      });
+      for (let i = 0; i < active.length; i++) for (let j = i + 1; j < active.length; j++) {
+        const a = active[i], b = active[j];
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+        if (d < 10) { const push = (10 - d) / d * 0.3; a.x -= dx * push; a.y -= dy * push; b.x += dx * push; b.y += dy * push; }
+      }
+      active.forEach(n => { n.x = Math.max(6, Math.min(94, n.x)); n.y = Math.max(6, Math.min(94, n.y)); });
+    }
+
+    const edges = m2
+      .filter(r => byIdM.has(r.s) && byIdM.has(r.t))
+      .map(r => ({ s: r.s, t: r.t, kind: r.kind, ref: r }));
+
+    // 约束满足率（按布局后的实际方位核对）
+    let dirOk = 0;
+    dirRels.forEach(r => {
+      const a = byIdM.get(r.s), b = byIdM.get(r.t);
+      if (!a || !b || a.unknown || b.unknown) return;
+      const v = DIR_VEC[r.value]; if (!v) return;
+      let ok = true;
+      if (v[0] < 0 && a.x >= b.x) ok = false;
+      if (v[0] > 0 && a.x <= b.x) ok = false;
+      if (v[1] < 0 && a.y >= b.y) ok = false;
+      if (v[1] > 0 && a.y <= b.y) ok = false;
+      if (ok) dirOk++;
+    });
+    let distOk = 0;
+    distRels.forEach(r => {
+      const a = byIdM.get(r.s), b = byIdM.get(r.t);
+      if (!a || !b || a.unknown || b.unknown) return;
+      if (Math.hypot(a.x - b.x, a.y - b.y) >= 10) distOk++;
+    });
+    const containRels = m2.filter(r => r.kind === 'contain');
+    let contOk = 0;
+    containRels.forEach(r => {
+      const p = byIdM.get(r.s), c = byIdM.get(r.t);
+      if (!p || !c || c.unknown) return;
+      if (Math.hypot(p.x - c.x, p.y - c.y) <= 26) contOk++;
+    });
+
+    nodes.forEach(n => { n.r = 7 + Math.min(n.kids, 6) * 0.8; });
+    return {
+      nodes, edges,
+      unknown: nodes.filter(n => n.unknown),
+      sat: { direction: `${dirOk}/${dirRels.length}`, distance: `${distOk}/${distRels.length}`, region: `${contOk}/${containRels.length}` },
+      fallback: null
+    };
+  }
+
+  function computeMapModel() {
+    const ids = mapLayerNodeIds();
+    if (mapMode === 'm2') return buildM2Model(ids);
+    const { aux } = mapRelsFor(ids);
+    return buildM1Model(ids, aux);
+  }
+
+  /* ---------- 画布绘制 ---------- */
+  function mapCanvas2d() {
+    const canvas = document.getElementById('mapCanvas');
+    return canvas ? { canvas, ctx: canvas.getContext('2d') } : null;
+  }
+  function mapFit() {
+    const stage = document.getElementById('mapStage');
+    if (!stage || !mapModel || !mapModel.nodes.length) { mapView = { x: 0, y: 0, k: 1 }; return; }
+    const rect = stage.getBoundingClientRect();
+    const pad = 42;
+    let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    mapModel.nodes.forEach(n => {
+      if (n.unknown) return;
+      minX = Math.min(minX, n.x - n.r); maxX = Math.max(maxX, n.x + n.r);
+      minY = Math.min(minY, n.y - n.r); maxY = Math.max(maxY, n.y + n.r);
+    });
+    const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+    mapView.k = Math.max(0.3, Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h, 1.6));
+    mapView.x = rect.width / 2 - (minX + maxX) / 2 * mapView.k;
+    mapView.y = rect.height / 2 - (minY + maxY) / 2 * mapView.k;
+  }
+  function mToScreen(n) { return { x: n.x * mapView.k + mapView.x, y: n.y * mapView.k + mapView.y }; }
+
+  function mapEdgeStyle(edge) {
+    if (mapMode === 'm1') {
+      if (edge.kind === 'parent') return { color: '#C9C2B2', width: 1.3, dash: [], alpha: 0.85 };
+      return { color: '#9A9488', width: 1.1, dash: [5, 4], alpha: 0.75 };
+    }
+    const conf = (edge.ref && edge.ref.confidence) || 'medium';
+    const st = CONF_STYLE_MAP[conf] || CONF_STYLE_MAP.medium;
+    return st;
+  }
+  const CONF_STYLE_MAP = {
+    high:   { color: '#6B675E', width: 1.6, dash: [],        alpha: 0.92 },
+    medium: { color: '#9A9488', width: 1.2, dash: [6, 4],   alpha: 0.7 },
+    low:    { color: '#B4B2A9', width: 1.0, dash: [1.5, 3],  alpha: 0.4 }
+  };
+
+  function drawMap() {
+    const pack = mapCanvas2d();
+    if (!pack || !mapModel) return;
+    const { canvas, ctx } = pack;
+    const stage = document.getElementById('mapStage');
+    const rect = stage.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    if (mapModel.fallback || !mapModel.nodes.length) return;
+
+    // 边
+    mapModel.edges.forEach(edge => {
+      const a = mapModel.nodes.find(n => n.id === edge.s);
+      const b = mapModel.nodes.find(n => n.id === edge.t);
+      if (!a || !b) return;
+      const sa = mToScreen(a), sb = mToScreen(b);
+      const st = mapEdgeStyle(edge);
+      const isHover = edge === mapHoverEdge;
+      ctx.beginPath();
+      ctx.strokeStyle = st.color;
+      ctx.lineWidth = st.width * (isHover ? 1.7 : 1);
+      ctx.globalAlpha = Math.min(1, st.alpha + (isHover ? 0.25 : 0));
+      ctx.setLineDash(st.dash);
+      ctx.moveTo(sa.x, sa.y); ctx.lineTo(sb.x, sb.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // 节点（M2 方位未知节点只进托盘，不画进四象限画布）
+    mapModel.nodes.forEach(n => {
+      if (n.unknown) return;
+      const s = mToScreen(n);
+      const color = mapMode === 'm2' && !n.inLayer ? '#9A9488' : mapColorOf(n.rootId);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      const hover = n === mapHoverNode;
+      const showLabel = hover || (mapMode === 'm1'
+        ? (n.kids >= 1 || n.id === mapLayer)
+        : (n.inLayer && (n.kids >= 1 || n.id === mapLayer)));
+      if (showLabel) {
+        ctx.font = `${hover ? '600 ' : ''}10.5px -apple-system, "PingFang SC", sans-serif`;
+        ctx.fillStyle = '#2B2A26';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, s.x, s.y + n.r + 13 / Math.max(mapView.k, 0.6));
+      }
+    });
+
+    // 悬停提示
+    if (mapHoverEdge) {
+      const r = mapHoverEdge.ref;
+      const ch = (r.evidence && r.evidence.ch) || r.first_ch || '—';
+      const text = `${SPATIAL_KIND_CN[r.kind] || r.kind} · ${r.value || ''} · 第 ${ch} 章`;
+      drawMapTooltip(ctx, text);
+    } else if (mapHoverNode) {
+      const n = mapHoverNode;
+      const extra = mapMode === 'm2'
+        ? (n.unknown ? '方位未知（无方向/距离证据）' : '示意坐标（非真实经纬度）')
+        : '层级/拓扑位置，仅用于避让';
+      drawMapTooltip(ctx, `${n.name} · ${extra}`);
+    }
+  }
+
+  function drawMapTooltip(ctx, text) {
+    const stage = document.getElementById('mapStage');
+    if (!stage) return;
+    ctx.font = '11px -apple-system, "PingFang SC", sans-serif';
+    const tw = ctx.measureText(text).width;
+    const bw = tw + 20, bh = 24;
+    let left = mapPointer.x + 13, top = mapPointer.y - 32;
+    if (left + bw > stage.clientWidth - 6) left = mapPointer.x - bw - 13;
+    if (top < 6) top = mapPointer.y + 14;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(left, top, bw, bh, 5);
+    else ctx.rect(left, top, bw, bh);
+    ctx.fillStyle = 'rgba(255,255,255,0.97)';
+    ctx.fill();
+    ctx.strokeStyle = '#E3DFD5';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#2B2A26';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, left + 10, top + 16);
+  }
+
+  function mapPickNode(px, py) {
+    const p = { x: (px - mapView.x) / mapView.k, y: (py - mapView.y) / mapView.k };
+    let best = null, bd = Infinity;
+    mapModel.nodes.forEach(n => {
+      if (n.unknown) return;
+      const d = Math.hypot(n.x - p.x, n.y - p.y);
+      if (d < n.r + 5 && d < bd) { bd = d; best = n; }
+    });
+    return best;
+  }
+  function mapPickEdge(px, py) {
+    let best = null, bd = 6;
+    mapModel.edges.forEach(e => {
+      const a = mapModel.nodes.find(n => n.id === e.s);
+      const b = mapModel.nodes.find(n => n.id === e.t);
+      if (!a || !b) return;
+      const sa = mToScreen(a), sb = mToScreen(b);
+      const vx = sb.x - sa.x, vy = sb.y - sa.y;
+      const len2 = vx * vx + vy * vy || 1;
+      const t = Math.max(0, Math.min(1, ((px - sa.x) * vx + (py - sa.y) * vy) / len2));
+      const qx = sa.x + vx * t, qy = sa.y + vy * t;
+      const d = Math.hypot(px - qx, py - qy);
+      if (d < bd) { bd = d; best = e; }
+    });
+    return best;
+  }
+
+  /* ---------- 点位详情（复用右侧面板，补父级路径/子地点/空间关系） ---------- */
+  function openMapPlace(id) {
+    const p = placeById.get(id);
+    if (!p) return;
+    const path = placePath(p);
+    const kids = placeChildren.get(id) || [];
+    const rels = SPATIAL.filter(r => r.s === id || r.t === id);
+    let coordNote = '';
+    if (mapMode === 'm2' && mapModel && !mapModel.fallback) {
+      const n = mapModel.nodes.find(x => x.id === id);
+      if (n) coordNote = n.unknown ? '方位未知（无方向/距离证据）'
+        : `示意坐标（非真实经纬度）：(${n.x.toFixed(1)}, ${n.y.toFixed(1)})`;
+    }
+
+    const relHTML = rels.length ? rels.map(r => {
+      const otherId = r.s === id ? r.t : r.s;
+      const other = placeById.get(otherId);
+      const ch = (r.evidence && r.evidence.ch) || r.first_ch || '—';
+      const quote = (r.evidence && r.evidence.quote) || '';
+      return `<div class="rel-item" data-map-goto="${otherId}">
+        <span class="rel-dot" style="background:${CONF_COLOR[r.confidence] || '#9A9488'}"></span>
+        <span class="rel-name">${other ? escHtml(other.name) : escHtml(otherId)}</span>
+        <span class="rel-label">${SPATIAL_KIND_CN[r.kind] || r.kind} · ${escHtml(r.value || '')} · ${CONF_CN[r.confidence] || r.confidence}</span>
+      </div>
+      <div class="geo-ev-body" style="padding:0 0 6px 22px">第 ${ch} 章 · ${escHtml(quote) || '（无原文摘录）'}</div>`;
+    }).join('') : '<div class="geo-empty">没有记录在案的空间关系。</div>';
+
+    panelBody.innerHTML = `
+      <h2 class="ent-name"><span>${escHtml(p.name)}</span></h2>
+      <div class="ent-meta">地点 · 第 ${p.first_ch || '—'} 章首现${coordNote ? ` · ${escHtml(coordNote)}` : ''}</div>
+      <div class="chips">
+        <span class="chip">${path.length} 级层级</span>
+        <span class="chip">${kids.length} 个下级地点</span>
+      </div>
+      <p class="ent-desc">${escHtml(p.desc || '暂无档案描述。')}</p>
+      <div class="sec-title">父级路径</div>
+      <div class="attrs">${path.map(x => `<button class="geo-jump" data-map-goto="${x.id}">${escHtml(x.name)}</button>`).join(' › ') || '—'}</div>
+      <div class="sec-title" style="margin-top:14px">子地点</div>
+      <div class="geo-chip-row">${kids.length ? kids.map(k =>
+        `<button class="geo-chip" data-map-goto="${k.id}">${escHtml(k.name)} <span style="color:#9A9488">第${k.first_ch || '—'}章</span></button>`).join('')
+        : '<span class="geo-empty">无下级地点记录</span>'}</div>
+      <div class="sec-title" style="margin-top:14px">相关空间关系 · ${rels.length}</div>
+      ${relHTML}
+    `;
+    panel.classList.add('open');
+    animatePanelBody();
+    panelBody.querySelectorAll('[data-map-goto]').forEach(el => {
+      el.addEventListener('click', () => {
+        const t = el.getAttribute('data-map-goto');
+        if (placeById.has(t)) openMapPlace(t);
+        else if (byId.has(t)) select(t, { center: true });
+      });
+    });
+  }
+
+  /* ---------- 渲染 ---------- */
+  function renderMap() {
+    const wrap = views.map;
+    if (!wrap) return;
+    const layerOpts = mapLayerList().map(l =>
+      `<option value="${l.id}" ${l.id === mapLayer ? 'selected' : ''}>${escHtml(l.name)}（${l.count}）</option>`).join('');
+    wrap.innerHTML = `
+      <div class="map-wrap">
+        <div class="map-toolbar">
+          <div class="map-mode">
+            <button data-map-mode="m1" class="${mapMode === 'm1' ? 'on' : ''}">M1 层级/拓扑</button>
+            <button data-map-mode="m2" class="${mapMode === 'm2' ? 'on' : ''}">M2 示意方位</button>
+          </div>
+          <select id="mapLayerSel">${layerOpts}</select>
+        </div>
+        <div class="map-note-bar" id="mapNote"></div>
+        <div class="map-stage" id="mapStage">
+          <canvas id="mapCanvas" class="map-canvas"></canvas>
+          <div class="map-fallback" id="mapFallback" hidden></div>
+          <div class="map-legend" id="mapLegend"></div>
+        </div>
+        <div class="map-tray" id="mapTray" hidden>
+          <div class="map-tray-head" id="mapTrayHead"></div>
+          <div class="map-chip-row" id="mapTrayBody"></div>
+        </div>
+        <div class="map-footer" id="mapFooter"></div>
+      </div>`;
+
+    wrap.querySelectorAll('[data-map-mode]').forEach(b => b.addEventListener('click', () => {
+      mapMode = b.dataset.mapMode;
+      renderMap();
+    }));
+    const sel = document.getElementById('mapLayerSel');
+    sel.addEventListener('change', () => { mapLayer = sel.value; renderMap(); });
+
+    mapModel = computeMapModel();
+    mapHoverNode = null; mapHoverEdge = null;
+
+    const note = document.getElementById('mapNote');
+    const fallback = document.getElementById('mapFallback');
+    const legend = document.getElementById('mapLegend');
+    const tray = document.getElementById('mapTray');
+    const trayHead = document.getElementById('mapTrayHead');
+    const trayBody = document.getElementById('mapTrayBody');
+    const footer = document.getElementById('mapFooter');
+
+    if (mapModel.fallback) {
+      note.textContent = '层级/拓扑关系图 · 节点位置仅用于避让，不代表原文方位';
+      fallback.hidden = false;
+      fallback.innerHTML = `
+        <div class="fb-card">
+          <div class="fb-title">M2 证据不足，已回退</div>
+          <div class="fb-body">${escHtml(mapModel.fallback.reason)}</div>
+          <button id="mapToM1">切到 M1 拓扑图</button>
+        </div>`;
+      document.getElementById('mapToM1').addEventListener('click', () => { mapMode = 'm1'; renderMap(); });
+      legend.innerHTML = '';
+      tray.hidden = true;
+      footer.innerHTML = '<span>当前层没有可用于二维定位的方向/距离证据；不画假坐标。</span>';
+      return;
+    }
+
+    if (!mapModel.nodes.length) {
+      note.textContent = '层级/拓扑关系图 · 节点位置仅用于避让，不代表原文方位';
+      fallback.hidden = false;
+      fallback.innerHTML = '<div class="fb-card"><div class="fb-body">本层没有地点数据。</div></div>';
+      legend.innerHTML = ''; tray.hidden = true; footer.innerHTML = '';
+      return;
+    }
+
+    if (mapMode === 'm1') {
+      note.textContent = '层级/拓扑关系图 · 节点位置仅用于避让，不代表原文方位';
+      legend.innerHTML = `
+        <span><i class="lg-line"></i>父子层级</span>
+        <span><i class="lg-line dashed"></i>传送 / 航线等辅助边</span>
+        <span><i class="dot" style="background:${PALETTE[0]}"></i>按根层着色</span>`;
+      footer.innerHTML = '<span>M1 只表达包含、传送、航线等拓扑关系；不画指北针、比例尺、经纬网。</span>';
+    } else {
+      note.textContent = '示意坐标，非真实经纬度；局部位置不可精确到里';
+      legend.innerHTML = `
+        <span><i class="lg-line"></i>高置信 · 实线</span>
+        <span><i class="lg-line dashed"></i>中置信 · 虚线</span>
+        <span><i class="lg-line dotted"></i>低置信 · 点线低透明度</span>
+        <span><i class="dot" style="background:#9A9488"></i>层外关联地点</span>`;
+      const s = mapModel.sat;
+      footer.innerHTML = `<div class="sat">
+        <span>方向 ${s.direction}</span><span>距离 ${s.distance}</span><span>区域 ${s.region}</span>
+      </div><span>示意坐标，非真实经纬度；局部位置不可精确到里</span>`;
+    }
+
+    // 方位未知托盘
+    if (mapMode === 'm2' && mapModel.unknown.length) {
+      tray.hidden = false;
+      trayHead.innerHTML = `<b>方位未知区</b> · ${mapModel.unknown.length} 个节点无方向/距离证据，不进入四象限`;
+      trayBody.innerHTML = mapModel.unknown.map(n =>
+        `<button class="map-chip" data-map-goto="${n.id}">${escHtml(n.name)}</button>`).join('');
+      trayBody.querySelectorAll('[data-map-goto]').forEach(el => {
+        el.addEventListener('click', () => openMapPlace(el.dataset.mapGoto));
+      });
+    } else {
+      tray.hidden = true;
+    }
+
+    mapBindCanvas();
+    mapResize();
+  }
+
+  function mapResize() {
+    const canvas = document.getElementById('mapCanvas');
+    const stage = document.getElementById('mapStage');
+    if (!canvas || !stage) return;
+    const rect = stage.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    canvas.width = rect.width * DPR;
+    canvas.height = rect.height * DPR;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    mapFit();
+    drawMap();
+  }
+
+  const mapPointer = { x: 0, y: 0 };
+  function mapBindCanvas() {
+    const canvas = document.getElementById('mapCanvas');
+    if (!canvas) return;
+    canvas.onmousedown = e => {
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left, py = e.clientY - rect.top;
+      mapPointer.x = px; mapPointer.y = py;
+      const n = mapPickNode(px, py);
+      mapMoved = false;
+      mapLast = { x: e.clientX, y: e.clientY };
+      if (n) { mapDragNode = n; } else { mapPanning = true; }
+      canvas.classList.add('dragging');
+    };
+    window.onmousemove = e => {
+      if (curView !== 'map') return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      if (mapDragNode) {
+        if (mapLast && Math.hypot(e.clientX - mapLast.x, e.clientY - mapLast.y) > 3) mapMoved = true;
+        const p = { x: (mx - mapView.x) / mapView.k, y: (my - mapView.y) / mapView.k };
+        mapDragNode.x = p.x; mapDragNode.y = p.y;
+        drawMap();
+        return;
+      }
+      if (mapPanning && mapLast) {
+        mapView.x += e.clientX - mapLast.x;
+        mapView.y += e.clientY - mapLast.y;
+        mapLast = { x: e.clientX, y: e.clientY };
+        mapMoved = true;
+        drawMap();
+        return;
+      }
+      mapPointer.x = mx; mapPointer.y = my;
+      mapHoverNode = mapPickNode(mx, my);
+      mapHoverEdge = mapHoverNode ? null : mapPickEdge(mx, my);
+      canvas.style.cursor = (mapHoverNode || mapHoverEdge) ? 'pointer' : 'grab';
+      drawMap();
+    };
+    window.onmouseup = e => {
+      if (mapDragNode) {
+        if (!mapMoved) openMapPlace(mapDragNode.id);
+      } else if (mapPanning && !mapMoved) {
+        // 点空白不做处理
+      }
+      mapDragNode = null; mapPanning = false; mapLast = null;
+      canvas.classList.remove('dragging');
+    };
+    canvas.onwheel = e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const before = { x: (mx - mapView.x) / mapView.k, y: (my - mapView.y) / mapView.k };
+      mapView.k = Math.min(3, Math.max(0.35, mapView.k * (e.deltaY < 0 ? 1.1 : 0.9)));
+      mapView.x = mx - before.x * mapView.k;
+      mapView.y = my - before.y * mapView.k;
+      drawMap();
+    };
+  }
+
+  window.addEventListener('resize', () => { if (curView === 'map') mapResize(); });
 
   /* ================= 势力版图 ================= */
   let powerOnlyOwned = false;
