@@ -300,7 +300,12 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"青云签到三十�
     (D.meta.coverage && D.meta.coverage.chapters_done) || 0,
     1
   );
-  const FS_THRESHOLD = Math.max(50, Math.round(D.meta.chapters * 0.15));
+  // 阈值与 scripts/merge.py、validate.py、export.py 保持一致：
+  // 以「已分析到的章数」为跨度基准，下限 50 章。
+  // 不能全用全书章数——只拆前 200 章时，2443 章的 15% 是 366，
+  // 会让所有坑永远无法触发告警，功能形同失效。
+  const FS_SPAN = Math.max(CURRENT_CH, 1);
+  const FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
 
   // 阵营配色：按出现顺序动态分配，任何书都能用
   const PALETTE = ['#A6314A', '#3D6B7D', '#6B4A7A', '#B8925A', '#5A7A5E',
@@ -336,10 +341,15 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"青云签到三十�
   };
 
   /* 伏笔状态：派生，不信任存储值 */
+  /** 距最后一次提及过了多久；没有提及数据时退回埋设章 */
+  function fsSilent(f) {
+    const last = f.last_mention_ch || f.plant_ch;
+    return CURRENT_CH - last;
+  }
   function fsStatus(f) {
     if (f.payoff_ch !== null && f.payoff_ch !== undefined) return 'paid';
     if (f.status === 'dropped') return 'dropped';
-    return (CURRENT_CH - f.plant_ch) > FS_THRESHOLD ? 'overdue' : 'planted';
+    return fsSilent(f) > FS_THRESHOLD ? 'overdue' : 'planted';
   }
 
   /* ================= 建索引 ================= */
@@ -1069,9 +1079,10 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"青云签到三十�
     views.foreshadow.innerHTML = `
       ${partial ? `<div class="sample-note">
         当前只分析了全书 ${D.meta.chapters} 章中的前 ${doneTotal} 章。
-        「超期」阈值是 ${FS_THRESHOLD} 章（全书章数 × 15%），
-        所以这 ${counts.planted + counts.overdue} 条伏笔都还在合理跨度内——
-        要判断真正超期，需要跑完全书或至少分析到第 ${FS_THRESHOLD + 1} 章之后。
+        「超期」看的是<b>沉默时长</b>：距最后一次提及超过 ${FS_THRESHOLD} 章才会标红
+        （阈值 = 已分析 ${doneTotal} 章 × 15%，下限 50）。
+        埋得久但一直在提的主线伏笔不算超期；埋下去就再没管过的才会。
+        尚未分析的 ${D.meta.chapters - doneTotal} 章里可能已回收一部分，跑完全书结论才准确。
       </div>` : ''}
       <div class="fs-summary">
         <div class="fs-stat alarm">
@@ -1098,7 +1109,11 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"青云签到三十�
             <span class="fs-badge" style="color:${meta.color};background:${meta.bg}">${meta.cn}</span>
           </div>
           <div class="fs-meta">
-            第 ${f.plant_ch} 章埋${f.payoff_ch ? ` · 第 ${f.payoff_ch} 章收 · 跨 ${f.payoff_ch - f.plant_ch} 章` : ` · 已过 ${CURRENT_CH - f.plant_ch} 章`}
+            第 ${f.plant_ch} 章埋${f.payoff_ch
+              ? ` · 第 ${f.payoff_ch} 章收 · 跨 ${f.payoff_ch - f.plant_ch} 章`
+              : ` · 已过 ${CURRENT_CH - f.plant_ch} 章`}${!f.payoff_ch && f.last_mention_ch
+              ? ` · 最后提及第 ${f.last_mention_ch} 章（沉默 ${fsSilent(f)} 章）`
+              : !f.payoff_ch ? ' · 埋下后再未提及' : ''}
             ${f.thread ? ` · 线索「${f.thread}」` : ''}
           </div>
           <div class="fs-bar">
