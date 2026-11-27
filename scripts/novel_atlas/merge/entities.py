@@ -202,7 +202,9 @@ def normalize_groups(ents):
     规则：
     1. group 等于某个角色名 → 说明误填了人名，改为该角色自己的 group 或"其他"
     2. "无"/"不明"/空 → "其他"
-    3. 阵营数超过 8 个时，只保留成员数最多的 8 个，其余并入"其他"
+    3. 阵营数超过 8 个时，只保留成员数最多的 8 个，其余并入"其他"；
+       但本身有 org 实体（门派/家族/帮会）的阵营一律保留——长篇里 40+ 门派
+       若被这条上限吞成"其他"，势力视图会失效
     """
     by_name = {norm(e["name"]): e for e in ents}
     person_names = {norm(e["name"]) for e in ents if e.get("type") == "character"}
@@ -218,7 +220,9 @@ def normalize_groups(ents):
             e["group"] = og if og and norm(og) not in person_names and og not in ("无", "不明") else "其他"
 
     counts = Counter(e["group"] for e in ents)
-    mains = [g for g, _ in counts.most_common(8)]
+    org_names = {norm(e["name"]) for e in ents if e.get("type") == "org"}
+    mains = {g for g, _ in counts.most_common(8)}
+    mains |= {g for g in counts if norm(g) in org_names}
     for e in ents:
         if e["group"] not in mains:
             e["group"] = "其他"
