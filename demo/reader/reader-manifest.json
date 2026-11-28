@@ -1,35 +1,36 @@
 {
   "product": "Novel Atlas Reader",
   "title": "凡人修仙传",
-  "generated_at": "2026-11-28T07:40:58.448061+00:00",
+  "generated_at": "2026-11-28T07:49:42.041417+00:00",
   "coverage": {
-    "chapters_done": 500,
-    "chapters_skipped": 1943
+    "chapters_done": 800,
+    "chapters_skipped": 1643
   },
   "source_coverage": {
-    "chapters_done": 500,
-    "chapters_skipped": 1943
+    "chapters_done": 800,
+    "chapters_skipped": 1643
   },
   "coverage_complete": false,
   "publishable": false,
   "reader": {
-    "cutoff_ch": 500,
-    "analyzed_ch": 500,
-    "chapter_max": 500,
+    "cutoff_ch": 800,
+    "analyzed_ch": 800,
+    "chapter_max": 800,
     "total_chapters": 2443,
     "analysis_complete": false,
     "is_spoiler_safe": false
   },
   "anomalies": {
-    "total": 108,
-    "visible": 108,
+    "total": 151,
+    "visible": 151,
     "counts": {
-      "foreshadow_unresolved": 79,
-      "death_reappearance": 2,
-      "entity_after_last": 19,
-      "battle_gap": 2,
-      "alias_candidate": 3,
-      "relation_reversal": 3
+      "foreshadow_unresolved": 92,
+      "death_reappearance": 3,
+      "entity_after_last": 30,
+      "battle_gap": 7,
+      "alias_candidate": 12,
+      "relation_reversal": 6,
+      "item_disconnect": 1
     },
     "path": "anomalies.json"
   },
@@ -92,10 +93,10 @@
   "data": "data.js",
   "snapshot": null,
   "counts": {
-    "entities": 384,
-    "relations": 459,
-    "places": 119,
-    "chapters": 500,
-    "foreshadows": 215
+    "entities": 682,
+    "relations": 764,
+    "places": 205,
+    "chapters": 800,
+    "foreshadows": 336
   }
 }

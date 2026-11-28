@@ -1,23 +1,24 @@
 {
   "version": "1.0",
-  "generated_at": "2026-11-27T12:52:51Z",
+  "generated_at": "2026-11-28T07:07:31Z",
   "source_title": "凡人修仙传",
   "source_file": "《凡人修仙传》【精校全本】作者：忘语.txt",
   "coverage": {
-    "chapters_done": 500,
-    "chapters_skipped": 1943
+    "chapters_done": 800,
+    "chapters_skipped": 1643
   },
-  "threshold": 75,
-  "live_ch": 500,
+  "threshold": 120,
+  "live_ch": 800,
   "counts": {
-    "foreshadow_unresolved": 79,
-    "death_reappearance": 2,
-    "entity_after_last": 19,
-    "battle_gap": 2,
-    "alias_candidate": 3,
-    "relation_reversal": 3
+    "foreshadow_unresolved": 92,
+    "death_reappearance": 3,
+    "entity_after_last": 30,
+    "battle_gap": 7,
+    "alias_candidate": 12,
+    "relation_reversal": 6,
+    "item_disconnect": 1
   },
-  "total": 108,
+  "total": 151,
   "anomalies": [
     {
       "id": "an_foreshadow_b5a8210d68",
@@ -26,7 +27,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "无名口诀只练出一丝凉气，与正阳劲的热流截然不同，来历不明：第 7 章埋下，7 章后未再提",
-      "detail": "沉默 493 章，超过当前阈值 75 章。",
+      "detail": "沉默 793 章，超过当前阈值 120 章。",
       "chapter_range": [
         7,
         7
@@ -43,19 +44,19 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 493
+      "silent_chapters": 793
     },
     {
-      "id": "an_foreshadow_13af78ce7f",
+      "id": "an_foreshadow_87fcae09ec",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
       "confidence": "medium",
-      "title": "墨大夫寸步不离捧读《长生经》，似在追求长生不老：第 7 章埋下，373 章后未再提",
-      "detail": "沉默 127 章，超过当前阈值 75 章。",
+      "title": "墨大夫寸步不离捧读《长生经》，似在追求长生不老：第 7 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
       "chapter_range": [
         7,
-        373
+        637
       ],
       "entities": [
         "f_changshengjing"
@@ -66,26 +67,26 @@
           "quote": "墨大夫寸步不离捧读《长生经》，似在追求长生不老"
         },
         {
-          "coordinate": "ch373",
-          "quote": "第 373 章后未再出现；沉默 127 章"
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 127
+      "silent_chapters": 163
     },
     {
-      "id": "an_foreshadow_76e96ea37f",
+      "id": "an_foreshadow_cc129ec295",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "high",
-      "title": "厉师兄靠抽髓丸强撑功力，而韩立竟也曾分十次服下一粒：第 20 章埋下，73 章后未再提",
-      "detail": "沉默 427 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "厉师兄靠抽髓丸强撑功力，而韩立竟也曾分十次服下一粒：第 20 章埋下，662 章后未再提",
+      "detail": "沉默 138 章，超过当前阈值 120 章。",
       "chapter_range": [
         20,
-        73
+        662
       ],
       "entities": [
         "f_chousuiwan"
@@ -96,26 +97,26 @@
           "quote": "厉师兄靠抽髓丸强撑功力，而韩立竟也曾分十次服下一粒"
         },
         {
-          "coordinate": "ch73",
-          "quote": "第 73 章后未再出现；沉默 427 章"
+          "coordinate": "ch662",
+          "quote": "第 662 章后未再出现；沉默 138 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.85,
-      "silent_chapters": 427
+      "silent_chapters": 138
     },
     {
-      "id": "an_foreshadow_c59c2730cf",
+      "id": "an_foreshadow_57aa2315e8",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
       "confidence": "medium",
-      "title": "墨大夫在某神秘之处得到一本奇书，照书施为虽复功力却致早衰：第 30 章埋下，373 章后未再提",
-      "detail": "沉默 127 章，超过当前阈值 75 章。",
+      "title": "墨大夫在某神秘之处得到一本奇书，照书施为虽复功力却致早衰：第 30 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
       "chapter_range": [
         30,
-        373
+        637
       ],
       "entities": [
         "f_qishu"
@@ -126,14 +127,14 @@
           "quote": "墨大夫在某神秘之处得到一本奇书，照书施为虽复功力却致早衰"
         },
         {
-          "coordinate": "ch373",
-          "quote": "第 373 章后未再出现；沉默 127 章"
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 127
+      "silent_chapters": 163
     },
     {
       "id": "an_foreshadow_89c38a1437",
@@ -142,7 +143,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "七绝堂书库角落藏着七十四本同名眨眼剑谱，来历与真伪无人说：第 35 章埋下，92 章后未再提",
-      "detail": "沉默 408 章，超过当前阈值 75 章。",
+      "detail": "沉默 708 章，超过当前阈值 120 章。",
       "chapter_range": [
         35,
         92
@@ -157,25 +158,25 @@
         },
         {
           "coordinate": "ch92",
-          "quote": "第 92 章后未再出现；沉默 408 章"
+          "quote": "第 92 章后未再出现；沉默 708 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 408
+      "silent_chapters": 708
     },
     {
-      "id": "an_foreshadow_e87922b13a",
+      "id": "an_foreshadow_8d468df097",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
       "confidence": "medium",
-      "title": "墨大夫屋角立着一名高大神秘男子，无声无息如死物：第 44 章埋下，373 章后未再提",
-      "detail": "沉默 127 章，超过当前阈值 75 章。",
+      "title": "墨大夫屋角立着一名高大神秘男子，无声无息如死物：第 44 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
       "chapter_range": [
         44,
-        373
+        637
       ],
       "entities": [
         "f_gaodananzi"
@@ -186,23 +187,23 @@
           "quote": "墨大夫屋角立着一名高大神秘男子，无声无息如死物"
         },
         {
-          "coordinate": "ch373",
-          "quote": "第 373 章后未再出现；沉默 127 章"
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 127
+      "silent_chapters": 163
     },
     {
       "id": "an_foreshadow_58b5cc2a79",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "余子童称韩立天生灵根、资质过人，短短时日内练至长春功第六：第 56 章埋下，373 章后未再提",
-      "detail": "沉默 127 章，超过当前阈值 75 章。",
+      "detail": "沉默 427 章，超过当前阈值 120 章。",
       "chapter_range": [
         56,
         373
@@ -217,22 +218,22 @@
         },
         {
           "coordinate": "ch373",
-          "quote": "第 373 章后未再出现；沉默 127 章"
+          "quote": "第 373 章后未再出现；沉默 427 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.85,
-      "silent_chapters": 127
+      "silent_chapters": 427
     },
     {
       "id": "an_foreshadow_cc275e9617",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "余子童出身修士家族，家族有隐居之地，他可引见长老收徒：第 59 章埋下，373 章后未再提",
-      "detail": "沉默 127 章，超过当前阈值 75 章。",
+      "detail": "沉默 427 章，超过当前阈值 120 章。",
       "chapter_range": [
         59,
         373
@@ -247,25 +248,25 @@
         },
         {
           "coordinate": "ch373",
-          "quote": "第 373 章后未再出现；沉默 127 章"
+          "quote": "第 373 章后未再出现；沉默 427 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 127
+      "silent_chapters": 427
     },
     {
-      "id": "an_foreshadow_9b5f1fb206",
+      "id": "an_foreshadow_ee66b19bad",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
       "confidence": "medium",
-      "title": "墨大夫遗书托韩立两年内赴其家护妻小，许以女儿、半份家产与：第 62 章埋下，373 章后未再提",
-      "detail": "沉默 127 章，超过当前阈值 75 章。",
+      "title": "墨大夫遗书托韩立两年内赴其家护妻小，许以女儿、半份家产与：第 62 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
       "chapter_range": [
         62,
-        373
+        637
       ],
       "entities": [
         "f_yishu_jiaoyi"
@@ -276,14 +277,14 @@
           "quote": "墨大夫遗书托韩立两年内赴其家护妻小，许以女儿、半份家产与暖阳宝玉"
         },
         {
-          "coordinate": "ch373",
-          "quote": "第 373 章后未再出现；沉默 127 章"
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.9,
-      "silent_chapters": 127
+      "silent_chapters": 163
     },
     {
       "id": "an_foreshadow_e4c18f7c77",
@@ -292,7 +293,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "马门主屡次挑拨韩立与各派高层，逼这位神医站到自己一边：第 70 章埋下，73 章后未再提",
-      "detail": "沉默 427 章，超过当前阈值 75 章。",
+      "detail": "沉默 727 章，超过当前阈值 120 章。",
       "chapter_range": [
         70,
         73
@@ -307,25 +308,25 @@
         },
         {
           "coordinate": "ch73",
-          "quote": "第 73 章后未再出现；沉默 427 章"
+          "quote": "第 73 章后未再出现；沉默 727 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 427
+      "silent_chapters": 727
     },
     {
-      "id": "an_foreshadow_4753ab9b29",
+      "id": "an_foreshadow_bd22ac9cf5",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "high",
-      "title": "野狼帮在七玄门外围安插奸细，引路无声拔除各处哨所：第 77 章埋下，95 章后未再提",
-      "detail": "沉默 405 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "野狼帮在七玄门外围安插奸细，引路无声拔除各处哨所：第 77 章埋下，662 章后未再提",
+      "detail": "沉默 138 章，超过当前阈值 120 章。",
       "chapter_range": [
         77,
-        95
+        662
       ],
       "entities": [
         "f_neijian"
@@ -336,14 +337,14 @@
           "quote": "野狼帮在七玄门外围安插奸细，引路无声拔除各处哨所"
         },
         {
-          "coordinate": "ch95",
-          "quote": "第 95 章后未再出现；沉默 405 章"
+          "coordinate": "ch662",
+          "quote": "第 662 章后未再出现；沉默 138 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 405
+      "silent_chapters": 138
     },
     {
       "id": "an_foreshadow_70708ab185",
@@ -352,7 +353,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "敌人若识破拖延之计，将立即强攻墨府：第 108 章埋下，108 章后未再提",
-      "detail": "沉默 392 章，超过当前阈值 75 章。",
+      "detail": "沉默 692 章，超过当前阈值 120 章。",
       "chapter_range": [
         108,
         108
@@ -369,7 +370,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 392
+      "silent_chapters": 692
     },
     {
       "id": "an_foreshadow_5e0dd7870f",
@@ -378,7 +379,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "暗舵力量由五夫人独掌，月解利银越来越少：第 108 章埋下，251 章后未再提",
-      "detail": "沉默 249 章，超过当前阈值 75 章。",
+      "detail": "沉默 549 章，超过当前阈值 120 章。",
       "chapter_range": [
         108,
         251
@@ -393,55 +394,25 @@
         },
         {
           "coordinate": "ch251",
-          "quote": "第 251 章后未再出现；沉默 249 章"
+          "quote": "第 251 章后未再出现；沉默 549 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 249
+      "silent_chapters": 549
     },
     {
-      "id": "an_foreshadow_b9cf455d6f",
+      "id": "an_foreshadow_3e551cd14c",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "high",
-      "title": "墨府明知吴剑鸣是假货，仍以墨玉珠名誉拖延：第 108 章埋下，337 章后未再提",
-      "detail": "沉默 163 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        108,
-        337
-      ],
-      "entities": [
-        "f_wujianming_mao"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch108:p10",
-          "quote": "墨府明知吴剑鸣是假货，仍以墨玉珠名誉拖延"
-        },
-        {
-          "coordinate": "ch337",
-          "quote": "第 337 章后未再出现；沉默 163 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.85,
-      "silent_chapters": 163
-    },
-    {
-      "id": "an_foreshadow_5fd797850c",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "严氏要韩立灭五色门与独霸山庄，才肯交暖阳宝玉：第 118 章埋下，337 章后未再提",
-      "detail": "沉默 163 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "严氏要韩立灭五色门与独霸山庄，才肯交暖阳宝玉：第 118 章埋下，664 章后未再提",
+      "detail": "沉默 136 章，超过当前阈值 120 章。",
       "chapter_range": [
         118,
-        337
+        664
       ],
       "entities": [
         "f_wusemen_dubashan"
@@ -452,14 +423,14 @@
           "quote": "严氏要韩立灭五色门与独霸山庄，才肯交暖阳宝玉"
         },
         {
-          "coordinate": "ch337",
-          "quote": "第 337 章后未再出现；沉默 163 章"
+          "coordinate": "ch664",
+          "quote": "第 664 章后未再出现；沉默 136 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.9,
-      "silent_chapters": 163
+      "silent_chapters": 136
     },
     {
       "id": "an_foreshadow_437b3ec4f0",
@@ -468,7 +439,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "青颜真人一眼看破韩立木属性八层，态度提防：第 129 章埋下，142 章后未再提",
-      "detail": "沉默 358 章，超过当前阈值 75 章。",
+      "detail": "沉默 658 章，超过当前阈值 120 章。",
       "chapter_range": [
         129,
         142
@@ -483,13 +454,13 @@
         },
         {
           "coordinate": "ch142",
-          "quote": "第 142 章后未再出现；沉默 358 章"
+          "quote": "第 142 章后未再出现；沉默 658 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 358
+      "silent_chapters": 658
     },
     {
       "id": "an_foreshadow_772a4261d9",
@@ -498,7 +469,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "近几届太南会后，散修莫名失踪：第 133 章埋下，133 章后未再提",
-      "detail": "沉默 367 章，超过当前阈值 75 章。",
+      "detail": "沉默 667 章，超过当前阈值 120 章。",
       "chapter_range": [
         133,
         133
@@ -515,7 +486,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 367
+      "silent_chapters": 667
     },
     {
       "id": "an_foreshadow_9f9ecf127f",
@@ -524,7 +495,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "双首鹜是燕家灵禽，即席铁牛所见怪鹰：第 136 章埋下，247 章后未再提",
-      "detail": "沉默 253 章，超过当前阈值 75 章。",
+      "detail": "沉默 553 章，超过当前阈值 120 章。",
       "chapter_range": [
         136,
         247
@@ -539,73 +510,13 @@
         },
         {
           "coordinate": "ch247",
-          "quote": "第 247 章后未再出现；沉默 253 章"
+          "quote": "第 247 章后未再出现；沉默 553 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 253
-    },
-    {
-      "id": "an_foreshadow_b1693caa6d",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "姑雨山燕家派兄妹参加升仙大会，家有结丹修士：第 136 章埋下，338 章后未再提",
-      "detail": "沉默 162 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        136,
-        338
-      ],
-      "entities": [
-        "f_yanjia"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch136:p20",
-          "quote": "姑雨山燕家派兄妹参加升仙大会，家有结丹修士"
-        },
-        {
-          "coordinate": "ch338",
-          "quote": "第 338 章后未再出现；沉默 162 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.85,
-      "silent_chapters": 162
-    },
-    {
-      "id": "an_foreshadow_70f7241847",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "金竺笔为制符异宝，少女兄妹为丹药割爱：第 137 章埋下，242 章后未再提",
-      "detail": "沉默 258 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        137,
-        242
-      ],
-      "entities": [
-        "f_jinzhu_bi"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch137:p18",
-          "quote": "金竺笔为制符异宝，少女兄妹为丹药割爱"
-        },
-        {
-          "coordinate": "ch242",
-          "quote": "第 242 章后未再出现；沉默 258 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.75,
-      "silent_chapters": 258
+      "silent_chapters": 553
     },
     {
       "id": "an_foreshadow_10adb09ff3",
@@ -614,7 +525,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "黄铜瓶只能把绿液保存一天，绿液本质仍不明：第 152 章埋下，152 章后未再提",
-      "detail": "沉默 348 章，超过当前阈值 75 章。",
+      "detail": "沉默 648 章，超过当前阈值 120 章。",
       "chapter_range": [
         152,
         152
@@ -629,13 +540,13 @@
         },
         {
           "coordinate": "ch152",
-          "quote": "第 152 章后未再出现；沉默 348 章"
+          "quote": "第 152 章后未再出现；沉默 648 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 348
+      "silent_chapters": 648
     },
     {
       "id": "an_foreshadow_0d995e911c",
@@ -644,7 +555,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "地肺之火可代替先天真火炼丹，玄阳火地可租用：第 156 章埋下，156 章后未再提",
-      "detail": "沉默 344 章，超过当前阈值 75 章。",
+      "detail": "沉默 644 章，超过当前阈值 120 章。",
       "chapter_range": [
         156,
         156
@@ -661,46 +572,16 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.85,
-      "silent_chapters": 344
-    },
-    {
-      "id": "an_foreshadow_dd3cb54d39",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "天雷子可令筑基修士灰飞烟灭，韩立已入手：第 163 章埋下，330 章后未再提",
-      "detail": "沉默 170 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        163,
-        330
-      ],
-      "entities": [
-        "f_tianleizi"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch163:p8",
-          "quote": "天雷子可令筑基修士灰飞烟灭，韩立已入手"
-        },
-        {
-          "coordinate": "ch330",
-          "quote": "第 330 章后未再出现；沉默 170 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.8,
-      "silent_chapters": 170
+      "silent_chapters": 644
     },
     {
       "id": "an_foreshadow_9c7719910f",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "董妮子以红拂门下为饵，要陆师兄杀陈师妹、筑基后与她双修：第 166 章埋下，361 章后未再提",
-      "detail": "沉默 139 章，超过当前阈值 75 章。",
+      "detail": "沉默 439 章，超过当前阈值 120 章。",
       "chapter_range": [
         166,
         361
@@ -715,13 +596,13 @@
         },
         {
           "coordinate": "ch361",
-          "quote": "第 361 章后未再出现；沉默 139 章"
+          "quote": "第 361 章后未再出现；沉默 439 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.75,
-      "silent_chapters": 139
+      "silent_chapters": 439
     },
     {
       "id": "an_foreshadow_86bd168a64",
@@ -730,7 +611,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "灰剑符宝威能耗尽，自燃成灰：第 170 章埋下，170 章后未再提",
-      "detail": "沉默 330 章，超过当前阈值 75 章。",
+      "detail": "沉默 630 章，超过当前阈值 120 章。",
       "chapter_range": [
         170,
         170
@@ -747,7 +628,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 330
+      "silent_chapters": 630
     },
     {
       "id": "an_foreshadow_453136235c",
@@ -756,7 +637,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "服下筑基丹后须闭关三月化尽药力，与血禁试炼冲突：第 171 章埋下，171 章后未再提",
-      "detail": "沉默 329 章，超过当前阈值 75 章。",
+      "detail": "沉默 629 章，超过当前阈值 120 章。",
       "chapter_range": [
         171,
         171
@@ -773,7 +654,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 329
+      "silent_chapters": 629
     },
     {
       "id": "an_foreshadow_c0a535815b",
@@ -782,7 +663,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "穹前辈强行加入三方赌局，押上三枚无形针符宝：第 176 章埋下，178 章后未再提",
-      "detail": "沉默 322 章，超过当前阈值 75 章。",
+      "detail": "沉默 622 章，超过当前阈值 120 章。",
       "chapter_range": [
         176,
         178
@@ -797,85 +678,25 @@
         },
         {
           "coordinate": "ch178",
-          "quote": "第 178 章后未再出现；沉默 322 章"
+          "quote": "第 178 章后未再出现；沉默 622 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.75,
-      "silent_chapters": 322
+      "silent_chapters": 622
     },
     {
-      "id": "an_foreshadow_e44853665b",
+      "id": "an_foreshadow_9c20b8515a",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
       "confidence": "medium",
-      "title": "李师祖许诺重赏，贡献最大者筑基后可被他收入门下：第 177 章埋下，409 章后未再提",
-      "detail": "沉默 91 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        177,
-        409
-      ],
-      "entities": [
-        "f_lishizu_reward"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch177:p14",
-          "quote": "李师祖许诺重赏，贡献最大者筑基后可被他收入门下"
-        },
-        {
-          "coordinate": "ch409",
-          "quote": "第 409 章后未再出现；沉默 91 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 91
-    },
-    {
-      "id": "an_foreshadow_a84458f3fa",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "灵兽山两人用驱兽粉控制寒冰蟾，借妖兽伏杀天阙堡弟子：第 180 章埋下，332 章后未再提",
-      "detail": "沉默 168 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        180,
-        332
-      ],
-      "entities": [
-        "f_jindi_ambush"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch180:p20",
-          "quote": "灵兽山两人用驱兽粉控制寒冰蟾，借妖兽伏杀天阙堡弟子"
-        },
-        {
-          "coordinate": "ch332",
-          "quote": "第 332 章后未再出现；沉默 168 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 168
-    },
-    {
-      "id": "an_foreshadow_0794b4cf9d",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "透明丝线近乎隐形、锋利无比，可杀人于无形：第 182 章埋下，323 章后未再提",
-      "detail": "沉默 177 章，超过当前阈值 75 章。",
+      "title": "透明丝线近乎隐形、锋利无比，可杀人于无形：第 182 章埋下，592 章后未再提",
+      "detail": "沉默 208 章，超过当前阈值 120 章。",
       "chapter_range": [
         182,
-        323
+        592
       ],
       "entities": [
         "f_touming_sixian"
@@ -886,74 +707,44 @@
           "quote": "透明丝线近乎隐形、锋利无比，可杀人于无形"
         },
         {
-          "coordinate": "ch323",
-          "quote": "第 323 章后未再出现；沉默 177 章"
+          "coordinate": "ch592",
+          "quote": "第 592 章后未再出现；沉默 208 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 177
+      "silent_chapters": 208
     },
     {
-      "id": "an_foreshadow_ac3bb192f8",
+      "id": "an_foreshadow_d3381d9d64",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "high",
-      "title": "天雷子已用于灭杀封岳，韩立失去最强杀手锏：第 189 章埋下，330 章后未再提",
-      "detail": "沉默 170 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "乌皮靴可大幅提升身法，配合罗烟步能短暂隐形：第 190 章埋下，623 章后未再提",
+      "detail": "沉默 177 章，超过当前阈值 120 章。",
       "chapter_range": [
-        189,
-        330
+        190,
+        623
       ],
       "entities": [
-        "f_tianleizi_used"
+        "f_pixue"
       ],
       "evidence": [
         {
-          "coordinate": "ch189:p16",
-          "quote": "天雷子已用于灭杀封岳，韩立失去最强杀手锏"
+          "coordinate": "ch190:p14",
+          "quote": "乌皮靴可大幅提升身法，配合罗烟步能短暂隐形"
         },
         {
-          "coordinate": "ch330",
-          "quote": "第 330 章后未再出现；沉默 170 章"
+          "coordinate": "ch623",
+          "quote": "第 623 章后未再出现；沉默 177 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 170
-    },
-    {
-      "id": "an_foreshadow_cb1b53603d",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "陈氏大公子追查救陈师妹之人，怀疑是外门过路修士：第 199 章埋下，324 章后未再提",
-      "detail": "沉默 176 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        199,
-        324
-      ],
-      "entities": [
-        "f_chen_dagongzi"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch199:p22",
-          "quote": "陈氏大公子追查救陈师妹之人，怀疑是外门过路修士"
-        },
-        {
-          "coordinate": "ch324",
-          "quote": "第 324 章后未再出现；沉默 176 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 176
+      "silent_chapters": 177
     },
     {
       "id": "an_foreshadow_52b767240c",
@@ -962,7 +753,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "最后一天各派弟子满载而归，才是真正拼死劫杀的时机：第 200 章埋下，200 章后未再提",
-      "detail": "沉默 300 章，超过当前阈值 75 章。",
+      "detail": "沉默 600 章，超过当前阈值 120 章。",
       "chapter_range": [
         200,
         200
@@ -979,7 +770,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.85,
-      "silent_chapters": 300
+      "silent_chapters": 600
     },
     {
       "id": "an_foreshadow_7f3e3557ef",
@@ -988,7 +779,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "韩立持有掩月双娇护身法器青凝镜，双娇祖母为结丹长老，或追：第 202 章埋下，209 章后未再提",
-      "detail": "沉默 291 章，超过当前阈值 75 章。",
+      "detail": "沉默 591 章，超过当前阈值 120 章。",
       "chapter_range": [
         202,
         209
@@ -1003,13 +794,13 @@
         },
         {
           "coordinate": "ch209",
-          "quote": "第 209 章后未再出现；沉默 291 章"
+          "quote": "第 209 章后未再出现；沉默 591 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 291
+      "silent_chapters": 591
     },
     {
       "id": "an_foreshadow_fb7ad16c51",
@@ -1018,7 +809,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "金页与银页轮廓相同、薄厚不一，纳剑芒后传出功法，书页来历：第 240 章埋下，240 章后未再提",
-      "detail": "沉默 260 章，超过当前阈值 75 章。",
+      "detail": "沉默 560 章，超过当前阈值 120 章。",
       "chapter_range": [
         240,
         240
@@ -1035,37 +826,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.8,
-      "silent_chapters": 260
-    },
-    {
-      "id": "an_foreshadow_5703861a86",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "medium",
-      "title": "鬼灵门无帖硬闯燕家，十场比试五胜四，少门主叫停等候生死堂：第 249 章埋下，420 章后未再提",
-      "detail": "沉默 80 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        249,
-        420
-      ],
-      "entities": [
-        "f_guilingmen_tumo"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch249:p5",
-          "quote": "鬼灵门无帖硬闯燕家，十场比试五胜四，少门主叫停等候生死堂，来意不止切磋。"
-        },
-        {
-          "coordinate": "ch420",
-          "quote": "第 420 章后未再出现；沉默 80 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.8,
-      "silent_chapters": 80
+      "silent_chapters": 560
     },
     {
       "id": "an_foreshadow_54dd7f95de",
@@ -1074,7 +835,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "墨府七年前被毁、惊蛟会除名，二娘五娘身死，墨彩环母女流落：第 250 章埋下，251 章后未再提",
-      "detail": "沉默 249 章，超过当前阈值 75 章。",
+      "detail": "沉默 549 章，超过当前阈值 120 章。",
       "chapter_range": [
         250,
         251
@@ -1089,13 +850,13 @@
         },
         {
           "coordinate": "ch251",
-          "quote": "第 251 章后未再出现；沉默 249 章"
+          "quote": "第 251 章后未再出现；沉默 549 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.85,
-      "silent_chapters": 249
+      "silent_chapters": 549
     },
     {
       "id": "an_foreshadow_1b2c55329f",
@@ -1104,7 +865,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "魔道六宗五日后正式进攻越国，姜国、车骑国半月前已陷落，部：第 255 章埋下，255 章后未再提",
-      "detail": "沉默 245 章，超过当前阈值 75 章。",
+      "detail": "沉默 545 章，超过当前阈值 120 章。",
       "chapter_range": [
         255,
         255
@@ -1121,97 +882,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.9,
-      "silent_chapters": 245
-    },
-    {
-      "id": "an_foreshadow_cf605fb279",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "medium",
-      "title": "燕家归附鬼灵门，将堡中七派修士作为血祭聘礼，外围族人与凡：第 257 章埋下，420 章后未再提",
-      "detail": "沉默 80 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        257,
-        420
-      ],
-      "entities": [
-        "f_yanjia_betrayal"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch257:p11",
-          "quote": "燕家归附鬼灵门，将堡中七派修士作为血祭聘礼，外围族人与凡人将被放弃"
-        },
-        {
-          "coordinate": "ch420",
-          "quote": "第 420 章后未再出现；沉默 80 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.85,
-      "silent_chapters": 80
-    },
-    {
-      "id": "an_foreshadow_ead78de0b7",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "medium",
-      "title": "韩立独自识破法阵破绽遁走，同门被困阴火大阵，王蝉驾血云紧：第 260 章埋下，363 章后未再提",
-      "detail": "沉默 137 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        260,
-        363
-      ],
-      "entities": [
-        "f_hanli_trap"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch260:p46",
-          "quote": "韩立独自识破法阵破绽遁走，同门被困阴火大阵，王蝉驾血云紧追不舍"
-        },
-        {
-          "coordinate": "ch363",
-          "quote": "第 363 章后未再出现；沉默 137 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.85,
-      "silent_chapters": 137
-    },
-    {
-      "id": "an_foreshadow_7b01b1d3eb",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "high",
-      "title": "墨凤舞求韩立寻机除掉五色门门主，为墨府遇害亲人报仇：第 282 章埋下，337 章后未再提",
-      "detail": "沉默 163 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        282,
-        337
-      ],
-      "entities": [
-        "f_mofengwu_revenge"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch282:p46",
-          "quote": "墨凤舞求韩立寻机除掉五色门门主，为墨府遇害亲人报仇"
-        },
-        {
-          "coordinate": "ch337",
-          "quote": "第 337 章后未再出现；沉默 163 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 163
+      "silent_chapters": 545
     },
     {
       "id": "an_foreshadow_0dea3940da",
@@ -1220,7 +891,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "蒙山五友被蒙面人下禁制胁迫害人，幕后绑架修士者身份未明：第 284 章埋下，305 章后未再提",
-      "detail": "沉默 195 章，超过当前阈值 75 章。",
+      "detail": "沉默 495 章，超过当前阈值 120 章。",
       "chapter_range": [
         284,
         305
@@ -1235,13 +906,13 @@
         },
         {
           "coordinate": "ch305",
-          "quote": "第 305 章后未再出现；沉默 195 章"
+          "quote": "第 305 章后未再出现；沉默 495 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.75,
-      "silent_chapters": 195
+      "silent_chapters": 495
     },
     {
       "id": "an_death_reap_43e85342aa",
@@ -1272,43 +943,43 @@
       "verified": false
     },
     {
-      "id": "an_foreshadow_70aae39527",
+      "id": "an_foreshadow_568620f425",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "medium",
-      "title": "韩立已通过黄枫谷联络人向李化元发求援信，援兵尚未抵达：第 302 章埋下，385 章后未再提",
-      "detail": "沉默 115 章，超过当前阈值 75 章。",
+      "confidence": "high",
+      "title": "黑煞教行金蝉脱壳之计，核心弟子在修仙界另备明面身份：第 298 章埋下，518 章后未再提",
+      "detail": "沉默 282 章，超过当前阈值 120 章。",
       "chapter_range": [
-        302,
-        385
+        298,
+        518
       ],
       "entities": [
-        "f_lihuayuan_bingyuan"
+        "f_heisha_jinshentuo"
       ],
       "evidence": [
         {
-          "coordinate": "ch302:p37",
-          "quote": "韩立已通过黄枫谷联络人向李化元发求援信，援兵尚未抵达"
+          "coordinate": "ch298:p53",
+          "quote": "黑煞教行金蝉脱壳之计，核心弟子在修仙界另备明面身份"
         },
         {
-          "coordinate": "ch385",
-          "quote": "第 385 章后未再出现；沉默 115 章"
+          "coordinate": "ch518",
+          "quote": "第 518 章后未再出现；沉默 282 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 115
+      "silent_chapters": 282
     },
     {
       "id": "an_foreshadow_7085a70fcf",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "妖化血侍被玉尺符宝击退逃窜，未被斩杀，仍在越京一带：第 309 章埋下，350 章后未再提",
-      "detail": "沉默 150 章，超过当前阈值 75 章。",
+      "detail": "沉默 450 章，超过当前阈值 120 章。",
       "chapter_range": [
         309,
         350
@@ -1323,39 +994,43 @@
         },
         {
           "coordinate": "ch350",
-          "quote": "第 350 章后未再出现；沉默 150 章"
+          "quote": "第 350 章后未再出现；沉默 450 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.7,
-      "silent_chapters": 150
+      "silent_chapters": 450
     },
     {
-      "id": "an_foreshadow_62e4e818ca",
+      "id": "an_foreshadow_e7b0b8c680",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
       "confidence": "high",
-      "title": "黑煞诸般功法皆提及《玄阴经》，玉简中却无此书下落：第 330 章埋下，330 章后未再提",
-      "detail": "沉默 170 章，超过当前阈值 75 章。",
+      "title": "教主李破云藏身皇城、操纵越国皇帝，七派弟子却严禁踏入皇城：第 310 章埋下，429 章后未再提",
+      "detail": "沉默 371 章，超过当前阈值 120 章。",
       "chapter_range": [
-        330,
-        330
+        310,
+        429
       ],
       "entities": [
-        "f_xuanyin_jing"
+        "f_jiaohuangcheng"
       ],
       "evidence": [
         {
-          "coordinate": "ch330:p13",
-          "quote": "黑煞诸般功法皆提及《玄阴经》，玉简中却无此书下落"
+          "coordinate": "ch310:p38",
+          "quote": "教主李破云藏身皇城、操纵越国皇帝，七派弟子却严禁踏入皇城"
+        },
+        {
+          "coordinate": "ch429",
+          "quote": "第 429 章后未再出现；沉默 371 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 170
+      "importance": 0.9,
+      "silent_chapters": 371
     },
     {
       "id": "an_foreshadow_18cabf026e",
@@ -1364,7 +1039,7 @@
       "severity": "warning",
       "confidence": "high",
       "title": "魔道数日内将突袭七派大营，三国联军或已先行大败，消息真伪：第 339 章埋下，339 章后未再提",
-      "detail": "沉默 161 章，超过当前阈值 75 章。",
+      "detail": "沉默 461 章，超过当前阈值 120 章。",
       "chapter_range": [
         339,
         339
@@ -1381,97 +1056,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.75,
-      "silent_chapters": 161
-    },
-    {
-      "id": "an_foreshadow_429fa01d77",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "medium",
-      "title": "夺舍修士藏有御灵宗与灵兽山来往的玉简书信于附近山洞，尚未：第 340 章埋下，392 章后未再提",
-      "detail": "沉默 108 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        340,
-        392
-      ],
-      "entities": [
-        "f_yulingzong_jijian"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch340:p16",
-          "quote": "夺舍修士藏有御灵宗与灵兽山来往的玉简书信于附近山洞，尚未取出核验"
-        },
-        {
-          "coordinate": "ch392",
-          "quote": "第 392 章后未再出现；沉默 108 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 108
-    },
-    {
-      "id": "an_foreshadow_705bf4e55e",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "medium",
-      "title": "付家报复齐云霄、毁其住处，齐云霄下落不明，仇怨未解：第 350 章埋下，413 章后未再提",
-      "detail": "沉默 87 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        350,
-        413
-      ],
-      "entities": [
-        "f_fujie_chou"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch350:p22",
-          "quote": "付家报复齐云霄、毁其住处，齐云霄下落不明，仇怨未解"
-        },
-        {
-          "coordinate": "ch413",
-          "quote": "第 413 章后未再出现；沉默 87 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.7,
-      "silent_chapters": 87
-    },
-    {
-      "id": "an_foreshadow_e037450270",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "warning",
-      "confidence": "medium",
-      "title": "韩立承诺能力足够时灭付家一族，为齐云霄夫妇报仇：第 351 章埋下，413 章后未再提",
-      "detail": "沉默 87 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        351,
-        413
-      ],
-      "entities": [
-        "f_fujie_menghuo"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch351:p49",
-          "quote": "韩立承诺能力足够时灭付家一族，为齐云霄夫妇报仇"
-        },
-        {
-          "coordinate": "ch413",
-          "quote": "第 413 章后未再出现；沉默 87 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.8,
-      "silent_chapters": 87
+      "silent_chapters": 461
     },
     {
       "id": "an_death_reap_6dbf347d05",
@@ -1502,13 +1087,43 @@
       "verified": false
     },
     {
+      "id": "an_foreshadow_055a763cc7",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "古长老亮出雕绘狰狞鬼头的黑气令牌，青算子见之亡命遁走，令：第 382 章埋下，500 章后未再提",
+      "detail": "沉默 300 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        382,
+        500
+      ],
+      "entities": [
+        "f_guilingmen_token"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch382:p40",
+          "quote": "古长老亮出雕绘狰狞鬼头的黑气令牌，青算子见之亡命遁走，令牌所属门派与六连殿、极阴的关联未明"
+        },
+        {
+          "coordinate": "ch500",
+          "quote": "第 500 章后未再出现；沉默 300 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 300
+    },
+    {
       "id": "an_foreshadow_f6b9e93ab1",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "warning",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "范静梅与赵长老定计，半月后行动将韩立拖下水，顺利则拉拢，：第 400 章埋下，409 章后未再提",
-      "detail": "沉默 91 章，超过当前阈值 75 章。",
+      "detail": "沉默 391 章，超过当前阈值 120 章。",
       "chapter_range": [
         400,
         409
@@ -1523,13 +1138,609 @@
         },
         {
           "coordinate": "ch409",
-          "quote": "第 409 章后未再出现；沉默 91 章"
+          "quote": "第 409 章后未再出现；沉默 391 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.85,
-      "silent_chapters": 91
+      "silent_chapters": 391
+    },
+    {
+      "id": "an_foreshadow_de597e4385",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "内殿凶险，历次开启皆有元婴修士陨落其中，各方仍欲跟进夺宝：第 435 章埋下，435 章后未再提",
+      "detail": "沉默 365 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        435,
+        435
+      ],
+      "entities": [
+        "f_neidian_danger"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch435:p13",
+          "quote": "内殿凶险，历次开启皆有元婴修士陨落其中，各方仍欲跟进夺宝"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 365
+    },
+    {
+      "id": "an_foreshadow_ec2a337ac0",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "元瑶被点破身份时惊慌否认，身负不肯明说的大麻烦，来意与目：第 445 章埋下，604 章后未再提",
+      "detail": "沉默 196 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        445,
+        604
+      ],
+      "entities": [
+        "f_yuanyao_secret"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch445:p2",
+          "quote": "元瑶被点破身份时惊慌否认，身负不肯明说的大麻烦，来意与目标成谜"
+        },
+        {
+          "coordinate": "ch604",
+          "quote": "第 604 章后未再出现；沉默 196 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.75,
+      "silent_chapters": 196
+    },
+    {
+      "id": "an_death_reap_5f200e06f7",
+      "kind": "death_reappearance",
+      "kind_cn": "死亡后再出现",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "玄骨上人：记录已死亡，第 519 章仍被点名",
+      "detail": "attrs 标记死亡/退场，但第 519 章摘要仍出现该角色名/别名。",
+      "chapter_range": [
+        495,
+        519
+      ],
+      "entities": [
+        "e_xuangushangren"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch495",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch519",
+          "quote": "玄阴经 玄骨肋骨经阴气温养显露为玄阴经玉简：上半部玄阴大法，下半部记魔道秘术含天都尸火弱点，韩立记下结丹可修数种。开鼎半月无果；噬金虫互吞产卵，拟以炼晶重炼飞剑。 记下玄阴经保命秘术"
+        }
+      ],
+      "reader_note": "可能是回忆/残魂/同名，也可能是死亡记录错误；需回原文确认。",
+      "verified": false
+    },
+    {
+      "id": "an_foreshadow_9fc3356cb9",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "逆星盟将攻天星城，韩立须赶在大战封城前回城，经传送阵逃往：第 500 章埋下，577 章后未再提",
+      "detail": "沉默 223 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        500,
+        577
+      ],
+      "entities": [
+        "f_nixingmeng_zhan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch500:p34",
+          "quote": "逆星盟将攻天星城，韩立须赶在大战封城前回城，经传送阵逃往外星海"
+        },
+        {
+          "coordinate": "ch577",
+          "quote": "第 577 章后未再出现；沉默 223 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 223
+    },
+    {
+      "id": "an_foreshadow_ab1dad36b4",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "逆星盟少主为圣祖唯一传人、结丹后期，觊觎紫灵；苍云龙密谋：第 503 章埋下，577 章后未再提",
+      "detail": "沉默 223 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        503,
+        577
+      ],
+      "entities": [
+        "f_nixingmeng_shaodzhu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch503:p18",
+          "quote": "逆星盟少主为圣祖唯一传人、结丹后期，觊觎紫灵；苍云龙密谋战后压服妙音门献人，并夺韩立聚煞诀窍"
+        },
+        {
+          "coordinate": "ch577",
+          "quote": "第 577 章后未再出现；沉默 223 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 223
+    },
+    {
+      "id": "an_foreshadow_b390a998c0",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "千叶露须八级妖兽身畔伴妖草汁液，须赴海渊寻得八级妖兽巢穴：第 516 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        516,
+        637
+      ],
+      "entities": [
+        "f_banyaocao_source"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch516:p16",
+          "quote": "千叶露须八级妖兽身畔伴妖草汁液，须赴海渊寻得八级妖兽巢穴方可采集"
+        },
+        {
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 163
+    },
+    {
+      "id": "an_foreshadow_8efca044c7",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "深渊妖兽两年前暴动成禁区，元婴修士闯入亦惊逃而出，外星海：第 524 章埋下，524 章后未再提",
+      "detail": "沉默 276 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        524,
+        524
+      ],
+      "entities": [
+        "f_yaoshou_baodong"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch524:p11",
+          "quote": "深渊妖兽两年前暴动成禁区，元婴修士闯入亦惊逃而出，外星海恐将大乱"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.75,
+      "silent_chapters": 276
+    },
+    {
+      "id": "an_foreshadow_f74cbe5c2f",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "虫魔凶名被嫁祸扩散，传言金银飞虫灭杀近百修士，真凶另有冒：第 525 章埋下，556 章后未再提",
+      "detail": "沉默 244 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        525,
+        556
+      ],
+      "entities": [
+        "f_chongmo_ming"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch525:p19",
+          "quote": "虫魔凶名被嫁祸扩散，传言金银飞虫灭杀近百修士，真凶另有冒充者"
+        },
+        {
+          "coordinate": "ch556",
+          "quote": "第 556 章后未再出现；沉默 244 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 244
+    },
+    {
+      "id": "an_foreshadow_6a0d3eaee3",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "裂风兽巢穴近深渊边缘，内有八级成年兽与二三级幼崽，伴妖草：第 538 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        538,
+        637
+      ],
+      "entities": [
+        "f_liefeng_nest"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch538:p9",
+          "quote": "裂风兽巢穴近深渊边缘，内有八级成年兽与二三级幼崽，伴妖草或生其侧"
+        },
+        {
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 163
+    },
+    {
+      "id": "an_foreshadow_0653d16999",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "范静梅等魔道夺权后借秘市搜集情报寻找某物，所图之物与来历：第 540 章埋下，540 章后未再提",
+      "detail": "沉默 260 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        540,
+        540
+      ],
+      "entities": [
+        "f_miaoyinmen_coup"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch540:p16",
+          "quote": "范静梅等魔道夺权后借秘市搜集情报寻找某物，所图之物与来历未明"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 260
+    },
+    {
+      "id": "an_foreshadow_b569054bbb",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "碧焰酒中混沌魔气年许发作可致真元自爆，韩立疑被辟邪神雷荡：第 545 章埋下，598 章后未再提",
+      "detail": "沉默 202 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        545,
+        598
+      ],
+      "entities": [
+        "f_hundun_moqi"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch545:p25",
+          "quote": "碧焰酒中混沌魔气年许发作可致真元自爆，韩立疑被辟邪神雷荡净，真相未明"
+        },
+        {
+          "coordinate": "ch598",
+          "quote": "第 598 章后未再出现；沉默 202 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 202
+    },
+    {
+      "id": "an_foreshadow_a55c213093",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "万妖令掀起兽潮踏平人类岛屿，蛟龙族出手相助，两族大战局势：第 546 章埋下，546 章后未再提",
+      "detail": "沉默 254 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        546,
+        546
+      ],
+      "entities": [
+        "f_wanyaoling_war"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch546:p3",
+          "quote": "万妖令掀起兽潮踏平人类岛屿，蛟龙族出手相助，两族大战局势未明"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 254
+    },
+    {
+      "id": "an_foreshadow_f1874d67c8",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "温天仁神识感应到韩立，双方互相察觉并以禁制隔断，结丹后期：第 570 章埋下，613 章后未再提",
+      "detail": "沉默 187 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        570,
+        613
+      ],
+      "entities": [
+        "f_wen_tianren"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch570:p35",
+          "quote": "温天仁神识感应到韩立，双方互相察觉并以禁制隔断，结丹后期强敌压境"
+        },
+        {
+          "coordinate": "ch613",
+          "quote": "第 613 章后未再出现；沉默 187 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.85,
+      "silent_chapters": 187
+    },
+    {
+      "id": "an_foreshadow_93d88c1583",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "阴冥之地空间裂缝与返回之法未明，众人法力神识被禁，唯有武：第 580 章埋下，580 章后未再提",
+      "detail": "沉默 220 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        580,
+        580
+      ],
+      "entities": [
+        "f_yinming_exit"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch580:p1",
+          "quote": "阴冥之地空间裂缝与返回之法未明，众人法力神识被禁，唯有武技可用"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 220
+    },
+    {
+      "id": "an_foreshadow_d90dcc530e",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "脱出之法唯有趁裂缝开启自暴风山之巅冲出，山下盘踞最强阴兽：第 583 章埋下，583 章后未再提",
+      "detail": "沉默 217 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        583,
+        583
+      ],
+      "entities": [
+        "f_baofengshan_escape"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch583:p26",
+          "quote": "脱出之法唯有趁裂缝开启自暴风山之巅冲出，山下盘踞最强阴兽，山上阴风幻雾杀人无形"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 217
+    },
+    {
+      "id": "an_foreshadow_34329b9534",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "元瑶妍丽人鬼合修阴阳轮回诀，大成后受害不小并丧失重入轮回：第 594 章埋下，604 章后未再提",
+      "detail": "沉默 196 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        594,
+        604
+      ],
+      "entities": [
+        "f_yinyang_lunhui"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch594",
+          "quote": "元瑶妍丽人鬼合修阴阳轮回诀，大成后受害不小并丧失重入轮回资格，日后后果未明"
+        },
+        {
+          "coordinate": "ch604",
+          "quote": "第 604 章后未再出现；沉默 196 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 196
+    },
+    {
+      "id": "an_foreshadow_a92613e834",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "宋师祖探明韩立无事、杜东有鬼，冯老者疑其为杜家后人混入落：第 626 章埋下，626 章后未再提",
+      "detail": "沉默 174 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        626,
+        626
+      ],
+      "entities": [
+        "f_dudong_gui"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch626:p45",
+          "quote": "宋师祖探明韩立无事、杜东有鬼，冯老者疑其为杜家后人混入落云宗，杜家与百巧院付家有旧交"
+        },
+        {
+          "coordinate": "ch626",
+          "quote": "第 626 章后未再出现；沉默 174 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 174
+    },
+    {
+      "id": "an_foreshadow_99c08e6d1b",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "玉简载上古大阵与玄牡化婴大法，可催育第二元婴，须回宗钻研：第 656 章埋下，656 章后未再提",
+      "detail": "沉默 144 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        656,
+        656
+      ],
+      "entities": [
+        "f_xinruyin_yujian"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch656",
+          "quote": "玉简载上古大阵与玄牡化婴大法，可催育第二元婴，须回宗钻研弊端后再定是否修炼"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.75,
+      "silent_chapters": 144
+    },
+    {
+      "id": "an_foreshadow_a3cfb41eb8",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "噬金灵剑留宗祠护族，仅可出鞘三次，出鞘杀尽方圆十里人畜，：第 663 章埋下，663 章后未再提",
+      "detail": "沉默 137 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        663,
+        663
+      ],
+      "entities": [
+        "f_shijin_jian"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch663:p19",
+          "quote": "噬金灵剑留宗祠护族，仅可出鞘三次，出鞘杀尽方圆十里人畜，佩玉者方可拔剑"
+        },
+        {
+          "coordinate": "ch663",
+          "quote": "第 663 章后未再出现；沉默 137 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 137
+    },
+    {
+      "id": "an_entity_aft_af0ba5c43a",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "韩铸：记录最后出场第 1 章，后续仍被点名",
+      "detail": "第 661 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        1,
+        661
+      ],
+      "entities": [
+        "e_hanzhu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch1",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch661",
+          "quote": "韩家祠 韩立在酒楼听儒生议论韩家回乡祭祖，打探出五里沟本家；隐身回到旧村，潜入韩家祠，望着韩铸、韩铁等灵位出神。韩姓儒生与厉姓大汉上楼，大汉误认其为贼，凌空扑来。 大汉误认贼人扑来"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_16e11fab53",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "韩三叔：记录最后出场第 3 章，后续仍被点名",
+      "detail": "第 652 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        3,
+        652
+      ],
+      "entities": [
+        "e_hanshu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch3",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch652",
+          "quote": "预兆 付天化心神不宁，下令外松内紧、护堡大阵全开，并召三叔驱使镇族圣兽赴会。魔焰门孙、莫两护法携付家双艳抵达祝寿。韩立混在散修中入堡，中途隐匿消失。 韩立混入付家堡"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
     },
     {
       "id": "an_entity_aft_7cd812421e",
@@ -1588,16 +1799,16 @@
       "verified": false
     },
     {
-      "id": "an_foreshadow_96824672a8",
+      "id": "an_foreshadow_48bba530c8",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "high",
-      "title": "厉飞雨宁舍将来也要服抽髓丸换取眼前风光，苦衷始终未明：第 22 章埋下，162 章后未再提",
-      "detail": "沉默 338 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "厉飞雨宁舍将来也要服抽髓丸换取眼前风光，苦衷始终未明：第 22 章埋下，663 章后未再提",
+      "detail": "沉默 137 章，超过当前阈值 120 章。",
       "chapter_range": [
         22,
-        162
+        663
       ],
       "entities": [
         "f_lifeiyu"
@@ -1608,14 +1819,14 @@
           "quote": "厉飞雨宁舍将来也要服抽髓丸换取眼前风光，苦衷始终未明"
         },
         {
-          "coordinate": "ch162",
-          "quote": "第 162 章后未再出现；沉默 338 章"
+          "coordinate": "ch663",
+          "quote": "第 663 章后未再出现；沉默 137 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 338
+      "silent_chapters": 137
     },
     {
       "id": "an_entity_aft_f8e55d1841",
@@ -1761,34 +1972,6 @@
       "verified": false
     },
     {
-      "id": "an_entity_aft_f43f320d50",
-      "kind": "entity_after_last",
-      "kind_cn": "档案退场章疑点",
-      "severity": "info",
-      "confidence": "low",
-      "title": "络腮胡大汉：记录最后出场第 90 章，后续仍被点名",
-      "detail": "第 91 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
-      "chapter_range": [
-        90,
-        91
-      ],
-      "entities": [
-        "e_luosaihudahan"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch90",
-          "quote": "entities.last_ch"
-        },
-        {
-          "coordinate": "ch91",
-          "quote": "剑芒对飞剑 七玄门两位师叔跳出死斗，儒生以银针暗器、灰衣人以二寸剑芒围攻金光上人。儒生被灰芒削首，灰衣人吐血负伤，韩立扬手夺走灰芒。 韩立笑着讨要那道飞来飞去的灰光"
-        }
-      ],
-      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
-      "verified": false
-    },
-    {
       "id": "an_entity_aft_94ab54e0a2",
       "kind": "entity_after_last",
       "kind_cn": "档案退场章疑点",
@@ -1867,6 +2050,56 @@
       "verified": false
     },
     {
+      "id": "an_alias_cand_b47adf760d",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：古玉 的别名「儒生」",
+      "detail": "儒生 同时是实体 e_rusheng 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        91,
+        515
+      ],
+      "entities": [
+        "e_guyu",
+        "e_rusheng"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch515",
+          "quote": "古玉 aliases=儒生"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_alias_cand_ed1fd18826",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：韩天啸 的别名「儒生」",
+      "detail": "儒生 同时是实体 e_rusheng 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        91,
+        662
+      ],
+      "entities": [
+        "e_hantianxiao",
+        "e_rusheng"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch662",
+          "quote": "韩天啸 aliases=儒生"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
       "id": "an_entity_aft_ae38000e57",
       "kind": "entity_after_last",
       "kind_cn": "档案退场章疑点",
@@ -1929,7 +2162,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "灰剑符箓的寒光随使用次数递减，次数耗尽即灵性尽失：第 96 章埋下，96 章后未再提",
-      "detail": "沉默 404 章，超过当前阈值 75 章。",
+      "detail": "沉默 704 章，超过当前阈值 120 章。",
       "chapter_range": [
         96,
         96
@@ -1946,37 +2179,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 404
-    },
-    {
-      "id": "an_foreshadow_92062598a7",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "high",
-      "title": "韩立离山前与王门主密谈一笔交易，内容始终未明说：第 97 章埋下，98 章后未再提",
-      "detail": "沉默 402 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        97,
-        98
-      ],
-      "entities": [
-        "f_wangjiaoyi"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch97:p40",
-          "quote": "韩立离山前与王门主密谈一笔交易，内容始终未明说"
-        },
-        {
-          "coordinate": "ch98",
-          "quote": "第 98 章后未再出现；沉默 402 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.65,
-      "silent_chapters": 402
+      "silent_chapters": 704
     },
     {
       "id": "an_foreshadow_bdf3d2ccc0",
@@ -1985,7 +2188,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "王绝楚死后仅余三颗养精丹，日后为其后人引来血雨腥风：第 98 章埋下，98 章后未再提",
-      "detail": "沉默 402 章，超过当前阈值 75 章。",
+      "detail": "沉默 702 章，超过当前阈值 120 章。",
       "chapter_range": [
         98,
         98
@@ -2000,13 +2203,13 @@
         },
         {
           "coordinate": "ch98",
-          "quote": "第 98 章后未再出现；沉默 402 章"
+          "quote": "第 98 章后未再出现；沉默 702 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.5,
-      "silent_chapters": 402
+      "silent_chapters": 702
     },
     {
       "id": "an_entity_aft_3490d30cbd",
@@ -2090,66 +2293,6 @@
       "verified": false
     },
     {
-      "id": "an_foreshadow_151476ffc3",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "high",
-      "title": "燕歌痴恋墨玉珠多年，被拒仍甘心守护：第 114 章埋下，337 章后未再提",
-      "detail": "沉默 163 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        114,
-        337
-      ],
-      "entities": [
-        "f_yange_chi"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch114:p10",
-          "quote": "燕歌痴恋墨玉珠多年，被拒仍甘心守护"
-        },
-        {
-          "coordinate": "ch337",
-          "quote": "第 337 章后未再出现；沉默 163 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.65,
-      "silent_chapters": 163
-    },
-    {
-      "id": "an_foreshadow_1fe25f8814",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "high",
-      "title": "韩立放云翅鸟监视孙二狗，防其逃离嘉元城：第 120 章埋下，337 章后未再提",
-      "detail": "沉默 163 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        120,
-        337
-      ],
-      "entities": [
-        "f_yunchiniao_jian"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch120:p28",
-          "quote": "韩立放云翅鸟监视孙二狗，防其逃离嘉元城"
-        },
-        {
-          "coordinate": "ch337",
-          "quote": "第 337 章后未再出现；沉默 163 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.6,
-      "silent_chapters": 163
-    },
-    {
       "id": "an_entity_aft_7b6e64cbd4",
       "kind": "entity_after_last",
       "kind_cn": "档案退场章疑点",
@@ -2176,36 +2319,6 @@
       ],
       "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
       "verified": false
-    },
-    {
-      "id": "an_foreshadow_938fb72bf3",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "medium",
-      "title": "枯崖山万家祖训不歧视散修，祖先出自巨剑门：第 128 章埋下，357 章后未再提",
-      "detail": "沉默 143 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        128,
-        357
-      ],
-      "entities": [
-        "f_wanjia"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch128:p8",
-          "quote": "枯崖山万家祖训不歧视散修，祖先出自巨剑门"
-        },
-        {
-          "coordinate": "ch357",
-          "quote": "第 357 章后未再出现；沉默 143 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.65,
-      "silent_chapters": 143
     },
     {
       "id": "an_relation_r_dc590ddbec",
@@ -2243,7 +2356,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "《青溪笔录》记载升仙令等修仙界密闻，或还有可用之处：第 141 章埋下，141 章后未再提",
-      "detail": "沉默 359 章，超过当前阈值 75 章。",
+      "detail": "沉默 659 章，超过当前阈值 120 章。",
       "chapter_range": [
         141,
         141
@@ -2260,37 +2373,37 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.65,
-      "silent_chapters": 359
+      "silent_chapters": 659
     },
     {
-      "id": "an_foreshadow_a57633bdc2",
+      "id": "an_foreshadow_d6fd7e5604",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
       "confidence": "high",
-      "title": "化刀坞寒天涯阴柔狠辣，连求饶女修也杀：第 185 章埋下，272 章后未再提",
-      "detail": "沉默 228 章，超过当前阈值 75 章。",
+      "title": "韩立编造幼时误食龙鳞果的奇遇，王师叔半信半疑：第 173 章埋下，213 章后未再提",
+      "detail": "沉默 587 章，超过当前阈值 120 章。",
       "chapter_range": [
-        185,
-        272
+        173,
+        213
       ],
       "entities": [
-        "f_handi"
+        "f_longlinguog"
       ],
       "evidence": [
         {
-          "coordinate": "ch185:p14",
-          "quote": "化刀坞寒天涯阴柔狠辣，连求饶女修也杀"
+          "coordinate": "ch173:p4",
+          "quote": "韩立编造幼时误食龙鳞果的奇遇，王师叔半信半疑"
         },
         {
-          "coordinate": "ch272",
-          "quote": "第 272 章后未再出现；沉默 228 章"
+          "coordinate": "ch213",
+          "quote": "第 213 章后未再出现；沉默 587 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 228
+      "silent_chapters": 587
     },
     {
       "id": "an_foreshadow_e5173ee117",
@@ -2299,7 +2412,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "钟吾认出踏云靴，与韩立交换中心区资料，二人互相忌惮：第 192 章埋下，269 章后未再提",
-      "detail": "沉默 231 章，超过当前阈值 75 章。",
+      "detail": "沉默 531 章，超过当前阈值 120 章。",
       "chapter_range": [
         192,
         269
@@ -2314,13 +2427,13 @@
         },
         {
           "coordinate": "ch269",
-          "quote": "第 269 章后未再出现；沉默 231 章"
+          "quote": "第 269 章后未再出现；沉默 531 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 231
+      "silent_chapters": 531
     },
     {
       "id": "an_foreshadow_16743c66bd",
@@ -2329,7 +2442,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "巨蜈蚣背壳坚硬可挡顶级法器，韩立切下准备做内甲：第 197 章埋下，266 章后未再提",
-      "detail": "沉默 234 章，超过当前阈值 75 章。",
+      "detail": "沉默 534 章，超过当前阈值 120 章。",
       "chapter_range": [
         197,
         266
@@ -2344,73 +2457,13 @@
         },
         {
           "coordinate": "ch266",
-          "quote": "第 266 章后未再出现；沉默 234 章"
+          "quote": "第 266 章后未再出现；沉默 534 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 234
-    },
-    {
-      "id": "an_foreshadow_ee6e426cd0",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "high",
-      "title": "菡云芝被无忧针法抹去半日记忆，不记韩立相救之事，日后或再：第 203 章埋下，338 章后未再提",
-      "detail": "沉默 162 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        203,
-        338
-      ],
-      "entities": [
-        "f_han_yunzhi_memory"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch203:p38",
-          "quote": "菡云芝被无忧针法抹去半日记忆，不记韩立相救之事，日后或再相遇"
-        },
-        {
-          "coordinate": "ch338",
-          "quote": "第 338 章后未再出现；沉默 162 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.6,
-      "silent_chapters": 162
-    },
-    {
-      "id": "an_foreshadow_0544f70597",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "medium",
-      "title": "赵师妹误封地道困住南宫师祖，出禁地后面临师门追究：第 206 章埋下，409 章后未再提",
-      "detail": "沉默 91 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        206,
-        409
-      ],
-      "entities": [
-        "f_zhao_shimei"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch206:p37",
-          "quote": "赵师妹误封地道困住南宫师祖，出禁地后面临师门追究"
-        },
-        {
-          "coordinate": "ch409",
-          "quote": "第 409 章后未再出现；沉默 91 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.55,
-      "silent_chapters": 91
+      "silent_chapters": 534
     },
     {
       "id": "an_entity_aft_5dcbbfb8a6",
@@ -2441,43 +2494,13 @@
       "verified": false
     },
     {
-      "id": "an_foreshadow_8b1cf098f1",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "medium",
-      "title": "李化元称韩立筑基成功后再接去收为正式弟子，三年来却再无音：第 212 章埋下，385 章后未再提",
-      "detail": "沉默 115 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        212,
-        385
-      ],
-      "entities": [
-        "f_lihuayuan_formal"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch212:p15",
-          "quote": "李化元称韩立筑基成功后再接去收为正式弟子，三年来却再无音讯。"
-        },
-        {
-          "coordinate": "ch385",
-          "quote": "第 385 章后未再出现；沉默 115 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.5,
-      "silent_chapters": 115
-    },
-    {
       "id": "an_foreshadow_8730a8e899",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
       "confidence": "high",
       "title": "银色书页花纹奇特，韩立琢磨许久毫无头绪，来历与用途不明。：第 213 章埋下，240 章后未再提",
-      "detail": "沉默 260 章，超过当前阈值 75 章。",
+      "detail": "沉默 560 章，超过当前阈值 120 章。",
       "chapter_range": [
         213,
         240
@@ -2492,13 +2515,13 @@
         },
         {
           "coordinate": "ch240",
-          "quote": "第 240 章后未再出现；沉默 260 章"
+          "quote": "第 240 章后未再出现；沉默 560 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 260
+      "silent_chapters": 560
     },
     {
       "id": "an_foreshadow_42a96e52b8",
@@ -2507,7 +2530,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "全本青元剑诀传闻含分神期功法，现存仅半部残本，后续功法早：第 217 章埋下，217 章后未再提",
-      "detail": "沉默 283 章，超过当前阈值 75 章。",
+      "detail": "沉默 583 章，超过当前阈值 120 章。",
       "chapter_range": [
         217,
         217
@@ -2524,7 +2547,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.5,
-      "silent_chapters": 283
+      "silent_chapters": 583
     },
     {
       "id": "an_foreshadow_811fc7d102",
@@ -2533,7 +2556,7 @@
       "severity": "info",
       "confidence": "high",
       "title": "灵眼之物理应生于灵气最浓处，此泉附近灵气并不浓密却成形，：第 221 章埋下，221 章后未再提",
-      "detail": "沉默 279 章，超过当前阈值 75 章。",
+      "detail": "沉默 579 章，超过当前阈值 120 章。",
       "chapter_range": [
         221,
         221
@@ -2550,19 +2573,19 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 279
+      "silent_chapters": 579
     },
     {
-      "id": "an_foreshadow_92ed53aa5b",
+      "id": "an_foreshadow_80a91a6bf9",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
       "confidence": "medium",
-      "title": "与齐云霄约定数年内改进颠倒五行阵器，若成功则奉还封印心得：第 227 章埋下，413 章后未再提",
-      "detail": "沉默 87 章，超过当前阈值 75 章。",
+      "title": "与齐云霄约定数年内改进颠倒五行阵器，若成功则奉还封印心得：第 227 章埋下，657 章后未再提",
+      "detail": "沉默 143 章，超过当前阈值 120 章。",
       "chapter_range": [
         227,
-        413
+        657
       ],
       "entities": [
         "f_qiyunxiao_future"
@@ -2573,44 +2596,14 @@
           "quote": "与齐云霄约定数年内改进颠倒五行阵器，若成功则奉还封印心得，留有联系方式待后会。"
         },
         {
-          "coordinate": "ch413",
-          "quote": "第 413 章后未再出现；沉默 87 章"
+          "coordinate": "ch657",
+          "quote": "第 657 章后未再出现；沉默 143 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 87
-    },
-    {
-      "id": "an_foreshadow_0ee579133b",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
-      "severity": "info",
-      "confidence": "medium",
-      "title": "秘店受千竹教重金收买配合设局，店方背后的交易与势力未明。：第 230 章埋下，398 章后未再提",
-      "detail": "沉默 102 章，超过当前阈值 75 章。",
-      "chapter_range": [
-        230,
-        398
-      ],
-      "entities": [
-        "f_midian_buyoff"
-      ],
-      "evidence": [
-        {
-          "coordinate": "ch230:p37",
-          "quote": "秘店受千竹教重金收买配合设局，店方背后的交易与势力未明。"
-        },
-        {
-          "coordinate": "ch398",
-          "quote": "第 398 章后未再出现；沉默 102 章"
-        }
-      ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.5,
-      "silent_chapters": 102
+      "silent_chapters": 143
     },
     {
       "id": "an_entity_aft_67e672ae3f",
@@ -2672,16 +2665,16 @@
       }
     },
     {
-      "id": "an_foreshadow_accdc779e3",
+      "id": "an_foreshadow_f1b67ff176",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "high",
-      "title": "乾坤塔符宝为夺宝大会头彩，各国弟子云集，韩立是否出手争夺：第 245 章埋下，253 章后未再提",
-      "detail": "沉默 247 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "乾坤塔符宝为夺宝大会头彩，各国弟子云集，韩立是否出手争夺：第 245 章埋下，599 章后未再提",
+      "detail": "沉默 201 章，超过当前阈值 120 章。",
       "chapter_range": [
         245,
-        253
+        599
       ],
       "entities": [
         "f_qiankunta"
@@ -2692,23 +2685,23 @@
           "quote": "乾坤塔符宝为夺宝大会头彩，各国弟子云集，韩立是否出手争夺尚未可知。"
         },
         {
-          "coordinate": "ch253",
-          "quote": "第 253 章后未再出现；沉默 247 章"
+          "coordinate": "ch599",
+          "quote": "第 599 章后未再出现；沉默 201 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 247
+      "silent_chapters": 201
     },
     {
       "id": "an_foreshadow_c7c5d9658b",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "董萱儿修化春决须双修否则法力停滞，名声已坏，被遣赴大会，：第 246 章埋下，361 章后未再提",
-      "detail": "沉默 139 章，超过当前阈值 75 章。",
+      "detail": "沉默 439 章，超过当前阈值 120 章。",
       "chapter_range": [
         246,
         361
@@ -2723,25 +2716,25 @@
         },
         {
           "coordinate": "ch361",
-          "quote": "第 361 章后未再出现；沉默 139 章"
+          "quote": "第 361 章后未再出现；沉默 439 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 139
+      "silent_chapters": 439
     },
     {
-      "id": "an_foreshadow_4cc317761f",
+      "id": "an_foreshadow_8b16e5e055",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
       "confidence": "high",
-      "title": "田不缺记住韩立三人样貌，迷心术只惑女子，临行放话此事不算：第 258 章埋下，262 章后未再提",
-      "detail": "沉默 238 章，超过当前阈值 75 章。",
+      "title": "田不缺记住韩立三人样貌，迷心术只惑女子，临行放话此事不算：第 258 章埋下，505 章后未再提",
+      "detail": "沉默 295 章，超过当前阈值 120 章。",
       "chapter_range": [
         258,
-        262
+        505
       ],
       "entities": [
         "f_tian_buque_remember"
@@ -2752,14 +2745,14 @@
           "quote": "田不缺记住韩立三人样貌，迷心术只惑女子，临行放话此事不算完"
         },
         {
-          "coordinate": "ch262",
-          "quote": "第 262 章后未再出现；沉默 238 章"
+          "coordinate": "ch505",
+          "quote": "第 505 章后未再出现；沉默 295 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 238
+      "silent_chapters": 295
     },
     {
       "id": "an_entity_aft_ec7f97b0b0",
@@ -2790,13 +2783,43 @@
       "verified": false
     },
     {
+      "id": "an_foreshadow_53370bfb82",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "辛如音身负久治不愈顽症，需年久灵草医治，韩立许诺割让八百：第 276 章埋下，672 章后未再提",
+      "detail": "沉默 128 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        276,
+        672
+      ],
+      "entities": [
+        "f_xinruyin_bing"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch276:p3",
+          "quote": "辛如音身负久治不愈顽症，需年久灵草医治，韩立许诺割让八百年灵草为酬"
+        },
+        {
+          "coordinate": "ch672",
+          "quote": "第 672 章后未再出现；沉默 128 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 128
+    },
+    {
       "id": "an_foreshadow_b1ddec7542",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
       "confidence": "high",
       "title": "韩立约青袍老者祖孙王府后门等候，欲询问其敛息功法：第 289 章埋下，291 章后未再提",
-      "detail": "沉默 209 章，超过当前阈值 75 章。",
+      "detail": "沉默 509 章，超过当前阈值 120 章。",
       "chapter_range": [
         289,
         291
@@ -2811,55 +2834,75 @@
         },
         {
           "coordinate": "ch291",
-          "quote": "第 291 章后未再出现；沉默 209 章"
+          "quote": "第 291 章后未再出现；沉默 509 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.55,
-      "silent_chapters": 209
+      "silent_chapters": 509
     },
     {
-      "id": "an_foreshadow_a804cf793e",
-      "kind": "foreshadow_unresolved",
-      "kind_cn": "伏笔未回收",
+      "id": "an_alias_cand_49e94381cd",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
       "severity": "info",
-      "confidence": "high",
-      "title": "少女持传音符与玉牌，往黄枫谷百药园引荐拜马师兄为师：第 297 章埋下，345 章后未再提",
-      "detail": "沉默 155 章，超过当前阈值 75 章。",
+      "confidence": "low",
+      "title": "别名指向另一个实体：血侍 的别名「光头大汉」",
+      "detail": "光头大汉 同时是实体 e_guangtou_dahan 的正名；当前未被 merge 合并。",
       "chapter_range": [
-        297,
-        345
+        306,
+        648
       ],
       "entities": [
-        "f_shaonv_baishi"
+        "e_xueshi",
+        "e_guangtou_dahan"
       ],
       "evidence": [
         {
-          "coordinate": "ch297:p4",
-          "quote": "少女持传音符与玉牌，往黄枫谷百药园引荐拜马师兄为师"
-        },
-        {
-          "coordinate": "ch345",
-          "quote": "第 345 章后未再出现；沉默 155 章"
+          "coordinate": "ch306",
+          "quote": "血侍 aliases=光头大汉"
         }
       ],
-      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
-      "verified": false,
-      "importance": 0.55,
-      "silent_chapters": 155
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
     },
     {
-      "id": "an_foreshadow_b61981be09",
+      "id": "an_alias_cand_d8ae8b0e74",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：铁罗 的别名「光头大汉」",
+      "detail": "光头大汉 同时是实体 e_guangtou_dahan 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        311,
+        648
+      ],
+      "entities": [
+        "e_tieluo",
+        "e_guangtou_dahan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch311",
+          "quote": "铁罗 aliases=光头大汉"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_foreshadow_0f259767e8",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "high",
-      "title": "陈巧倩认定韩立就是血色试炼后救她之人，被否认后仍不死心：第 315 章埋下，332 章后未再提",
-      "detail": "沉默 168 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "陈巧倩认定韩立就是血色试炼后救她之人，被否认后仍不死心：第 315 章埋下，642 章后未再提",
+      "detail": "沉默 158 章，超过当前阈值 120 章。",
       "chapter_range": [
         315,
-        332
+        642
       ],
       "entities": [
         "f_chenqiaoqian_identity"
@@ -2870,23 +2913,53 @@
           "quote": "陈巧倩认定韩立就是血色试炼后救她之人，被否认后仍不死心"
         },
         {
-          "coordinate": "ch332",
-          "quote": "第 332 章后未再出现；沉默 168 章"
+          "coordinate": "ch642",
+          "quote": "第 642 章后未再出现；沉默 158 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.65,
-      "silent_chapters": 168
+      "silent_chapters": 158
+    },
+    {
+      "id": "an_foreshadow_5df2654f7a",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "武炫离队后在客栈失踪，随身衣物未收，疑似被黑煞教抓走：第 316 章埋下，518 章后未再提",
+      "detail": "沉默 282 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        316,
+        518
+      ],
+      "entities": [
+        "f_wuxuan_missing"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch316:p45",
+          "quote": "武炫离队后在客栈失踪，随身衣物未收，疑似被黑煞教抓走"
+        },
+        {
+          "coordinate": "ch518",
+          "quote": "第 518 章后未再出现；沉默 282 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 282
     },
     {
       "id": "an_foreshadow_5b5091c3f3",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "medium",
+      "confidence": "high",
       "title": "吴九指与血侍一伙，昔日旧识在战场沦为敌人，其立场来历成谜：第 319 章埋下，350 章后未再提",
-      "detail": "沉默 150 章，超过当前阈值 75 章。",
+      "detail": "沉默 450 章，超过当前阈值 120 章。",
       "chapter_range": [
         319,
         350
@@ -2901,13 +2974,13 @@
         },
         {
           "coordinate": "ch350",
-          "quote": "第 350 章后未再出现；沉默 150 章"
+          "quote": "第 350 章后未再出现；沉默 450 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.55,
-      "silent_chapters": 150
+      "silent_chapters": 450
     },
     {
       "id": "an_entity_aft_4b4ed094c7",
@@ -2966,16 +3039,16 @@
       "verified": false
     },
     {
-      "id": "an_foreshadow_12f44dbe1d",
+      "id": "an_foreshadow_b47ebf04e5",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "medium",
-      "title": "血凝五行丹可用于身外化身之术，韩立断自用结丹之念后并未弃：第 330 章埋下，404 章后未再提",
-      "detail": "沉默 96 章，超过当前阈值 75 章。",
+      "confidence": "high",
+      "title": "血凝五行丹可用于身外化身之术，韩立断自用结丹之念后并未弃：第 330 章埋下，518 章后未再提",
+      "detail": "沉默 282 章，超过当前阈值 120 章。",
       "chapter_range": [
         330,
-        404
+        518
       ],
       "entities": [
         "f_wuxingdan_huashen"
@@ -2986,44 +3059,44 @@
           "quote": "血凝五行丹可用于身外化身之术，韩立断自用结丹之念后并未弃用"
         },
         {
-          "coordinate": "ch404",
-          "quote": "第 404 章后未再出现；沉默 96 章"
+          "coordinate": "ch518",
+          "quote": "第 518 章后未再出现；沉默 282 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.6,
-      "silent_chapters": 96
+      "silent_chapters": 282
     },
     {
-      "id": "an_foreshadow_808a795a2f",
+      "id": "an_foreshadow_d3c1cdce0c",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
-      "confidence": "high",
-      "title": "孙二狗中数月慢性隐毒，心中已有几个怀疑对象，凡人恩怨韩立：第 333 章埋下，337 章后未再提",
-      "detail": "沉默 163 章，超过当前阈值 75 章。",
+      "confidence": "medium",
+      "title": "结丹修士被血灵钻击爆的绿色丹丸碎粒被收起，用途未明：第 343 章埋下，642 章后未再提",
+      "detail": "沉默 158 章，超过当前阈值 120 章。",
       "chapter_range": [
-        333,
-        337
+        343,
+        642
       ],
       "entities": [
-        "f_sunerou_poison"
+        "f_jindan_suili"
       ],
       "evidence": [
         {
-          "coordinate": "ch333:p55",
-          "quote": "孙二狗中数月慢性隐毒，心中已有几个怀疑对象，凡人恩怨韩立不插手"
+          "coordinate": "ch343:p49",
+          "quote": "结丹修士被血灵钻击爆的绿色丹丸碎粒被收起，用途未明"
         },
         {
-          "coordinate": "ch337",
-          "quote": "第 337 章后未再出现；沉默 163 章"
+          "coordinate": "ch642",
+          "quote": "第 642 章后未再出现；沉默 158 章"
         }
       ],
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
-      "importance": 0.5,
-      "silent_chapters": 163
+      "importance": 0.6,
+      "silent_chapters": 158
     },
     {
       "id": "an_entity_aft_c1b5cc34e4",
@@ -3054,13 +3127,98 @@
       "verified": false
     },
     {
-      "id": "an_foreshadow_2e4bd07254",
+      "id": "an_alias_cand_e00f014853",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：窦道友 的别名「光头大汉」",
+      "detail": "光头大汉 同时是实体 e_guangtou_dahan 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        379,
+        648
+      ],
+      "entities": [
+        "e_dou_daoyou",
+        "e_guangtou_dahan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch379",
+          "quote": "窦道友 aliases=光头大汉"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_foreshadow_af3c2c1609",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "六连殿严守婴鲤兽消息，另许每人千枚灵石保密补偿，所图妖丹：第 380 章埋下，500 章后未再提",
+      "detail": "沉默 300 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        380,
+        500
+      ],
+      "entities": [
+        "f_liuliandian_secret"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch380:p13",
+          "quote": "六连殿严守婴鲤兽消息，另许每人千枚灵石保密补偿，所图妖丹之外的隐秘未明"
+        },
+        {
+          "coordinate": "ch500",
+          "quote": "第 500 章后未再出现；沉默 300 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 300
+    },
+    {
+      "id": "an_foreshadow_53a76867d5",
       "kind": "foreshadow_unresolved",
       "kind_cn": "伏笔未回收",
       "severity": "info",
       "confidence": "medium",
+      "title": "韩立挂名妙音门名义长老，只借名头不掌实务，日后或被卷入门：第 410 章埋下，561 章后未再提",
+      "detail": "沉默 239 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        410,
+        561
+      ],
+      "entities": [
+        "f_mingyi_zhanglao"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch410:p24",
+          "quote": "韩立挂名妙音门名义长老，只借名头不掌实务，日后或被卷入门派纷争"
+        },
+        {
+          "coordinate": "ch561",
+          "quote": "第 561 章后未再出现；沉默 239 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 239
+    },
+    {
+      "id": "an_foreshadow_2e4bd07254",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
       "title": "光罩中心石柱刻古文花纹与古怪条纹，古修士遗址内所藏之物尚：第 418 章埋下，418 章后未再提",
-      "detail": "沉默 82 章，超过当前阈值 75 章。",
+      "detail": "沉默 382 章，超过当前阈值 120 章。",
       "chapter_range": [
         418,
         418
@@ -3077,7 +3235,7 @@
       "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
       "verified": false,
       "importance": 0.65,
-      "silent_chapters": 82
+      "silent_chapters": 382
     },
     {
       "id": "an_relation_r_312636cca4",
@@ -3135,6 +3293,1027 @@
         }
       ],
       "reader_note": "反目/结盟本身是正常剧情；标出来是提醒核对时间顺序。",
+      "verified": false
+    },
+    {
+      "id": "an_foreshadow_74e283b761",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第二关冰火道分玄晶道奇寒与熔岩路炙热两路，须走到峡谷尽头：第 448 章埋下，448 章后未再提",
+      "detail": "沉默 352 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        448,
+        448
+      ],
+      "entities": [
+        "f_binghuo_dao"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch448:p1",
+          "quote": "第二关冰火道分玄晶道奇寒与熔岩路炙热两路，须走到峡谷尽头传送阵方可出关"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 352
+    },
+    {
+      "id": "an_foreshadow_87b0aa6d6e",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "熔岩路中段出现一望无际的黑色沙漠，绕路需多耽误两日，暗藏：第 460 章埋下，460 章后未再提",
+      "detail": "沉默 340 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        460,
+        460
+      ],
+      "entities": [
+        "f_hei_shamo"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch460:p43",
+          "quote": "熔岩路中段出现一望无际的黑色沙漠，绕路需多耽误两日，暗藏未知诡异危险"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 340
+    },
+    {
+      "id": "an_foreshadow_ee671537a0",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "寒骊台后壁夹层中的陈旧发黄卷轴，来历与内容均未明，韩立尚：第 478 章埋下，478 章后未再提",
+      "detail": "沉默 322 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        478,
+        478
+      ],
+      "entities": [
+        "f_juanzhou_mystery"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch478:p6",
+          "quote": "寒骊台后壁夹层中的陈旧发黄卷轴，来历与内容均未明，韩立尚未及展开"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 322
+    },
+    {
+      "id": "an_foreshadow_23b111bc01",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "五色骸骨与圆珠出自极炫，骨骼为何呈五色及与越皇的关系未解：第 499 章埋下，499 章后未再提",
+      "detail": "沉默 301 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        499,
+        499
+      ],
+      "entities": [
+        "f_jixuan_guhai"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch499:p21",
+          "quote": "五色骸骨与圆珠出自极炫，骨骼为何呈五色及与越皇的关系未解"
+        },
+        {
+          "coordinate": "ch499",
+          "quote": "第 499 章后未再出现；沉默 301 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 301
+    },
+    {
+      "id": "an_foreshadow_ed39cece3e",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "凌玉灵容颜绝美、男女难辨，修驻颜功法，星宫中也少有人知其：第 505 章埋下，591 章后未再提",
+      "detail": "沉默 209 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        505,
+        591
+      ],
+      "entities": [
+        "f_lingyuling_identity"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch505:p19",
+          "quote": "凌玉灵容颜绝美、男女难辨，修驻颜功法，星宫中也少有人知其真身"
+        },
+        {
+          "coordinate": "ch591",
+          "quote": "第 591 章后未再出现；沉默 209 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 209
+    },
+    {
+      "id": "an_alias_cand_9fa43047e1",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：易道友 的别名「锦衣大汉」",
+      "detail": "锦衣大汉 同时是实体 e_jinyi_dahan 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        508,
+        765
+      ],
+      "entities": [
+        "e_yi_daoyou",
+        "e_jinyi_dahan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch508",
+          "quote": "易道友 aliases=锦衣大汉"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_foreshadow_20cf676323",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "星空殿传送阵被顾乾二人做手脚私放修士，另一名主事者外出未：第 510 章埋下，510 章后未再提",
+      "detail": "沉默 290 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        510,
+        510
+      ],
+      "entities": [
+        "f_xingkong_private"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch510:p41",
+          "quote": "星空殿传送阵被顾乾二人做手脚私放修士，另一名主事者外出未归，事后或遭追查"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 290
+    },
+    {
+      "id": "an_foreshadow_a075cc2708",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "巨龟若进阶八级，领土意识或察觉雾中岛洞府，韩立做好弃岛搬：第 520 章埋下，550 章后未再提",
+      "detail": "沉默 250 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        520,
+        550
+      ],
+      "entities": [
+        "f_wuzhongdao_danger"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch520:p36",
+          "quote": "巨龟若进阶八级，领土意识或察觉雾中岛洞府，韩立做好弃岛搬迁准备"
+        },
+        {
+          "coordinate": "ch550",
+          "quote": "第 550 章后未再出现；沉默 250 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 250
+    },
+    {
+      "id": "an_foreshadow_c680d96390",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "青灵门五名修士误入雾海岛阵法，受韩立所救，门派底细已吐露：第 530 章埋下，533 章后未再提",
+      "detail": "沉默 267 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        530,
+        533
+      ],
+      "entities": [
+        "f_qinglingmen_visitors"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch530:p39",
+          "quote": "青灵门五名修士误入雾海岛阵法，受韩立所救，门派底细已吐露"
+        },
+        {
+          "coordinate": "ch533",
+          "quote": "第 533 章后未再出现；沉默 267 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.55,
+      "silent_chapters": 267
+    },
+    {
+      "id": "an_foreshadow_94ec17e46e",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "妙音门邀结丹修士清剿五六级妖兽采集幻梦石，筹建回内星海传：第 539 章埋下，561 章后未再提",
+      "detail": "沉默 239 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        539,
+        561
+      ],
+      "entities": [
+        "f_huanmengshi_mission"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch539:p31",
+          "quote": "妙音门邀结丹修士清剿五六级妖兽采集幻梦石，筹建回内星海传送阵"
+        },
+        {
+          "coordinate": "ch561",
+          "quote": "第 561 章后未再出现；沉默 239 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 239
+    },
+    {
+      "id": "an_foreshadow_010e733b77",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "卓如婷在妙音门政变后不知所踪，下落未明：第 540 章埋下，561 章后未再提",
+      "detail": "沉默 239 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        540,
+        561
+      ],
+      "entities": [
+        "f_zhuoruting_missing"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch540:p14",
+          "quote": "卓如婷在妙音门政变后不知所踪，下落未明"
+        },
+        {
+          "coordinate": "ch561",
+          "quote": "第 561 章后未再出现；沉默 239 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.55,
+      "silent_chapters": 239
+    },
+    {
+      "id": "an_foreshadow_327a310abd",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "伴妖草到手，韩立称其直接关系能否在修仙路上更上一层，具体：第 541 章埋下，637 章后未再提",
+      "detail": "沉默 163 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        541,
+        637
+      ],
+      "entities": [
+        "f_banyaocao_yongtu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch541:p21",
+          "quote": "伴妖草到手，韩立称其直接关系能否在修仙路上更上一层，具体用途待揭"
+        },
+        {
+          "coordinate": "ch637",
+          "quote": "第 637 章后未再出现；沉默 163 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 163
+    },
+    {
+      "id": "an_entity_aft_e3f47151cf",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "云天啸：记录最后出场第 559 章，后续仍被点名",
+      "detail": "第 634 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        559,
+        634
+      ],
+      "entities": [
+        "e_yuntianxiao"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch559",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch634",
+          "quote": "算计 卫师兄吐露天煞宗卧底身份与云长老恩情，只愿分醇液。蓝童子率付老者破土而出，破阵声乃故意假造。姜云急报程长老中伏，竟是套中套；卫师兄被天煞真君附身紫爪突袭。 天煞真君附体出手"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_a214e0a768",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "恶汉：记录最后出场第 564 章，后续仍被点名",
+      "detail": "第 650 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        564,
+        650
+      ],
+      "entities": [
+        "e_ehan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch564",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch650",
+          "quote": "妖婴 二凶刚要发难，女童声音道破韩立元婴身份。光头大汉金遁符逃遁被飞剑斩杀，罗兄被绿光小人吞吃精魂。小人修炫光化物诀、靠吞噬生魂精进，硬接神雷无碍，贪窥元婴对峙。 绿光小人窥伺元婴"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_alias_cand_fd53728241",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：程天坤 的别名「大长老」",
+      "detail": "大长老 同时是实体 e_dazhanglao 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        581,
+        636
+      ],
+      "entities": [
+        "e_cheng_tiankun",
+        "e_dazhanglao"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch636",
+          "quote": "程天坤 aliases=大长老"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_alias_cand_06c0c47475",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：魏无涯 的别名「大长老」",
+      "detail": "大长老 同时是实体 e_dazhanglao 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        581,
+        715
+      ],
+      "entities": [
+        "e_wei_wuya",
+        "e_dazhanglao"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch715",
+          "quote": "魏无涯 aliases=大长老"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_ce85822b70",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "大长老：记录最后出场第 590 章，后续仍被点名",
+      "detail": "第 707 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        590,
+        707
+      ],
+      "entities": [
+        "e_dazhanglao"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch590",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch707",
+          "quote": "路逢旧人 余二盒得绿瓷瓶与紫色丝网紫铖兜古宝；玉简载苍坤上人望月诀等功法。韩立入丰原国，遥见五名结丹修士被一元婴法士围攻，其中胖老者竟是旧识雷万鹤。 围攻中认出旧识雷万鹤"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_alias_cand_e0b876939c",
+      "kind": "alias_candidate",
+      "kind_cn": "别名候选",
+      "severity": "info",
+      "confidence": "low",
+      "title": "别名指向另一个实体：俞师弟 的别名「俞姓青年」",
+      "detail": "俞姓青年 同时是实体 e_yu_xiaonian 的正名；当前未被 merge 合并。",
+      "chapter_range": [
+        599,
+        600
+      ],
+      "entities": [
+        "e_yu_shixiong",
+        "e_yu_xiaonian"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch599",
+          "quote": "俞师弟 aliases=俞姓青年"
+        }
+      ],
+      "reader_note": "可能是同名不同人，也可能是漏归并；不要直接当成同一人。",
+      "verified": false
+    },
+    {
+      "id": "an_foreshadow_7c850274a1",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "同批入门的络腮胡大汉明面炼气十层，隐修特殊法诀，身上散出：第 600 章埋下，603 章后未再提",
+      "detail": "沉默 197 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        600,
+        603
+      ],
+      "entities": [
+        "f_suspicious_dahan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch600",
+          "quote": "同批入门的络腮胡大汉明面炼气十层，隐修特殊法诀，身上散出隐蔽阴森寒气，来历不明"
+        },
+        {
+          "coordinate": "ch603",
+          "quote": "第 603 章后未再出现；沉默 197 章"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 197
+    },
+    {
+      "id": "an_battle_gap_fe3ac5d118",
+      "kind": "battle_gap",
+      "kind_cn": "越级战斗",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 623 章：韩立 vs 询通，境界差 +2",
+      "detail": "战斗记录显示境界差 +2；绝对值 ≥2，属于越级战斗候选。",
+      "chapter_range": [
+        623,
+        623
+      ],
+      "entities": [
+        "e_hanli",
+        "e_xuntong"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch623",
+          "quote": "询通天阳火脉、持火浪珠，韩立一出手三四十张火弹符破其护罩，裁判救下询通。第二轮韩立以罗烟步绕后，手刀击昏青衫少年，迅捷身法被认出是世俗武技。"
+        }
+      ],
+      "reader_note": "越级本身是爽点结构，不等于错误；列为疑点是因为缺少前置铺垫时容易崩。",
+      "verified": false,
+      "battle": {
+        "a": "e_hanli",
+        "b": "e_xuntong",
+        "result": "胜",
+        "gap": 2,
+        "ch": 623
+      }
+    },
+    {
+      "id": "an_battle_gap_68543d2d9e",
+      "kind": "battle_gap",
+      "kind_cn": "越级战斗",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 627 章：韩立 vs 姚锋，境界差 +2",
+      "detail": "战斗记录显示境界差 +2；绝对值 ≥2，属于越级战斗候选。",
+      "chapter_range": [
+        627,
+        627
+      ],
+      "entities": [
+        "e_hanli",
+        "e_yaofeng"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch627",
+          "quote": "百巧院广场迎接古剑门姜云一行与白璧双剑伉俪，落云宗乘青光雕赶到。比试开赛，韩立首轮对古剑门筑基初期姚锋，五六十枚火弹符过后绕后一脚踩昏对手，大获全胜。"
+        }
+      ],
+      "reader_note": "越级本身是爽点结构，不等于错误；列为疑点是因为缺少前置铺垫时容易崩。",
+      "verified": false,
+      "battle": {
+        "a": "e_hanli",
+        "b": "e_yaofeng",
+        "result": "胜",
+        "gap": 2,
+        "ch": 627
+      }
+    },
+    {
+      "id": "an_foreshadow_518fe1bfd3",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "玄天仙藤被醇液浇灌后仍一副枯萎、未能救活，正魔两道觊觎灵：第 636 章埋下，636 章后未再提",
+      "detail": "沉默 164 章，超过当前阈值 120 章。",
+      "chapter_range": [
+        636,
+        636
+      ],
+      "entities": [
+        "f_xuantian_teng"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch636:p28",
+          "quote": "玄天仙藤被醇液浇灌后仍一副枯萎、未能救活，正魔两道觊觎灵眼之物的心思未死"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 164
+    },
+    {
+      "id": "an_battle_gap_44ecd8900c",
+      "kind": "battle_gap",
+      "kind_cn": "越级战斗",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 650 章：韩立 vs 光头大汉，境界差 +2",
+      "detail": "战斗记录显示境界差 +2；绝对值 ≥2，属于越级战斗候选。",
+      "chapter_range": [
+        650,
+        650
+      ],
+      "entities": [
+        "e_hanli",
+        "e_guangtou_dahan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch650",
+          "quote": "二凶刚要发难，女童声音道破韩立元婴身份。光头大汉金遁符逃遁被飞剑斩杀，罗兄被绿光小人吞吃精魂。小人修炫光化物诀、靠吞噬生魂精进，硬接神雷无碍，贪窥元婴对峙。"
+        }
+      ],
+      "reader_note": "越级本身是爽点结构，不等于错误；列为疑点是因为缺少前置铺垫时容易崩。",
+      "verified": false,
+      "battle": {
+        "a": "e_hanli",
+        "b": "e_guangtou_dahan",
+        "result": "胜",
+        "gap": 2,
+        "ch": 650
+      }
+    },
+    {
+      "id": "an_entity_aft_ee2c52a491",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "光头大汉：记录最后出场第 650 章，后续仍被点名",
+      "detail": "第 734 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        650,
+        734
+      ],
+      "entities": [
+        "e_guangtou_dahan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch650",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch734",
+          "quote": "天刹真魔功 首战平手，天哭先生下场不死不休，韩立应战。对方魔化双角獠牙巨汉，形貌如六极真魔功幻影；修天刹真魔功，鬼阴爪难测。韩立神雷金网罩下，对手化侏儒爆裂为黑丝。 黑丝爆裂遁走金网"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_battle_gap_481db69a3c",
+      "kind": "battle_gap",
+      "kind_cn": "越级战斗",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 653 章：韩立 vs 小三，境界差 +2",
+      "detail": "战斗记录显示境界差 +2；绝对值 ≥2，属于越级战斗候选。",
+      "chapter_range": [
+        653,
+        653
+      ],
+      "entities": [
+        "e_hanli",
+        "e_xiaosan"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch653",
+          "quote": "阁楼中付天化与小三暗议勾结御灵宗、转结鬼灵宗。韩立现身讨债，一剑洞穿小三结丹初期，收其灵兽袋；银月追出土遁符逃走的付天化，三色噬金虫化虫云分头清剿付家嫡系修士。"
+        }
+      ],
+      "reader_note": "越级本身是爽点结构，不等于错误；列为疑点是因为缺少前置铺垫时容易崩。",
+      "verified": false,
+      "battle": {
+        "a": "e_hanli",
+        "b": "e_xiaosan",
+        "result": "胜",
+        "gap": 2,
+        "ch": 653
+      }
+    },
+    {
+      "id": "an_entity_aft_fb1518a2a4",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "付天化：记录最后出场第 654 章，后续仍被点名",
+      "detail": "第 655 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        654,
+        655
+      ],
+      "entities": [
+        "e_futianhua"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch654",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch655",
+          "quote": "旧人后 宾客散去，御灵宗绿衫修士姗姗来迟。付家灭门消息震动元武国，魔焰门虚张声势寻人。韩立携付天化首级赴辛如音隐居竹楼祭奠，遇小梅后人妇人，阁中供齐云霄、辛如音牌位。 竹楼见故人之后"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_809aa3e264",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "小梅后人：记录最后出场第 657 章，后续仍被点名",
+      "detail": "第 665 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        657,
+        665
+      ],
+      "entities": [
+        "e_xiaomei_hou"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch657",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch665",
+          "quote": "闻风而逃 鬼灵门询姓、阙姓、林姓三名碎魂门下修士质问御灵宗是否去过太岳山脉。元婴期冰冷神识从天而降罩住众人，众人吓得分头逃命；韩立风雷翅雷遁追至，锁定遁速最快的林姓妇人。 元婴神识罩住全场"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_battle_gap_7bb08b1cb8",
+      "kind": "battle_gap",
+      "kind_cn": "越级战斗",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 659 章：韩立 vs 于洪，境界差 +2",
+      "detail": "战斗记录显示境界差 +2；绝对值 ≥2，属于越级战斗候选。",
+      "chapter_range": [
+        659,
+        659
+      ],
+      "entities": [
+        "e_hanli",
+        "e_yuhong"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch659",
+          "quote": "韩立灭杀鬼灵门众人，于洪逃遁被巨剑斩灭；黑衫老者系合欢宗弃徒，曾受董璇儿之命寻过韩立，搜魂后焚尸。碎魂真人感应六师弟身死，命三弟子追查凶手；御灵宗进入越国。"
+        }
+      ],
+      "reader_note": "越级本身是爽点结构，不等于错误；列为疑点是因为缺少前置铺垫时容易崩。",
+      "verified": false,
+      "battle": {
+        "a": "e_hanli",
+        "b": "e_yuhong",
+        "result": "胜",
+        "gap": 2,
+        "ch": 659
+      }
+    },
+    {
+      "id": "an_entity_aft_9121216cd4",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "林姓妇人：记录最后出场第 666 章，后续仍被点名",
+      "detail": "第 679 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        666,
+        679
+      ],
+      "entities": [
+        "e_lin_shijie"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch666",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch679",
+          "quote": "赤精芝 锦袍修士展出三千年赤精芝，索十万灵石或土属性材料。韩立以一枚七级妖丹换得；又一妇人展出未认主困仙环，换得一瓶元婴丹药。 七级妖丹换赤精芝"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_relation_r_c57dd05dde",
+      "kind": "relation_reversal",
+      "kind_cn": "关系反转",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "关系反转候选：韩立 ↔ 南陇侯 同时有同盟/敌对",
+      "detail": "relations 同时记录 alliance 与 conflict；若发生在同一时间段，需检查是否有事件支撑。",
+      "chapter_range": [
+        676,
+        686
+      ],
+      "entities": [
+        "e_hanli",
+        "e_nanlonghou"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch686:p31",
+          "quote": "同盟记录"
+        },
+        {
+          "coordinate": "ch676:p4",
+          "quote": "敌对记录"
+        }
+      ],
+      "reader_note": "反目/结盟本身是正常剧情；标出来是提醒核对时间顺序。",
+      "verified": false
+    },
+    {
+      "id": "an_relation_r_a1fd888cfa",
+      "kind": "relation_reversal",
+      "kind_cn": "关系反转",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "关系反转候选：南陇侯 ↔ 云姓老者 同时有同盟/敌对",
+      "detail": "relations 同时记录 alliance 与 conflict；若发生在同一时间段，需检查是否有事件支撑。",
+      "chapter_range": [
+        686,
+        701
+      ],
+      "entities": [
+        "e_nanlonghou",
+        "e_yun_laozhe"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch687:p18",
+          "quote": "同盟记录"
+        },
+        {
+          "coordinate": "ch701:p26",
+          "quote": "敌对记录"
+        }
+      ],
+      "reader_note": "反目/结盟本身是正常剧情；标出来是提醒核对时间顺序。",
+      "verified": false
+    },
+    {
+      "id": "an_relation_r_a0d9c1b5fa",
+      "kind": "relation_reversal",
+      "kind_cn": "关系反转",
+      "severity": "info",
+      "confidence": "medium",
+      "title": "关系反转候选：谷双蒲 ↔ 韩立 同时有同盟/敌对",
+      "detail": "relations 同时记录 alliance 与 conflict；若发生在同一时间段，需检查是否有事件支撑。",
+      "chapter_range": [
+        728,
+        737
+      ],
+      "entities": [
+        "e_gushuangpu",
+        "e_hanli"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch728",
+          "quote": "同盟记录"
+        },
+        {
+          "coordinate": "ch737",
+          "quote": "敌对记录"
+        }
+      ],
+      "reader_note": "反目/结盟本身是正常剧情；标出来是提醒核对时间顺序。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_05d1c66e3a",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "天哭先生：记录最后出场第 735 章，后续仍被点名",
+      "detail": "第 750 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        735,
+        750
+      ],
+      "entities": [
+        "e_tianku_xiansheng"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch735",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch750",
+          "quote": "条件 吕洛引见韩立赴天道盟议事殿，介绍长老会与三家主事。龙晗先致歉失信，况姓修士催提条件；韩立愿继续参战，但要借盟中力量搜集一种克制黑袍法士的稀罕炼器材料。 韩立开口索求炼器材料"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_5df450a9f7",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "谷双蒲：记录最后出场第 737 章，后续仍被点名",
+      "detail": "第 757 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        737,
+        757
+      ],
+      "entities": [
+        "e_gushuangpu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch737",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch757",
+          "quote": "老怪齐聚 云露老魔落座挑衅，碎魂真人随后入殿。龙晗指点：天恨老怪乃三大修士之下第一人，曾轻伤至阳道友脱身；东门图因谷双蒲之死对韩立不满。三大修士自偏门走出。 三大修士现身大殿"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_item_disco_bde11b3f1e",
+      "kind": "item_disconnect",
+      "kind_cn": "器物断线",
+      "severity": "info",
+      "confidence": "low",
+      "title": "器物 无名雷珠 未登记首现章节",
+      "detail": "first_ch=772，但 chapters.new_entities 中没有该器物。",
+      "chapter_range": [
+        772,
+        772
+      ],
+      "entities": [
+        "e_leizhu_2"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch772",
+          "quote": "韩立新近炼成的雷珠，以与紫罗天火同阶的青色灯焰炼制，练成后从未祭出。一击击穿孔血罗罩；圣禽所化火鸟可吞噬雷珠，反进补自身。"
+        }
+      ],
+      "reader_note": "可能是抽取遗漏，不代表作品矛盾。",
+      "verified": false
+    },
+    {
+      "id": "an_entity_aft_bb9bb0f0a4",
+      "kind": "entity_after_last",
+      "kind_cn": "档案退场章疑点",
+      "severity": "info",
+      "confidence": "low",
+      "title": "阴罗宗宗主：记录最后出场第 783 章，后续仍被点名",
+      "detail": "第 784 章摘要仍出现该角色名/别名；last_ch 可能偏早。",
+      "chapter_range": [
+        783,
+        784
+      ],
+      "entities": [
+        "e_yinluozong_zongzhu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch783",
+          "quote": "entities.last_ch"
+        },
+        {
+          "coordinate": "ch784",
+          "quote": "南宫惊变 轮值部署后韩立先回落云宗，却被程长老拦入密室：南宫婉采阴露时遭黑袍男子偷袭，中失传封魂咒，自封冰壁成女童。对方留玉简约韩立带金雷竹法宝赴玄天峰相见；韩立认出是阴 南宫婉中封魂咒被封冰壁"
+        }
+      ],
+      "reader_note": "这是档案退场章与章节摘要不一致，属于数据疑点，不一定是剧情矛盾。",
       "verified": false
     }
   ]
