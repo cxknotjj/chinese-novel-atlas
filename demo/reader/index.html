@@ -2089,14 +2089,28 @@
   let dragNode = null, panning = false, last = null, moved = false, clickedEmpty = false;
 
   canvas.addEventListener('mousedown', e => {
+    if (e.button !== 0 && e.button !== 2) return;   // 只认左键与右键
     camAnim = null;
     const rect = canvas.getBoundingClientRect();
     const n = pick(e.clientX - rect.left, e.clientY - rect.top);
-    moved = false; clickedEmpty = !n;
-    if (n) { dragNode = n; n.fixed = true; n._px = e.clientX; n._py = e.clientY; }
-    else { panning = true; last = { x: e.clientX, y: e.clientY }; }
+    moved = false;
+    // 右键与地图一致：只平移，不抓节点、不选中，也不弹浏览器菜单
+    if (e.button === 2) {
+      dragNode = null; clickedEmpty = false;
+      panning = true; last = { x: e.clientX, y: e.clientY };
+    } else if (n) {
+      clickedEmpty = false;
+      dragNode = n; n.fixed = true; n._px = e.clientX; n._py = e.clientY;
+    } else {
+      clickedEmpty = true;
+      panning = true; last = { x: e.clientX, y: e.clientY };
+    }
     canvas.classList.add('dragging');
   });
+
+  // canvas 会被浏览器当成「图片」，右键默认弹「图片另存为 / 复制图片」。
+  // 地图早就阻止了，图谱这里补上；右键拖拽的平移逻辑在上面。
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
 
   window.addEventListener('mousemove', e => {
     if (e.target !== canvas) { hoverId = null; hoverLink = null; return; }
