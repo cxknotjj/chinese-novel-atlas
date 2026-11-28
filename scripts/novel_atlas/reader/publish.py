@@ -50,7 +50,9 @@ def build_reader(data: dict, out_dir: str | Path, *, name: str = "index.html",
                  cutoff: int | None = None, external: bool = True,
                  snapshot: bool = False, label: str = "",
                  require_complete: bool = False) -> dict:
-    out = Path(out_dir)
+    # 必须绝对化：下面的 build.py 以 ROOT 为 cwd 启动子进程，
+    # 相对路径会被解析到 ROOT 而不是调用者的当前目录。
+    out = Path(out_dir).resolve()
     out.mkdir(parents=True, exist_ok=True)
     meta = data.get("meta") or {}
     coverage = meta.get("coverage") or {}

@@ -4,10 +4,12 @@
 不重新分析小说；只读 anomalies.json，复核结果写到 anomalies-verdicts.json。
 
 用法：
-    python skills/atlas-audit/scripts/audit.py stats --data output/凡人修仙传/data.json
-    python skills/atlas-audit/scripts/audit.py list --data output/凡人修仙传/data.json --severity warning
-    python skills/atlas-audit/scripts/audit.py show --data output/凡人修仙传/data.json --id an_fs_xxx
-    python skills/atlas-audit/scripts/audit.py mark --data output/凡人修仙传/data.json --id an_fs_xxx --status verified --note "第73章已回收"
+    python <SKILL_DIR>/scripts/audit.py stats --data output/凡人修仙传/data.json
+    python <SKILL_DIR>/scripts/audit.py list --data output/凡人修仙传/data.json --severity warning
+    python <SKILL_DIR>/scripts/audit.py show --data output/凡人修仙传/data.json --id an_fs_xxx
+    python <SKILL_DIR>/scripts/audit.py mark --data output/凡人修仙传/data.json --id an_fs_xxx --status verified --note "第73章已回收"
+
+疑点文件默认取 data.json 同目录的 anomalies.json，由 <SKILL_DIR>/scripts/anomalies.py 生成。
 """
 
 from __future__ import annotations
@@ -21,18 +23,34 @@ from pathlib import Path
 VERDICT_FILE = "anomalies-verdicts.json"
 
 
-def find_project_root(start: Path | None = None) -> Path:
+def find_project_root(start: Path | None = None) -> Path | None:
+    """定位仓库根，仅用于解析相对路径。
+
+    这个 skill 是独立安装的：用户手上可能只有 data.json，没有完整仓库。
+    所以找不到时返回 None，由调用方退回「相对当前目录」解析，而不是直接失败。
+    """
     cur = (start or Path.cwd()).resolve()
     for p in [cur, *cur.parents]:
         if (p / "scripts" / "novel_atlas" / "reader" / "anomalies.py").exists():
             return p
-    raise SystemExit("找不到项目根：需要包含 scripts/novel_atlas/reader/anomalies.py")
+        if (p / "scripts" / "novel_atlas" / "reader").is_dir():
+            return p
+    return None
+
+
+def resolve(path_str: str, base: Path) -> Path:
+    """相对路径先按项目根解析；项目根不存在就按当前目录解析。"""
+    p = Path(path_str)
+    if p.is_absolute():
+        return p
+    return (base / p).resolve()
 
 
 def load_report(data_path: Path, anomalies_path: Path | None) -> tuple[dict, Path]:
     ap = anomalies_path or (data_path.parent / "anomalies.json")
     if not ap.exists():
-        raise SystemExit(f"找不到疑点文件：{ap}\n先运行 scripts/anomalies.py --data {data_path}")
+        raise SystemExit(f"找不到疑点文件：{ap}\n先运行 scripts/anomalies.py --data {data_path}\n"
+                         f"（anomalies.py 与本脚本同目录）")
     return json.loads(ap.read_text(encoding="utf-8")), ap
 
 
@@ -130,12 +148,12 @@ def main() -> int:
     args = ap.parse_args()
 
     root = find_project_root(Path(args.project_root) if args.project_root else None)
-    data_path = Path(args.data)
-    if not data_path.is_absolute():
-        data_path = (root / data_path).resolve()
-    anomalies_path = Path(args.anomalies) if args.anomalies else data_path.parent / "anomalies.json"
-    if not anomalies_path.is_absolute():
-        anomalies_path = (root / anomalies_path).resolve()
+    base = root or Path.cwd()
+    if root is None and args.project_root:
+        raise SystemExit(f"找不到项目根：{args.project_root} 下没有 scripts/novel_atlas/reader/")
+
+    data_path = resolve(args.data, base)
+    anomalies_path = resolve(args.anomalies, base) if args.anomalies else data_path.parent / "anomalies.json"
     report, apath = load_report(data_path, anomalies_path)
     verdict_path = apath.parent / VERDICT_FILE
     verdicts = load_verdicts(verdict_path)

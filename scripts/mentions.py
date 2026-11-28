@@ -35,8 +35,12 @@ MAX_DF_RATIO = 0.10
 MIN_KW_LEN = 2
 
 
-def load_chapters(ch_dir):
-    """把所有章节拼成一个大字符串，同时记录每章在其中的区间。"""
+def load_chapters(ch_dir, up_to=None):
+    """把所有章节拼成一个大字符串，同时记录每章在其中的区间。
+
+    up_to: 只收章号不超过它的章节。分析只覆盖前 N 章时，必须传 N ——
+    否则会把还没分析的后文算进「最后提及」，沉默时长全部失真。
+    """
     files = sorted(ch_dir.glob("ch-*.txt"))
     if not files:
         raise SystemExit(f"{ch_dir} 里没有 ch-*.txt，请先跑 chunk.py")
@@ -47,8 +51,11 @@ def load_chapters(ch_dir):
         m = re.search(r"ch-(\d+)", p.name)
         if not m:
             continue
+        ch = int(m.group(1))
+        if up_to is not None and ch > up_to:
+            continue
         t = p.read_text(encoding="utf-8", errors="replace")
-        spans.append((int(m.group(1)), pos, pos + len(t)))
+        spans.append((ch, pos, pos + len(t)))
         parts.append(t)
         pos += len(t) + 1          # +1 对应 join 的换行
     return "\n".join(parts), spans
@@ -104,9 +111,17 @@ def main():
 
     root = Path(args.dir)
     data = json.loads((root / "data.json").read_text(encoding="utf-8"))
-    corpus, spans = load_chapters(root / "chapters")
+
+    # 沉默时长只能在「已分析到的章」里算。原文有 2443 章、只拆了前 500 章时，
+    # 用全 2443 章做分母会让每条伏笔都显示沉默上千章，并把错误的 status 写回去。
+    analyzed = max((c.get("ch") or 0 for c in data.get("chapters") or []), default=0) or None
+    corpus, spans = load_chapters(root / "chapters", up_to=analyzed)
     total_ch = len(spans)
     live = max(ch for ch, _, _ in spans)
+
+    on_disk = len(list((root / "chapters").glob("ch-*.txt")))
+    if analyzed and on_disk > total_ch:
+        print(f"注意：原文 {on_disk} 章，只算已分析的 {total_ch} 章（第 {live} 章为止）")
 
     names = entity_names(data)
     # 先算每个实体的文档频率，用于稀有度过滤

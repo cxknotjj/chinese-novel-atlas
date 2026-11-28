@@ -3,35 +3,25 @@ name: atlas-audit
 description: "复核 Novel Atlas 的读者向疑点索引：查看 anomalies.json、按严重度/规则筛选、回到原文坐标核对、把某条标为已核实或误报，并输出考据统计。适用于读者考据、书评作者核对设定矛盾、维护疑点误报库、给读者站补疑点说明。触发词：疑点、考据、矛盾、伏笔没回收、死亡又出现、战力倒退、越级战斗、atlas-audit、anomalies.json、误报标记。"
 ---
 
-> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
-> 若尚未获取仓库：
-> ```bash
-> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
-> cd chinese-novel-atlas
-> ```
-> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+> **脚本已内置**：本 skill 自带全部 CLI 与渲染资源，装完即可运行，**不需要 clone 仓库**。
+> 下文命令里的 `<SKILL_DIR>` 指本 skill 的安装目录（含 `SKILL.md` 的那一层），
+> 常见位置：`~/.claude/skills/atlas-audit`、`~/.workbuddy/skills/atlas-audit`；
+> 执行时替换成真实绝对路径。产出路径（如 `output/{书名}/`）相对**当前工作目录**。
 
 # atlas-audit · 疑点复核
 
 `atlas-audit` 不重新分析小说，只消费 `anomalies.json` 和 `data.json`。它回答的是“这条疑点值不值得信、原文在哪、是不是误报”，不是“作者该怎么改”。
 
-## 先定位项目根
+## 数据在哪
 
-项目根必须同时包含：
+本 skill 只读两个文件，不关心仓库结构：
 
 ```text
-scripts/anomalies.py
-scripts/novel_atlas/reader/anomalies.py
-template/viewer.html
+data.json          # 由 atlas-analyze 产出
+anomalies.json     # 默认取 data.json 同目录，由本 skill 的 anomalies.py 生成
 ```
 
-默认从当前目录向上找；也可以显式传：
-
-```powershell
-python "<SKILL_DIR>\scripts\audit.py" stats --project-root "D:\Desktop\project\chinese-novel-atlas"
-```
-
-`SKILL_DIR` 是本 skill 所在目录。不要在本 skill 目录里找 `data.json`。
+`--data` 传绝对路径最稳；传相对路径时先按当前目录解析，若当前目录在仓库内则按仓库根解析。不需要指定项目根，也不需要仓库存在。
 
 ## 疑点的语义
 
@@ -54,17 +44,17 @@ python "<SKILL_DIR>\scripts\audit.py" stats --project-root "D:\Desktop\project\c
 
 ### 1. 生成/刷新疑点
 
-```powershell
-python scripts/anomalies.py --data output/凡人修仙传/data.json --out output/凡人修仙传/anomalies.json
+```bash
+python "<SKILL_DIR>/scripts/anomalies.py" --data output/凡人修仙传/data.json --out output/凡人修仙传/anomalies.json
 ```
 
 只有数据变化后才需要重跑。读者站的 `build_reader.py` 也会自动生成。
 
 ### 2. 看统计与清单
 
-```powershell
-python "<SKILL_DIR>\scripts\audit.py" stats --project-root "D:\Desktop\project\chinese-novel-atlas" --data output/凡人修仙传/data.json
-python "<SKILL_DIR>\scripts\audit.py" list --data output/凡人修仙传/data.json --severity warning
+```bash
+python "<SKILL_DIR>/scripts/audit.py" stats --data output/凡人修仙传/data.json
+python "<SKILL_DIR>/scripts/audit.py" list --data output/凡人修仙传/data.json --severity warning
 ```
 
 ### 3. 回原文核对
@@ -77,9 +67,9 @@ python "<SKILL_DIR>\scripts\audit.py" list --data output/凡人修仙传/data.js
 
 ### 4. 标记复核结果
 
-```powershell
-python "<SKILL_DIR>\scripts\audit.py" mark --data output/凡人修仙传/data.json --id an_fs_xxx --status verified --note "第 73 章确有回收，误报"
-python "<SKILL_DIR>\scripts\audit.py" mark --data output/凡人修仙传/data.json --id an_x_xxx --status rejected
+```bash
+python "<SKILL_DIR>/scripts/audit.py" mark --data output/凡人修仙传/data.json --id an_fs_xxx --status verified --note "第 73 章确有回收，误报"
+python "<SKILL_DIR>/scripts/audit.py" mark --data output/凡人修仙传/data.json --id an_x_xxx --status rejected
 ```
 
 复核结果写到 `anomalies-verdicts.json`，不修改 `anomalies.json`，方便重跑后保留人工判断。
@@ -105,7 +95,7 @@ python "<SKILL_DIR>\scripts\audit.py" mark --data output/凡人修仙传/data.js
 
 | 现象 | 先查 |
 |---|---|
-| 疑点全部是 `rule_error` | 用 `python scripts/anomalies.py ... --list` 看具体规则异常 |
+| 疑点全部是 `rule_error` | 用 `python "<SKILL_DIR>/scripts/anomalies.py" ... --list` 看具体规则异常 |
 | 伏笔未回收数量暴增 | `meta.coverage.chapters_done` 是否只覆盖前 N 章；阈值是否按 live 章计算 |
 | 死亡再出现全是误报 | `entities.attrs` 是否把“假死/残魂/回忆”写成死亡；`last_ch` 是否偏早 |
 | 读者站疑点为空 | 构建时是否用了旧版 `anomalies.json`；`build_reader` 是否注入了 `anomalies` |

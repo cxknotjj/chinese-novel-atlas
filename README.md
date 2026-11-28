@@ -74,29 +74,32 @@ npx skills add cxknotjj/chinese-novel-atlas -y -g
 
 `-g` 全局安装，所有目录可用；去掉 `-g` 只装到当前目录。更新时重跑同一条命令即可。
 
-skill 本体是说明与参考资料，实际干活的 CLI 在仓库里，所以再 clone 一份：
+**skill 是自包含的**：`scripts/`、`template/`、`references/` 都随 skill 一起装进去（`atlas-analyze` 约 1.7MB，其余各约 0.2MB），装完即可运行，**不需要 clone 仓库**。资源由 `scripts/sync_skills.py` 从源码同步，CI 会校验副本与源码逐字节一致。
 
-```bash
-git clone https://github.com/cxknotjj/chinese-novel-atlas.git
-cd chinese-novel-atlas
-```
-
-装完后在你正在用的 Agent（Claude Code / Codex / 任何能读 `SKILL.md` 的工具）里，在仓库目录下直接说：
+装完后在你正在用的 Agent（Claude Code / Codex / 任何能读 `SKILL.md` 的工具）里直接说：
 
 > 拆《我的书》
 
-六个 skill 会按需加载，不需要单独配模型或起服务。也可以让 Agent 直接读 `skills/atlas-analyze/SKILL.md` 手动走流程。
+六个 skill 会按需加载，不需要单独配模型或起服务。
+
+**唯一例外是 `atlas-map`**：地图渲染依赖 `atlas-kit/` 的 20MB 手绘素材，没法随 skill 分发，所以做地图时要有一份仓库：
+
+```bash
+git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+```
 
 ---
 
 ## 快速开始（命令行）
 
+下面是从仓库根直接跑的用法（需先 clone）。五个 skill 自带同样的脚本，装好后不 clone 也能跑，把 `scripts/` 换成 `<SKILL_DIR>/scripts/` 即可。
+
 ### 1. 分析一本完本小说
 
 按 [`skills/atlas-analyze/SKILL.md`](skills/atlas-analyze/SKILL.md) 执行。CLI 负责切分、合并、校验和构建，逐批抽取由执行 Agent 完成：
 
-```powershell
-python scripts/chunk.py "D:\path\我的书.txt" --out output/我的书
+```bash
+python scripts/chunk.py "path/我的书.txt" --out output/我的书
 python scripts/merge.py output/我的书 --genre 仙侠 --platform 起点
 python scripts/mentions.py output/我的书 --apply
 python scripts/validate.py output/我的书/data.json
@@ -107,14 +110,14 @@ python scripts/build.py --data output/我的书/data.json --out output/我的书
 
 ### 2. 问答与对比
 
-```powershell
-python scripts/seek.py --data output/我的书/data.json --query "韩立第几章筑基"
+```bash
+python scripts/seek.py --dir output/我的书/ --keyword "韩立第几章筑基" --context 2
 python scripts/compare.py --a output/A/data.json --b output/B/data.json --out output/_compare
 ```
 
 ### 3. 疑点索引与复核
 
-```powershell
+```bash
 python scripts/anomalies.py --data output/我的书/data.json
 python skills/atlas-audit/scripts/audit.py stats --data output/我的书/data.json
 python skills/atlas-audit/scripts/audit.py list  --data output/我的书/data.json --severity warning
@@ -124,7 +127,7 @@ python skills/atlas-audit/scripts/audit.py list  --data output/我的书/data.js
 
 ### 4. 生成读者站
 
-```powershell
+```bash
 python scripts/build_reader.py --data output/我的书/data.json --out output/我的书/reader --single
 python scripts/build_reader.py --data output/我的书/data.json --out output/我的书/reader --cutoff 120 --allow-partial
 ```
@@ -136,7 +139,7 @@ python scripts/build_reader.py --data output/我的书/data.json --out output/�
 
 ### 5. 地图
 
-```powershell
+```bash
 python skills/atlas-map/scripts/atlas_map.py --project-root . levels --data output/我的书/data.json
 python skills/atlas-map/scripts/atlas_map.py --project-root . audit  --data output/我的书/data.json
 ```
@@ -206,7 +209,7 @@ output/我的书/
 
 ## 版本与重跑
 
-```powershell
+```bash
 python scripts/snapshot.py --data output/我的书/data.json --label 500章
 python scripts/snapshot.py --diff output/我的书/versions/v1.json output/我的书/versions/v2.json
 ```
@@ -217,7 +220,7 @@ python scripts/snapshot.py --diff output/我的书/versions/v1.json output/我�
 
 ## 测试与 CI
 
-```powershell
+```bash
 python -m unittest discover -s tests -v
 ```
 
@@ -239,8 +242,9 @@ python -m unittest discover -s tests -v
 ## 目录
 
 ```text
-skills/               六个 Agent Skill（产品本体）
-scripts/              分析、合并、校验、导出、读者站、地图 CLI
+skills/               六个 Agent Skill（产品本体，自带 scripts/template/references）
+scripts/              分析、合并、校验、导出、读者站、地图 CLI（源码）
+scripts/sync_skills.py 把 CLI 同步进各 skill；--check 供 CI 校验副本一致性
 references/schema.md  数据契约
 atlas-kit/            21 件 PNG + 9 件变量层
 template/             读者站渲染模板

@@ -24,3 +24,54 @@ jobs:
         run: python scripts/map_levels.py --data samples/fictional/data.json
       - name: Build reader
         run: python scripts/build_reader.py --data samples/fictional/data.json --out build-reader --single --allow-partial
+
+  skills:
+    # skill 是独立安装的：npx skills add 只拷 skills/<name>/，仓库根的 scripts/ 不会跟过去。
+    # 这里模拟一次真实安装——把 skill 单独拷到别处，在没有仓库的目录里跑所有命令。
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Vendored copies are in sync with scripts/
+        run: python scripts/sync_skills.py --check
+
+      - name: Install skills into a clean root
+        run: |
+          mkdir -p "$RUNNER_TEMP/install/skills" "$RUNNER_TEMP/work"
+          cp -r skills/atlas-analyze skills/atlas-ask skills/atlas-audit \
+                skills/atlas-compare skills/atlas-export "$RUNNER_TEMP/install/skills/"
+          cp samples/fictional/data.json "$RUNNER_TEMP/work/data.json"
+
+      - name: Analyze skill runs without the repo
+        working-directory: ${{ runner.temp }}/work
+        run: |
+          S="$RUNNER_TEMP/install/skills/atlas-analyze/scripts"
+          python "$S/validate.py" data.json
+          python "$S/build.py" --data data.json --out out/
+          test -s out/atlas.html
+          python "$S/anomalies.py" --data data.json --out anomalies.json
+          test -s anomalies.json
+
+      - name: Reader builds with a relative --out
+        # 曾经的 bug：build.py 以仓库根为 cwd 起子进程，相对 --out 被解析到别处
+        working-directory: ${{ runner.temp }}/work
+        run: |
+          S="$RUNNER_TEMP/install/skills/atlas-analyze/scripts"
+          python "$S/build_reader.py" --data data.json --out out/reader --single --allow-partial
+          test -s out/reader/index.html
+
+      - name: Query, audit, compare and export run without the repo
+        working-directory: ${{ runner.temp }}/work
+        run: |
+          E="$RUNNER_TEMP/install/skills/atlas-export/scripts"
+          A="$RUNNER_TEMP/install/skills/atlas-audit/scripts"
+          C="$RUNNER_TEMP/install/skills/atlas-compare/scripts"
+          for f in single md csv fs site; do
+            python "$E/export.py" --dir . --format "$f" --out "exp-$f"
+          done
+          python "$A/audit.py" stats --data data.json
+          python "$C/compare.py" --a data.json --b data.json --out cmp
+          test -s cmp/metrics.md

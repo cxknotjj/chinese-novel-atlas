@@ -3,13 +3,14 @@ name: atlas-map
 description: "把小说地图作为结构化数据渲染成网页，而不是生成一张固定图片。使用 atlas-kit 的 21 件手绘 PNG 景物层与 9 件代码/SVG 变量层，产出可缩放、可切层、可点击的浅绛淡彩水墨地图；支持多本小说共用同一套底件。适用于给小说做地图、给 data.json 补 map_layout、把地图接入 atlas.html、修改地图视觉与标签层级、排查地图渲染问题。触发词：小说地图、生成地图、地图渲染、地图视图、map_layout、atlas-map、世界地图、势力地图、把地图接入网页、给这本书做地图、world map、novel atlas map。"
 ---
 
-> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
-> 若尚未获取仓库：
+> **本 skill 需要一份完整仓库**：地图渲染依赖 `atlas-kit/` 的 21 件手绘素材（约 20MB），
+> 没法随 skill 一起分发。所以它和其余五个 skill 不同——脚本只负责编排，
+> 真正的地图资源在**项目根**里。
 > ```bash
 > git clone https://github.com/cxknotjj/chinese-novel-atlas.git
-> cd chinese-novel-atlas
 > ```
-> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+> 下文 `<SKILL_DIR>` 指本 skill 的安装目录（含 `SKILL.md` 的那一层），
+> `--project-root` 指上面 clone 下来的仓库根。产出路径相对当前工作目录。
 
 # atlas-map · 小说地图渲染
 
@@ -29,7 +30,7 @@ template/viewer/
 默认从当前目录向上找；也可以显式传：
 
 ```powershell
-python "<SKILL_DIR>\scripts\atlas_map.py" info --project-root "D:\Desktop\project\chinese-novel-atlas"
+python "<SKILL_DIR>\scripts\atlas_map.py" info --project-root "<项目根>"
 ```
 
 `SKILL_DIR` 是本 skill 所在目录。项目根不是本 skill 目录；不要在里面找 `atlas-kit`。

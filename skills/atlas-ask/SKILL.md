@@ -4,13 +4,10 @@ version: 0.1.0
 description: "基于已拆解的网文数据回答问题，答案带原文坐标可溯源。查角色境界、查伏笔回收、查势力关系、查某人在第几章出场。触发词：这本书里XX是谁、问书、查设定、XX现在什么境界、XX在第几章出现、这本书的XX组织是什么、XX和XX什么关系、有没有提到XX、atlas ask。"
 ---
 
-> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
-> 若尚未获取仓库：
-> ```bash
-> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
-> cd chinese-novel-atlas
-> ```
-> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+> **脚本已内置**：本 skill 自带全部 CLI 与渲染资源，装完即可运行，**不需要 clone 仓库**。
+> 下文命令里的 `<SKILL_DIR>` 指本 skill 的安装目录（含 `SKILL.md` 的那一层），
+> 常见位置：`~/.claude/skills/atlas-ask`、`~/.workbuddy/skills/atlas-ask`；
+> 执行时替换成真实绝对路径。产出路径（如 `output/{书名}/`）相对**当前工作目录**。
 
 # atlas-ask · 书内问答
 
@@ -64,7 +61,7 @@ ls output/*/data.json
 ### 5. 结构化查不到才回原文
 
 ```bash
-python scripts/seek.py --dir output/{书名}/ --keyword "云纹玉佩" --context 2
+python "<SKILL_DIR>/scripts/seek.py" --dir output/{书名}/ --keyword "云纹玉佩" --context 2
 ```
 
 只返回命中位置前后各 2 段，附带 `chN:pM` 坐标，**不要整章加载**。可加 `--chapter-range 1-200` 限定范围，`--json` 供程序消费。

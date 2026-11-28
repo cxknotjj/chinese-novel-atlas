@@ -24,3 +24,13 @@ Thumbs.db
 
 # 原始小说文本（版权内容，绝不提交）
 novals/
+
+# 模板/地图的视觉验收临时产物（Playwright 截图、node_modules、旧版备份）
+_contract/
+
+# 本地配置（含 key），只提交 config.example.json
+data/config.json
+
+# 构建检查产物
+build-check/
+build-reader/

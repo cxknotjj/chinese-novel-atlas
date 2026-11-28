@@ -30,24 +30,35 @@ The product is six Agent Skills (Claude Code / Codex / any agent that reads `SKI
 - **Reader-facing, spoiler-free.** A `cutoff_ch` truncates characters, relations, plot threads and map layers to your reading progress.
 - **Maps aren't stickers.** 21 hand-drawn PNG assets composited with 9 code/SVG variable layers.
 
+## Install
+
+```bash
+npx skills add cxknotjj/chinese-novel-atlas -y -g
+```
+
+The skills are **self-contained**: `scripts/`, `template/` and `references/` ship inside each skill directory (`atlas-analyze` ~1.7 MB, the others ~0.2 MB each), so there is nothing to clone. Those copies are generated from source by `scripts/sync_skills.py`, and CI fails if a copy drifts from its source.
+
+The one exception is `atlas-map`: map rendering needs the 20 MB hand-drawn `atlas-kit/` assets, which are not vendored. Clone the repo if you want to build maps.
+
 ## Quick start
 
 ```bash
-# 1. split into chapters
+# 1. split into chapters (pure text processing, no LLM)
 python scripts/chunk.py path/to/novel.txt --out output/mybook/
 
-# 2. batch extraction (needs an OpenAI-compatible API key)
-python scripts/extract.py --dir output/mybook/ --concurrency 8 --max-cost 5
+# 2. extraction: the running agent reads 10-chapter batches and writes out/batch-XX.json
+#    (no API key, no external client)
 
-# 3. merge, validate, build
+# 3. merge, track mentions, validate, build
 python scripts/merge.py output/mybook/
-python scripts/validate.py output/mybook/
+python scripts/mentions.py output/mybook/ --apply
+python scripts/validate.py output/mybook/data.json
 python scripts/build.py --data output/mybook/data.json --out output/mybook/
 ```
 
 Point your agent at `skills/` (or read the relevant `SKILL.md` directly). No server, no external model calls at render time.
 
-Cost reference: 720k characters (500 chapters) costs about ¥5 / $0.7 with DeepSeek.
+Cost reference: 720k characters (500 chapters) costs about ¥5 / $0.7 of model usage.
 
 ## Design decisions worth arguing about
 

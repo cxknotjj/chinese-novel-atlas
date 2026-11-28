@@ -4,13 +4,10 @@ version: 0.5.0
 description: "把一部已完结长篇小说编译成读者向世界档案：结构化 data.json（人物/关系/章节/伏笔/地点/概念）+ 疑点索引 + 可按阅读进度截断的读者站。支持百万字级长篇，由执行 agent 原生分批抽取，可断点续跑；不调用外部 API、不需要 key。触发词：拆书、拆这本书、拆《XXX》、分析这本小说、分析这本书、生成人物图谱、做个人物关系图、整理这本书的设定、做个读者站、读懂这本书、小说图谱、novel atlas。"
 ---
 
-> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
-> 若尚未获取仓库：
-> ```bash
-> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
-> cd chinese-novel-atlas
-> ```
-> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+> **脚本已内置**：本 skill 自带全部 CLI 与渲染资源，装完即可运行，**不需要 clone 仓库**。
+> 下文命令里的 `<SKILL_DIR>` 指本 skill 的安装目录（含 `SKILL.md` 的那一层），
+> 常见位置：`~/.claude/skills/atlas-analyze`、`~/.workbuddy/skills/atlas-analyze`；
+> 执行时替换成真实绝对路径。产出路径（如 `output/{书名}/`）相对**当前工作目录**。
 
 # atlas-analyze · 拆书成世界档案
 
@@ -58,7 +55,7 @@ output/{书名}/reader/           读者站（总览 + 进度 + 搜索 + 疑点�
 ### 第 1 步 · 分章
 
 ```bash
-python scripts/chunk.py "<文件路径>" --out output/{书名}/
+python "<SKILL_DIR>/scripts/chunk.py" "<文件路径>" --out output/{书名}/
 ```
 
 纯字符处理，零 LLM 调用。产出 `chapters/ch-001.txt` … 和 `chunk-meta.json`。
@@ -71,7 +68,7 @@ python scripts/chunk.py "<文件路径>" --out output/{书名}/
 
 由当前执行 agent 直接抽取，不调用外部模型 API。
 
-- 每批 10 章，只读 `chapters/ch-XXX.txt` 的当前批次，按 `scripts/prompts/batch_template.md` 的模板写成 `out/batch-XX.json`
+- 每批 10 章，只读 `chapters/ch-XXX.txt` 的当前批次，按 `<SKILL_DIR>/scripts/prompts/batch_template.md` 的模板写成 `out/batch-XX.json`
 - 写完后立即做 JSON 解析和字段自检；每批每一章都要有记录，章号必须与输入一致
 - 批次的实体 id 先按本批命名，合并阶段统一由 `merge.py` 做正名/别名归并和 id 重映射
 - 已存在且章号完全对得上的批次直接跳过，支持断点续跑
@@ -84,7 +81,7 @@ python scripts/chunk.py "<文件路径>" --out output/{书名}/
 ### 第 3 步 · 合并与境界
 
 ```bash
-python scripts/merge.py output/{书名}/ --genre 仙侠 --platform 起点
+python "<SKILL_DIR>/scripts/merge.py" output/{书名}/ --genre 仙侠 --platform 起点
 ```
 
 `merge.py` 做四件事：正名 + 别名归并（`韩老魔 → 韩立`）、关系重映射、伏笔去重与 id 唯一化、按派生规则重算 `status`。
@@ -94,15 +91,15 @@ python scripts/merge.py output/{书名}/ --genre 仙侠 --platform 起点
 境界必须先有权威表，否则各批次各自编号，`筑基` 会被排成第一境：
 
 ```bash
-python scripts/realms.py output/{书名}/ --write   # 扫描候选
+python "<SKILL_DIR>/scripts/realms.py" output/{书名}/ --write   # 扫描候选
 # 人工/执行 agent 核对后写 realms.json（含 realms 与 power_history）
-python scripts/merge.py output/{书名}/            # 重跑，以此为准
+python "<SKILL_DIR>/scripts/merge.py" output/{书名}/            # 重跑，以此为准
 ```
 
 ### 第 4 步 · 提及追踪（决定超期判得准不准）
 
 ```bash
-python scripts/mentions.py output/{书名}/ --apply
+python "<SKILL_DIR>/scripts/mentions.py" output/{书名}/ --apply
 ```
 
 这一步补 `last_mention_ch`：回全文找每条伏笔的指纹词最后一次出现在第几章。
@@ -121,14 +118,14 @@ python scripts/mentions.py output/{书名}/ --apply
 - `regions` 的 `shape` 只用 `land / sea / void`；`nodes[].place`、`regions[].layer`、`routes[].s/t` 必须是已有 `places` id。
 - 坐标和路线点位必须人工给定，不得由程序推算或约束求解反推；不得声称精确距离、方位或经纬度。
 - 没有原文证据就不写方向、距离或坐标；“旁边”“不远处”“一天路程”不得折算成里数或像素。
-- 地图的 atlas 配置、21 件 PNG + 9 件代码/SVG 分工、层筛选、缩放 LOD、构建与浏览器验收，一律读 `skills/atlas-map/SKILL.md`，并用 `scripts/atlas_map.py` 审计。
+- 地图的 atlas 配置、21 件 PNG + 9 件代码/SVG 分工、层筛选、缩放 LOD、构建与浏览器验收，一律读同级 skill `atlas-map` 的 `SKILL.md`。
 
-`map_layout` 的字段规则以 `references/schema.md` 的「地图规则」为准；渲染规则以 `skills/atlas-map/references/web-contract.md` 为准。
+`map_layout` 的字段规则以 `references/schema.md` 的「地图规则」为准；渲染规则以 `atlas-map` skill 的 `references/web-contract.md` 为准。
 
 ### 第 5 步 · 校验
 
 ```bash
-python scripts/validate.py output/{书名}/data.json
+python "<SKILL_DIR>/scripts/validate.py" output/{书名}/data.json
 ```
 
 校验失败则报告具体哪条不合法，**不要自行"修一下"**。
@@ -139,8 +136,8 @@ python scripts/validate.py output/{书名}/data.json
 
 ### 第 6 步 · 构建视图
 
-```powershell
-python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
+```bash
+python "<SKILL_DIR>/scripts/build.py" --data output/{书名}/data.json --out output/{书名}/
 ```
 
 把 `data.json` 内嵌进 `template/viewer.html`，构建时按职责拼接 `template/viewer/*.js`，再内联样式和入口，产出单文件 `atlas.html`。
@@ -150,9 +147,9 @@ python scripts/build.py --data output/{书名}/data.json --out output/{书名}/
 
 ### 第 7 步 · 疑点索引与读者站
 
-```powershell
-python scripts/anomalies.py --data output/{书名}/data.json
-python scripts/build_reader.py --data output/{书名}/data.json --out output/{书名}/reader --single --allow-partial
+```bash
+python "<SKILL_DIR>/scripts/anomalies.py" --data output/{书名}/data.json
+python "<SKILL_DIR>/scripts/build_reader.py" --data output/{书名}/data.json --out output/{书名}/reader --single --allow-partial
 ```
 
 - `anomalies.json` 只产疑点，不给改稿建议；每条必须有 `evidence`，没有证据不进入索引。
@@ -212,7 +209,7 @@ python scripts/build_reader.py --data output/{书名}/data.json --out output/{�
 | 组件 | 状态 |
 |---|---|
 | 数据契约 `references/schema.md` | ✅ 完成（v2.4，含可选 `spatial_relations` / `map_layout`） |
-| 虚构样例 `samples/fictional/` | ✅ 完成（18 角色 / 25 关系 / 12 伏笔） |
+| 虚构样例 | ✅ 完成（仓库 `samples/fictional/`，18 角色 / 25 关系 / 12 伏笔） |
 | 视图模板 `template/viewer.*` | ✅ 完成（HTML 骨架 + CSS + JS，构建时内联为单文件；八视图，含地图三子视图：示意 2D / 证据方位 / 拓扑） |
 | `scripts/chunk.py` | ✅ 分章 + 编码探测 + 模式打分 + 兜底 |
 | `scripts/prompts/batch_template.md` | ✅ 执行 agent 的批次输出模板 |

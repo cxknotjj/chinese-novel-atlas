@@ -1,0 +1,874 @@
+{
+  "name": "东方国风地图通用底件库",
+  "version": "0.2.0",
+  "style": "浅绛淡彩水墨 · 21 PNG + 9 SVG",
+  "description": "跨小说的通用底件层：21 件手绘 PNG 负责笔触与纸纹，9 件代码/SVG 负责路线、标记、罗盘、题签、印章；小说专名、势力、坐标放在 worlds/*/world.json。",
+  "asset_count": 30,
+  "canvas": [
+    640,
+    640
+  ],
+  "pivot_default": [
+    0.5,
+    0.875
+  ],
+  "view": "平视偏俯15–25度，非等距透视",
+  "light": "top-left",
+  "license": "原创生成；可用于本项目及多本小说的地图组装；不得转售素材包或作为 AI 训练数据。",
+  "assets": [
+    {
+      "id": "terrain_far_01",
+      "name": "远山 A",
+      "file": "base/terrain/far/terrain_far_01.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "far",
+        "horizon"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 93525,
+      "media": "png"
+    },
+    {
+      "id": "terrain_far_02",
+      "name": "远山 B",
+      "file": "base/terrain/far/terrain_far_02.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "far",
+        "horizon"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 76386,
+      "media": "png"
+    },
+    {
+      "id": "terrain_peak_01",
+      "name": "主峰 A",
+      "file": "base/terrain/main-peak/terrain_peak_01.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "peak"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 246344,
+      "media": "png"
+    },
+    {
+      "id": "terrain_peak_02",
+      "name": "主峰 B",
+      "file": "base/terrain/main-peak/terrain_peak_02.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "peak"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 264164,
+      "media": "png"
+    },
+    {
+      "id": "terrain_ridge_01",
+      "name": "山脊 A",
+      "file": "base/terrain/ridge/terrain_ridge_01.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "ridge"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 101783,
+      "media": "png"
+    },
+    {
+      "id": "terrain_ridge_02",
+      "name": "山脊 B",
+      "file": "base/terrain/ridge/terrain_ridge_02.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "ridge",
+        "cliff"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 209125,
+      "media": "png"
+    },
+    {
+      "id": "terrain_slope_01",
+      "name": "坡脚",
+      "file": "base/terrain/slope/terrain_slope_01.png",
+      "type": "terrain",
+      "tags": [
+        "terrain",
+        "mountain",
+        "slope"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 108478,
+      "media": "png"
+    },
+    {
+      "id": "water_cloud_01",
+      "name": "云雾 A",
+      "file": "base/water/cloud/water_cloud_01.png",
+      "type": "water",
+      "tags": [
+        "water",
+        "cloud",
+        "mist"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 131767,
+      "media": "png"
+    },
+    {
+      "id": "water_cloud_02",
+      "name": "云雾 B",
+      "file": "base/water/cloud/water_cloud_02.png",
+      "type": "water",
+      "tags": [
+        "water",
+        "cloud",
+        "mist"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 147727,
+      "media": "png"
+    },
+    {
+      "id": "water_bank_01",
+      "name": "水岸 A",
+      "file": "base/water/bank/water_bank_01.png",
+      "type": "water",
+      "tags": [
+        "water",
+        "bank",
+        "river",
+        "lake"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 233612,
+      "media": "png"
+    },
+    {
+      "id": "water_bank_02",
+      "name": "水岸 B",
+      "file": "base/water/bank/water_bank_02.png",
+      "type": "water",
+      "tags": [
+        "water",
+        "bank",
+        "coast"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 198980,
+      "media": "png"
+    },
+    {
+      "id": "arch_sect_gate_01",
+      "name": "山门",
+      "file": "base/architecture/sect-gate/arch_sect_gate_01.png",
+      "type": "architecture",
+      "tags": [
+        "architecture",
+        "sect",
+        "gate"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 336412,
+      "media": "png"
+    },
+    {
+      "id": "arch_city_wall_01",
+      "name": "城郭",
+      "file": "base/architecture/city-wall/arch_city_wall_01.png",
+      "type": "architecture",
+      "tags": [
+        "architecture",
+        "city",
+        "wall"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 334612,
+      "media": "png"
+    },
+    {
+      "id": "arch_pass_01",
+      "name": "关隘",
+      "file": "base/architecture/pass/arch_pass_01.png",
+      "type": "architecture",
+      "tags": [
+        "architecture",
+        "pass",
+        "fort"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 359939,
+      "media": "png"
+    },
+    {
+      "id": "arch_cave_01",
+      "name": "洞府",
+      "file": "base/architecture/cave/arch_cave_01.png",
+      "type": "architecture",
+      "tags": [
+        "architecture",
+        "cave",
+        "dwelling"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 423133,
+      "media": "png"
+    },
+    {
+      "id": "arch_village_01",
+      "name": "村落",
+      "file": "base/architecture/village/arch_village_01.png",
+      "type": "architecture",
+      "tags": [
+        "architecture",
+        "village"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 310156,
+      "media": "png"
+    },
+    {
+      "id": "arch_dock_01",
+      "name": "码头",
+      "file": "base/architecture/dock/arch_dock_01.png",
+      "type": "architecture",
+      "tags": [
+        "architecture",
+        "dock",
+        "harbor"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 266338,
+      "media": "png"
+    },
+    {
+      "id": "veg_pine_01",
+      "name": "松林",
+      "file": "base/vegetation/pine/veg_pine_01.png",
+      "type": "vegetation",
+      "tags": [
+        "vegetation",
+        "pine",
+        "forest"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 364671,
+      "media": "png"
+    },
+    {
+      "id": "veg_bamboo_01",
+      "name": "竹林",
+      "file": "base/vegetation/bamboo/veg_bamboo_01.png",
+      "type": "vegetation",
+      "tags": [
+        "vegetation",
+        "bamboo"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 254549,
+      "media": "png"
+    },
+    {
+      "id": "veg_reeds_01",
+      "name": "芦苇",
+      "file": "base/vegetation/reeds/veg_reeds_01.png",
+      "type": "vegetation",
+      "tags": [
+        "vegetation",
+        "reeds",
+        "water"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 230413,
+      "media": "png"
+    },
+    {
+      "id": "veg_dead_tree_01",
+      "name": "枯树",
+      "file": "base/vegetation/dead-tree/veg_dead_tree_01.png",
+      "type": "vegetation",
+      "tags": [
+        "vegetation",
+        "dead-tree"
+      ],
+      "pivot": [
+        0.5,
+        0.875
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 107103,
+      "media": "png"
+    },
+    {
+      "id": "route_land_01",
+      "name": "陆路",
+      "file": "vector/routes/route_land.svg",
+      "type": "route",
+      "tags": [
+        "route",
+        "land"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        470,
+        150
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 496,
+      "media": "vector",
+      "vector": "route_land",
+      "viewBox": [
+        470,
+        150
+      ],
+      "note": "线型样本；真实路线由 world.layers.routes 坐标生成，不是固定 stamp。",
+      "legacy_png": "base/routes/route_land_01.png"
+    },
+    {
+      "id": "route_sea_01",
+      "name": "水路",
+      "file": "vector/routes/route_sea.svg",
+      "type": "route",
+      "tags": [
+        "route",
+        "sea"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        470,
+        150
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 674,
+      "media": "vector",
+      "vector": "route_sea",
+      "viewBox": [
+        470,
+        150
+      ],
+      "note": "线型样本；真实路线由 world.layers.routes 坐标生成。",
+      "legacy_png": "base/routes/route_sea_01.png"
+    },
+    {
+      "id": "ui_compass_01",
+      "name": "罗盘",
+      "file": "vector/ui/compass.svg",
+      "type": "ui",
+      "tags": [
+        "ui",
+        "compass"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        100
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 3211,
+      "media": "vector",
+      "vector": "compass",
+      "viewBox": [
+        100,
+        100
+      ],
+      "note": "罗盘线稿；方向针与刻度可缩放。",
+      "legacy_png": "base/ui/ui_compass_01.png"
+    },
+    {
+      "id": "ui_cartouche_01",
+      "name": "题签",
+      "file": "vector/ui/cartouche_frame.svg",
+      "type": "ui",
+      "tags": [
+        "ui",
+        "cartouche"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        205
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 741,
+      "media": "vector",
+      "vector": "cartouche",
+      "viewBox": [
+        100,
+        205
+      ],
+      "note": "空题签框；文字由 world.ui[].text 写入。",
+      "legacy_png": "base/ui/ui_cartouche_01.png"
+    },
+    {
+      "id": "ui_seal_01",
+      "name": "印章",
+      "file": "vector/ui/seal_frame.svg",
+      "type": "ui",
+      "tags": [
+        "ui",
+        "seal"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        100
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 360,
+      "media": "vector",
+      "vector": "seal",
+      "viewBox": [
+        100,
+        100
+      ],
+      "note": "空印章框；印文由 world.ui[].text 写入。",
+      "legacy_png": "base/ui/ui_seal_01.png"
+    },
+    {
+      "id": "marker_city_01",
+      "name": "城标记",
+      "file": "vector/markers/marker_city.svg",
+      "type": "marker",
+      "tags": [
+        "marker",
+        "city"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        100
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 832,
+      "media": "vector",
+      "vector": "city",
+      "viewBox": [
+        100,
+        100
+      ],
+      "note": "城标记；默认替换固定 PNG 标记。",
+      "legacy_png": "base/markers/marker_city_01.png"
+    },
+    {
+      "id": "marker_sect_01",
+      "name": "宗门标记",
+      "file": "vector/markers/marker_sect.svg",
+      "type": "marker",
+      "tags": [
+        "marker",
+        "sect"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        100
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 1262,
+      "media": "vector",
+      "vector": "sect",
+      "viewBox": [
+        100,
+        100
+      ],
+      "note": "宗门标记；默认替换固定 PNG 标记。",
+      "legacy_png": "base/markers/marker_sect_01.png"
+    },
+    {
+      "id": "marker_secret_01",
+      "name": "秘境标记",
+      "file": "vector/markers/marker_secret.svg",
+      "type": "marker",
+      "tags": [
+        "marker",
+        "secret"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        100
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 1321,
+      "media": "vector",
+      "vector": "secret",
+      "viewBox": [
+        100,
+        100
+      ],
+      "note": "秘境标记；默认替换固定 PNG 标记。",
+      "legacy_png": "base/markers/marker_secret_01.png"
+    },
+    {
+      "id": "marker_danger_01",
+      "name": "危险标记",
+      "file": "vector/markers/marker_danger.svg",
+      "type": "marker",
+      "tags": [
+        "marker",
+        "danger"
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "size": [
+        100,
+        100
+      ],
+      "light": "top-left",
+      "palette": "ink-light",
+      "license": "original",
+      "bytes": 578,
+      "media": "vector",
+      "vector": "danger",
+      "viewBox": [
+        100,
+        100
+      ],
+      "note": "危险标记；默认替换固定 PNG 标记。",
+      "legacy_png": "base/markers/marker_danger_01.png"
+    }
+  ],
+  "support_assets": [
+    {
+      "id": "ui_paper_ornate",
+      "name": "空白 ornate 纸底",
+      "file": "base/ui/paper_ornate.webp",
+      "type": "support",
+      "tags": [
+        "paper",
+        "frame",
+        "background"
+      ],
+      "size": [
+        1920,
+        1080
+      ],
+      "note": "可选全幅纸底；如果不用，render_map.py 会用 theme.paper 纯色。"
+    },
+    {
+      "id": "ornament_corner_cloud",
+      "name": "如意云纹角饰",
+      "file": "base/ui/ornament_corner_cloud.webp",
+      "type": "support",
+      "tags": [
+        "ornament",
+        "corner",
+        "cloud"
+      ],
+      "size": [
+        700,
+        699
+      ]
+    },
+    {
+      "id": "ornament_divider_cloud",
+      "name": "云纹分隔",
+      "file": "base/ui/ornament_divider_cloud.webp",
+      "type": "support",
+      "tags": [
+        "ornament",
+        "divider",
+        "cloud"
+      ],
+      "size": [
+        1700,
+        212
+      ]
+    },
+    {
+      "id": "water_sea_01",
+      "name": "海面纹理（可选）",
+      "file": "base/water/sea/water_sea_01.png",
+      "type": "support",
+      "tags": [
+        "water",
+        "sea",
+        "texture"
+      ],
+      "size": [
+        640,
+        640
+      ],
+      "note": "可选纹理；world.water_bodies[].texture 指向它时启用，默认仍用代码水色、海岸边带与波纹。"
+    }
+  ],
+  "worlds": [
+    "worlds/fanren/world.json",
+    "worlds/test-novel/world.json"
+  ],
+  "renderer": "render_map.py",
+  "raster_count": 21,
+  "vector_count": 9,
+  "vector_system": {
+    "library": "vector_lib.py",
+    "tokens": "vector/tokens.json",
+    "docs": "vector/README.md",
+    "svg_assets": "vector/",
+    "default": true,
+    "legacy_png_note": "9 件旧 PNG 保留为可选手绘 stamp；默认渲染不读取。"
+  }
+}

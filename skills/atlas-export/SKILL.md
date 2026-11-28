@@ -4,13 +4,10 @@ version: 0.2.0
 description: "把拆解结果导出成读者能直接用的东西：读者站、单文件世界档案、Markdown 设定集、角色表、伏笔索引、地图 PNG/SVG。读者/同人/书评考据者拿去查设定；不再产出作者改稿清单。触发词：导出读者站、导出设定集、导出人物表、生成世界档案、做成 Wiki、导出一份设定文档、给我 CSV、atlas export、导出到第 N 章。"
 ---
 
-> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
-> 若尚未获取仓库：
-> ```bash
-> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
-> cd chinese-novel-atlas
-> ```
-> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+> **脚本已内置**：本 skill 自带全部 CLI 与渲染资源，装完即可运行，**不需要 clone 仓库**。
+> 下文命令里的 `<SKILL_DIR>` 指本 skill 的安装目录（含 `SKILL.md` 的那一层），
+> 常见位置：`~/.claude/skills/atlas-export`、`~/.workbuddy/skills/atlas-export`；
+> 执行时替换成真实绝对路径。产出路径（如 `output/{书名}/`）相对**当前工作目录**。
 
 # atlas-export · 导出读者世界档案
 
@@ -18,13 +15,13 @@ description: "把拆解结果导出成读者能直接用的东西：读者站、
 
 ## 六种导出
 
-```powershell
-python scripts/export.py --dir output/青云签到三十年/ --format reader
-python scripts/export.py --dir output/青云签到三十年/ --format single
-python scripts/export.py --dir output/青云签到三十年/ --format md
-python scripts/export.py --dir output/青云签到三十年/ --format csv
-python scripts/export.py --dir output/青云签到三十年/ --format fs
-python scripts/export.py --dir output/青云签到三十年/ --format site
+```bash
+python "<SKILL_DIR>/scripts/export.py" --dir output/{书名}/ --format reader
+python "<SKILL_DIR>/scripts/export.py" --dir output/{书名}/ --format single
+python "<SKILL_DIR>/scripts/export.py" --dir output/{书名}/ --format md
+python "<SKILL_DIR>/scripts/export.py" --dir output/{书名}/ --format csv
+python "<SKILL_DIR>/scripts/export.py" --dir output/{书名}/ --format fs
+python "<SKILL_DIR>/scripts/export.py" --dir output/{书名}/ --format site
 ```
 
 `--format all` 一次产出全部；`--out` 可改输出目录（默认 `export/`）。
@@ -40,9 +37,12 @@ python scripts/export.py --dir output/青云签到三十年/ --format site
 
 ## `reader` — 读者站（主产物）
 
-```powershell
-python scripts/build_reader.py --data samples/fictional/data.json --out demo/reader --single --allow-partial
-python scripts/build_reader.py --data output/凡人修仙传/data.json --out output/凡人修仙传/reader --cutoff 500 --allow-partial
+```bash
+# 全书已分析完：直接出读者站
+python "<SKILL_DIR>/scripts/build_reader.py" --data output/{书名}/data.json --out output/{书名}/reader
+
+# 只分析了前 N 章：加 --allow-partial，并可用 --cutoff 冻结到某一章
+python "<SKILL_DIR>/scripts/build_reader.py" --data output/凡人修仙传/data.json --out output/凡人修仙传/reader --cutoff 500 --allow-partial
 ```
 
 - 默认要求 `coverage.chapters_done == meta.chapters`；不满足时加 `--allow-partial`（试读/样书），manifest 会写 `publishable: false`。
