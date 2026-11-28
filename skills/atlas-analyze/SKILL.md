@@ -4,6 +4,14 @@ version: 0.5.0
 description: "把一部已完结长篇小说编译成读者向世界档案：结构化 data.json（人物/关系/章节/伏笔/地点/概念）+ 疑点索引 + 可按阅读进度截断的读者站。支持百万字级长篇，由执行 agent 原生分批抽取，可断点续跑；不调用外部 API、不需要 key。触发词：拆书、拆这本书、拆《XXX》、分析这本小说、分析这本书、生成人物图谱、做个人物关系图、整理这本书的设定、做个读者站、读懂这本书、小说图谱、novel atlas。"
 ---
 
+> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
+> 若尚未获取仓库：
+> ```bash
+> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+> cd chinese-novel-atlas
+> ```
+> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+
 # atlas-analyze · 拆书成世界档案
 
 把一本已完结小说编译成一套可查询、可按章截断、可发布的世界档案：
