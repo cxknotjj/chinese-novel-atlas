@@ -48,16 +48,17 @@
   .entity-icon-sm { width: 14px; height: 14px; }
   .entity-icon-lg { width: 20px; height: 20px; }
 
-  /* 顶部 GitHub Star 入口：所有 atlas / reader 页面共用 */
+  /* 顶部 GitHub Star 入口：嵌在 header 中间，不占独立横条 */
   .gh-star-strip {
     display: flex; align-items: center; justify-content: center; gap: 7px;
-    height: 30px; padding: 0 14px; flex: none; width: 100%;
-    border-bottom: 1px solid var(--line);
+    height: 28px; padding: 0 12px; flex: none;
+    margin-left: auto; margin-right: auto;
+    border: 1px solid var(--line); border-radius: 999px;
     background: #F2EFE7; color: var(--ink-2);
     font-size: 11.5px; letter-spacing: .01em; text-decoration: none;
-    white-space: nowrap; transition: background .15s, color .15s;
+    white-space: nowrap; transition: background .15s, color .15s, border-color .15s;
   }
-  .gh-star-strip:hover { background: #EDE8DC; color: var(--ink); }
+  .gh-star-strip:hover { background: #EDE8DC; color: var(--ink); border-color: #D8D1C1; }
   .gh-star-icon { width: 14px; height: 14px; flex: none; display: block; opacity: .8; }
   .gh-star-text b { color: var(--crimson); font-weight: 600; }
   .gh-star-repo { color: var(--ink-3); font-size: 10.5px; }
@@ -81,7 +82,7 @@
   .stats .cov b { color: var(--crimson); }
   .stats span { white-space: nowrap; }
 
-  .tabs { display: flex; gap: 1px; margin-left: auto; flex: none; }
+  .tabs { display: flex; gap: 1px; margin-left: 0; flex: none; }
   .tab {
     padding: 6px 12px; font-size: 12.5px; color: var(--ink-2);
     background: none; border: none; border-radius: 6px; cursor: pointer;
@@ -193,7 +194,7 @@
 
   /* ---------- 全书搜索 ---------- */
   #searchPanel {
-    position: fixed; top: 128px; right: 20px; width: min(460px, 92vw); max-height: 62vh;
+    position: fixed; top: 98px; right: 20px; width: min(460px, 92vw); max-height: 62vh;
     overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px;
     box-shadow: 0 16px 40px rgba(43,42,38,0.14); z-index: 20; padding: 8px;
   }
@@ -761,7 +762,16 @@
   }
   input[type=search]:focus { border-color: var(--gold); width: 176px; }
 
+  @media (max-width: 1700px) {
+    /* 中等桌面宽度收起仓库名，让中间 Star 入口不与两侧导航挤压 */
+    .gh-star-repo { display: none; }
+  }
+  @media (max-width: 1500px) {
+    /* 1440 级桌面给中间 Star 入口让位：保留覆盖与字数，收起角色/实体计数 */
+    .stats .book, .stats .entities { display: none; }
+  }
   @media (max-width: 1320px) {
+    .gh-star-arrow { display: none; }
     .tab { padding: 6px 8px; font-size: 12px; }
     .stats { gap: 10px; }
   }
@@ -770,11 +780,16 @@
     .geo-detail { position: static; }
     .power-extra { grid-template-columns: 1fr; }
   }
-  @media (max-width: 1180px) { .stats .book, .stats .entities { display: none; } }
   @media (max-width: 980px) { .stats { display: none; } .brand .tag { display: none; } }
   @media (max-width: 900px) {
     header { height: auto; min-height: 54px; flex-wrap: wrap; padding: 8px 12px; gap: 6px 10px; overflow: visible; }
     .brand { flex: 1 1 auto; min-width: 0; }
+    .gh-star-strip {
+      order: 3; flex: 1 1 100%; height: 28px; margin: 0; padding: 0 8px;
+      border: 0; border-top: 1px solid var(--line); border-radius: 0;
+      background: transparent;
+    }
+    .gh-star-strip:hover { background: transparent; }
     .tabs { order: 4; width: 100%; margin-left: 0; overflow-x: auto; padding-bottom: 2px; }
     .tab { flex: none; }
     #readerBar { height: auto; min-height: 42px; flex-wrap: wrap; padding: 6px 12px; gap: 5px 8px; }
@@ -806,21 +821,20 @@
 </head>
 <body>
 
-<a class="gh-star-strip" href="https://github.com/cxknotjj/chinese-novel-atlas" target="_blank" rel="noopener noreferrer" aria-label="觉得好用的话，就给个 Star 吧：在 GitHub 打开 cxknotjj/chinese-novel-atlas">
-  <svg class="gh-star-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-    <path fill="currentColor" d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/>
-  </svg>
-  <span class="gh-star-text">觉得好用的话，就给个 <b>Star</b> 吧</span>
-  <span class="gh-star-repo">github.com/cxknotjj/chinese-novel-atlas</span>
-  <span class="gh-star-arrow" aria-hidden="true">↗</span>
-</a>
-
 <header>
   <div class="brand">
     <h1 id="title">—</h1>
     <span class="tag" id="tag">—</span>
   </div>
   <div class="stats" id="stats"></div>
+  <a class="gh-star-strip" href="https://github.com/cxknotjj/chinese-novel-atlas" target="_blank" rel="noopener noreferrer" aria-label="觉得好用的话，就给个 Star 吧：在 GitHub 打开 cxknotjj/chinese-novel-atlas">
+    <svg class="gh-star-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/>
+    </svg>
+    <span class="gh-star-text">觉得好用的话，就给个 <b>Star</b> 吧</span>
+    <span class="gh-star-repo">github.com/cxknotjj/chinese-novel-atlas</span>
+    <span class="gh-star-arrow" aria-hidden="true">↗</span>
+  </a>
   <div class="tabs">
     <button class="tab on" data-view="home">总览</button>
     <button class="tab" data-view="graph">图谱</button>

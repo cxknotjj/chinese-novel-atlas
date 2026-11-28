@@ -24,6 +24,10 @@ class GitHubStarTest(unittest.TestCase):
         self.assertIn('class="gh-star-icon"', text, f"{label} 缺少 GitHub 图标")
         self.assertIn("M6.766 11.328", text, f"{label} 的 GitHub 图标路径不完整")
         self.assertIn("gh-star-strip", text, f"{label} 缺少 Star 入口样式")
+        header_start = text.index("<header>")
+        header_end = text.index("</header>", header_start)
+        star_at = text.index('class="gh-star-strip"', header_start)
+        self.assertLess(star_at, header_end, f"{label} 的 Star 入口应嵌在 header 内")
 
     def test_shared_template_and_vendored_skill(self):
         for rel in (
