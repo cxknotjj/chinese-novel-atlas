@@ -82,6 +82,23 @@ npx skills add cxknotjj/chinese-novel-atlas -y -g
 
 六个 skill 会按需加载，不需要单独配模型或起服务。
 
+### 装不上怎么办
+
+`npx` 内部是 `git clone github.com`。如果卡在 `Cloning repository…`（国内网络常见），换这两条路：
+
+**A. 作为 Claude Code 插件**
+
+```bash
+/plugin marketplace add cxknotjj/chinese-novel-atlas
+/plugin install novel-atlas
+```
+
+**B. 下载 ZIP 手动放**
+
+1. 下载 <https://github.com/cxknotjj/chinese-novel-atlas/archive/refs/heads/master.zip>
+2. 解压后把 `skills/` 下的 6 个目录拷进 skill root：Claude Code 是 `~/.claude/skills/`，WorkBuddy 是 `~/.workbuddy/skills/`
+3. 重开会话，skill 列表里出现 `atlas-analyze` 等条目即成功
+
 **唯一例外是 `atlas-map`**：地图渲染依赖 `atlas-kit/` 的 20MB 手绘素材，没法随 skill 分发，所以做地图时要有一份仓库：
 
 ```bash

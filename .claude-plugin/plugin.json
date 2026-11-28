@@ -1,0 +1,8 @@
+{
+  "name": "novel-atlas",
+  "version": "1.0.0",
+  "description": "Turn a finished web novel into an explorable, spoiler-safe world archive: character graph, gazetteer, faction map, pacing curve, cultivation-realm timeline, foreshadowing ledger. 把一部长篇网文拆成可查询的世界档案：人物关系图谱、设定百科、地点志、势力版图、节奏曲线、境界轨迹、伏笔台账。六件套 Agent skill，支持百万字级长篇，按阅读进度截断不剧透。",
+  "author": {
+    "name": "cxknotjj"
+  }
+}
