@@ -210,5 +210,48 @@ class InlineAssetTest(unittest.TestCase):
         self.assertGreater(len(out), len(raw))
 
 
+    # 11. link 模式：占位改成相对路径，并把素材拷到 <out>/assets/。
+    def test_link_mode_copies_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tpl, assets = self._make_template(tmp)
+            self._write_asset(assets, "foo.webp", WEBP_BYTES)
+            out_dir = Path(tmp) / "site"
+
+            text = build.inline_images('src="__ASSET__:map/web/foo.webp"', tpl,
+                                       "link", out_dir)
+            self.assertIn('src="assets/map/web/foo.webp"', text)
+            self.assertNotIn("data:image/webp;base64,", text)
+            self.assertNotIn("__ASSET__:", text)
+            copied = out_dir / "assets" / "map" / "web" / "foo.webp"
+            self.assertTrue(copied.exists(), "素材应被拷到输出目录")
+            self.assertEqual(copied.read_bytes(), WEBP_BYTES)
+
+    # 12. link 模式的完整构建：首屏 HTML 里不应再有任何 base64 素材。
+    def test_link_mode_build_smoke(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = '<img src="__ASSET__:map/web/foo.webp">'
+            tpl, assets = self._make_template(tmp, html_body=body)
+            self._write_asset(assets, "foo.webp", WEBP_BYTES)
+            data_dir = Path(tmp) / "data"
+            data_dir.mkdir()
+            data_json = data_dir / "data.json"
+            data_json.write_text(json.dumps(
+                {"meta": {"title": "测试书"}, "entities": [], "chapters": [],
+                 "foreshadows": []}, ensure_ascii=False), encoding="utf-8")
+            out_dir = Path(tmp) / "out"
+
+            proc = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "build.py"),
+                 "--data", str(data_json), "--out", str(out_dir),
+                 "--template", str(tpl), "--skip-validate", "--assets", "link"],
+                capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(proc.returncode, 0, proc.stderr or proc.stdout)
+
+            html = (out_dir / "atlas.html").read_text(encoding="utf-8")
+            self.assertNotIn("data:image/webp;base64,", html)
+            self.assertIn("assets/map/web/foo.webp", html)
+            self.assertTrue((out_dir / "assets" / "map" / "web" / "foo.webp").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

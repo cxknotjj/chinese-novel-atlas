@@ -28,12 +28,14 @@ def main():
     ap.add_argument("--label", default="")
     ap.add_argument("--allow-partial", action="store_true",
                     help="允许未 100% 覆盖的档案（样书/试读）；默认发布要求全书覆盖")
+    ap.add_argument("--assets", choices=["inline", "link"], default="inline",
+                    help="素材内嵌（单文件）或外链到 <out>/assets/（站点部署用）")
     args = ap.parse_args()
 
     data = json.loads(Path(args.data).read_text(encoding="utf-8"))
     result = build_reader(data, args.out, name=args.name, cutoff=args.cutoff,
                           external=not args.single, snapshot=args.snapshot, label=args.label,
-                          require_complete=not args.allow_partial)
+                          require_complete=not args.allow_partial, assets=args.assets)
     m = result["manifest"]
     print(f"输出    {result['entry']}")
     print(f"读者进度 第 {m['reader']['cutoff_ch']} / {m['reader']['chapter_max']} 章"

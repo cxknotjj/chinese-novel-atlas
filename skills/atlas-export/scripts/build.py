@@ -20,6 +20,7 @@ import argparse
 import base64
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -37,13 +38,25 @@ MIME = {".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg",
 _inline_stats = {"count": 0, "bytes": 0, "files": []}
 
 
-def inline_images(text, tpl_path):
-    """把 __ASSET__:<相对 template/assets/ 的路径> 换成 base64 data URI。"""
+def inline_images(text, tpl_path, mode="inline", out_dir=None):
+    """把 __ASSET__:<相对 template/assets/ 的路径> 换成 base64 data URI。
+
+    mode="link" 时改成相对路径 assets/<rel>，并把文件拷到 out_dir/assets/。
+    单文件交付仍然默认 inline；站点 demo 用 link——1.2MB 素材不必跟着首屏一起下载。
+    """
     def repl(m):
         rel = m.group(1)
         src = tpl_path.parent / "assets" / rel
         if not src.exists():
             raise SystemExit(f"找不到占位图片 {rel}（应在 {tpl_path.parent / 'assets'} 下）")
+        if mode == "link":
+            if out_dir is None:
+                raise SystemExit("link 模式必须提供 out_dir")
+            dst = out_dir / "assets" / rel
+            if not dst.exists():
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+            return f"assets/{rel}"
         mime = MIME.get(src.suffix.lower())
         if not mime:
             raise SystemExit(f"不认识的图片格式 {src.suffix}（{src}）")
@@ -80,18 +93,18 @@ def load_viewer_source(tpl_path):
     return js.replace(VIEWER_MODULE_TAG, body, 1)
 
 
-def inline_assets(tpl, tpl_path):
+def inline_assets(tpl, tpl_path, mode="inline", out_dir=None):
     """把模板目录里的 viewer.css / viewer.js 组装并内联回 HTML 骨架。"""
     if CSS_TAG in tpl:
         css_path = tpl_path.parent / "viewer.css"
         if not css_path.exists():
             raise SystemExit(f"找不到样式源 {css_path}")
         css = css_path.read_text(encoding="utf-8")
-        tpl = tpl.replace(CSS_TAG, inline_images(css, tpl_path), 1)
+        tpl = tpl.replace(CSS_TAG, inline_images(css, tpl_path, mode, out_dir), 1)
     if JS_TAG in tpl:
         js = load_viewer_source(tpl_path)
-        tpl = tpl.replace(JS_TAG, inline_images(js, tpl_path), 1)
-    return inline_images(tpl, tpl_path)
+        tpl = tpl.replace(JS_TAG, inline_images(js, tpl_path, mode, out_dir), 1)
+    return inline_images(tpl, tpl_path, mode, out_dir)
 
 
 def main():
@@ -102,6 +115,9 @@ def main():
     ap.add_argument("--template", default=str(ROOT / "template" / "viewer.html"))
     ap.add_argument("--external", action="store_true",
                     help="数据写成 data.js 外链，而不是内嵌")
+    ap.add_argument("--assets", choices=["inline", "link"], default="inline",
+                    help="素材处理：inline 内嵌 base64（单文件，默认）；"
+                         "link 写相对路径并拷到 <out>/assets/（站点 demo 用，首屏小 1.5MB）")
     ap.add_argument("--strict", action="store_true",
                     help="把校验警告也视为失败")
     ap.add_argument("--skip-validate", action="store_true",
@@ -129,14 +145,6 @@ def main():
     tpl_path = Path(args.template)
     if not tpl_path.exists():
         raise SystemExit(f"找不到模板 {tpl_path}")
-    tpl = tpl_path.read_text(encoding="utf-8")
-    tpl = inline_assets(tpl, tpl_path)
-
-    if DATA_TAG not in tpl:
-        raise SystemExit(f"模板里找不到数据占位 {DATA_TAG}，请检查 {tpl_path}")
-
-    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    payload = payload.replace("</", "<\\/")      # 防止正文里的 </script> 截断
 
     # --out 既接受目录也接受完整文件路径：以 .html 结尾就当文件名。
     # 之前只认目录，传 path/to/atlas.html 会试图把它建成目录并崩掉。
@@ -145,8 +153,17 @@ def main():
         out_dir, out_name = out_arg.parent, out_arg.name
     else:
         out_dir, out_name = out_arg, args.name
-
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    tpl = tpl_path.read_text(encoding="utf-8")
+    tpl = inline_assets(tpl, tpl_path, args.assets, out_dir)
+
+    if DATA_TAG not in tpl:
+        raise SystemExit(f"模板里找不到数据占位 {DATA_TAG}，请检查 {tpl_path}")
+
+    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    payload = payload.replace("</", "<\\/")      # 防止正文里的 </script> 截断
+
     out_file = out_dir / out_name
 
     if args.external:

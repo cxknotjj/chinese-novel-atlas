@@ -49,7 +49,7 @@ def annotate(data: dict, *, cutoff: int | None = None, anomalies: dict | None = 
 def build_reader(data: dict, out_dir: str | Path, *, name: str = "index.html",
                  cutoff: int | None = None, external: bool = True,
                  snapshot: bool = False, label: str = "",
-                 require_complete: bool = False) -> dict:
+                 require_complete: bool = False, assets: str = "inline") -> dict:
     # 必须绝对化：下面的 build.py 以 ROOT 为 cwd 启动子进程，
     # 相对路径会被解析到 ROOT 而不是调用者的当前目录。
     out = Path(out_dir).resolve()
@@ -81,6 +81,8 @@ def build_reader(data: dict, out_dir: str | Path, *, name: str = "index.html",
     ]
     if external:
         cmd.append("--external")
+    if assets == "link":
+        cmd += ["--assets", "link"]
     try:
         proc = subprocess.run(cmd, cwd=str(ROOT), text=True,
                               capture_output=True, encoding="utf-8", errors="replace")
