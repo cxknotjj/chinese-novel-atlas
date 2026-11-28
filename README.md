@@ -1,23 +1,26 @@
 # Novel Atlas
 
-**把一本完本网文，编译成可追溯、可按阅读进度发布的读者档案。**
+**把一本 200 万字的网文，做成能边看边查的世界百科——读到第 47 章，就只显示到第 47 章的设定，不剧透后面。**
 
 [![GitHub stars](https://img.shields.io/github/stars/cxknotjj/chinese-novel-atlas?style=social)](https://github.com/cxknotjj/chinese-novel-atlas)
 [![contract](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml/badge.svg)](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
+![Skills](https://img.shields.io/badge/Skills-6-5A7A5E)
 
 **[在线试玩：虚构样例《青云签到三十年》](http://deerfect.me/chinese-novel-atlas/demo/)** ·
-[GitHub](https://github.com/cxknotjj/chinese-novel-atlas) ·
 [数据契约](references/schema.md) ·
-[功能文档](docs/功能文档.md)
+[功能文档](docs/功能文档.md) ·
+[English](README_EN.md)
 
-> 如果这个项目对你有用，点一个 ⭐ Star。Star 是这类“Skill 优先”项目最直接的投票，也能让更多正在拆书的人看到它。
+![读者世界档案：八个视图共用一份数据](docs/screenshots/reader-home.png)
+
+同一份 `data.json` 投影出八个视图：人物图谱、设定百科、地点志、世界地图、势力版图、节奏曲线、境界轨迹、伏笔台账。拖动顶部进度条，整站内容跟着截断到你读到的那一章。
 
 ---
 
-## 为什么值得 Star
+## 为什么是 Skill 而不是网页
 
-- **核心是 6 个 Agent Skill，不是一个网页。** 分析、问答、对比、导出、地图、疑点复核都能被 Agent 直接调用；`reader/` 和 `atlas.html` 只是同一份数据的发布面。
+- **核心是 6 个 Agent Skill。** 分析、问答、对比、导出、地图、疑点复核都能被 Agent 直接调用；`reader/` 和 `atlas.html` 只是同一份数据的发布面。
 - **每条结论都能回到原文。** 人物、地点、关系、伏笔、地图节点都带 `chN:pM` 坐标；没有证据的推断不写入档案。
 - **一份 `data.json` 投影成多种产物。** 读者站、单文件八视图、地图、设定集、角色表、跨书指标，共享同一套实体与证据。
 - **读者向，不剧透。** 用 `cutoff_ch` 按阅读进度截断人物、关系、伏笔和地图层；未来内容默认锁定。
@@ -38,13 +41,11 @@
 
 截图来自仓库内的虚构样例与《凡人修仙传》500 章真实数据，不是概念图。
 
-| 读者档案总览 | 疑点索引 |
+| 疑点索引：每条带证据，可标已核实/误报 | 境界轨迹：多色相 + 同境界浅到深 |
 |---|---|
-| ![读者档案总览](docs/screenshots/reader-home.png) | ![疑点索引](docs/screenshots/reader-anomalies.png) |
+| ![疑点索引](docs/screenshots/reader-anomalies.png) | ![境界轨迹](docs/screenshots/realm-colors.png) |
 
-| 《凡人修仙传》M3 多层地图 | 境界轨迹：多色相 + 同境界浅到深 |
-|---|---|
-| ![《凡人修仙传》M3 地图](docs/screenshots/map-fanren.png) | ![境界轨迹](docs/screenshots/realm-colors.png) |
+![《凡人修仙传》多层地图：21 件手绘 PNG + 9 类 SVG 变量层](docs/screenshots/map-fanren.png)
 
 读者站与地图在 500px 宽度下可用；地图桌面端右键拖拽平移、移动端单指拖拽平移，缩放百分比实时显示。
 
@@ -65,7 +66,30 @@
 
 ---
 
-## 快速开始
+## 安装
+
+```bash
+npx skills add cxknotjj/chinese-novel-atlas -y -g
+```
+
+`-g` 全局安装，所有目录可用；去掉 `-g` 只装到当前目录。更新时重跑同一条命令即可。
+
+skill 本体是说明与参考资料，实际干活的 CLI 在仓库里，所以再 clone 一份：
+
+```bash
+git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+cd chinese-novel-atlas
+```
+
+装完后在你正在用的 Agent（Claude Code / Codex / 任何能读 `SKILL.md` 的工具）里，在仓库目录下直接说：
+
+> 拆《我的书》
+
+六个 skill 会按需加载，不需要单独配模型或起服务。也可以让 Agent 直接读 `skills/atlas-analyze/SKILL.md` 手动走流程。
+
+---
+
+## 快速开始（命令行）
 
 ### 1. 分析一本完本小说
 
@@ -84,7 +108,7 @@ python scripts/build.py --data output/我的书/data.json --out output/我的书
 ### 2. 问答与对比
 
 ```powershell
-python skills/atlas-ask/scripts/seek.py --data output/我的书/data.json --query "韩立第几章筑基"
+python scripts/seek.py --data output/我的书/data.json --query "韩立第几章筑基"
 python scripts/compare.py --a output/A/data.json --b output/B/data.json --out output/_compare
 ```
 
