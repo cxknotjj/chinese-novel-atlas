@@ -609,19 +609,7 @@
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-      const kx0 = mapView.kx || mapView.k, ky0 = mapView.ky || mapView.k;
-      const before = { x: (mx - mapView.x) / kx0, y: (my - mapView.y) / ky0 };
-      const f = e.deltaY < 0 ? 1.1 : 0.9;
-      if (mapModel.map2d) {
-        mapView.kx = Math.min(6, Math.max(0.35, kx0 * f));
-        mapView.ky = Math.min(6, Math.max(0.35, ky0 * f));
-        mapView.k = Math.min(mapView.kx, mapView.ky);
-      } else {
-        mapView.k = Math.min(3, Math.max(0.35, mapView.k * f));
-        mapView.kx = mapView.ky = mapView.k;
-      }
-      mapView.x = mx - before.x * mapView.kx;
-      mapView.y = my - before.y * mapView.ky;
+      zoomMapBy(e.deltaY < 0 ? 1.1 : 0.9, mx, my);
       drawMap();
     };
   }
