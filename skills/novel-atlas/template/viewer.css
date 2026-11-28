@@ -42,6 +42,22 @@
   .entity-icon-sm { width: 14px; height: 14px; }
   .entity-icon-lg { width: 20px; height: 20px; }
 
+  /* 顶部 GitHub Star 入口：所有 atlas / reader 页面共用 */
+  .gh-star-strip {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    height: 30px; padding: 0 14px; flex: none; width: 100%;
+    border-bottom: 1px solid var(--line);
+    background: #F2EFE7; color: var(--ink-2);
+    font-size: 11.5px; letter-spacing: .01em; text-decoration: none;
+    white-space: nowrap; transition: background .15s, color .15s;
+  }
+  .gh-star-strip:hover { background: #EDE8DC; color: var(--ink); }
+  .gh-star-icon { width: 14px; height: 14px; flex: none; display: block; opacity: .8; }
+  .gh-star-text b { color: var(--crimson); font-weight: 600; }
+  .gh-star-repo { color: var(--ink-3); font-size: 10.5px; }
+  .gh-star-strip:hover .gh-star-repo { color: var(--ink-2); }
+  .gh-star-arrow { color: var(--ink-3); font-size: 11px; }
+
   header {
     height: 56px; display: flex; align-items: center; gap: 16px;
     padding: 0 20px; border-bottom: 1px solid var(--line);
@@ -171,7 +187,7 @@
 
   /* ---------- 全书搜索 ---------- */
   #searchPanel {
-    position: fixed; top: 98px; right: 20px; width: min(460px, 92vw); max-height: 62vh;
+    position: fixed; top: 128px; right: 20px; width: min(460px, 92vw); max-height: 62vh;
     overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px;
     box-shadow: 0 16px 40px rgba(43,42,38,0.14); z-index: 20; padding: 8px;
   }
@@ -758,10 +774,12 @@
     #readerBar { height: auto; min-height: 42px; flex-wrap: wrap; padding: 6px 12px; gap: 5px 8px; }
     #readerBar input[type=range] { width: 120px; }
     #readerBar .reader-hint { white-space: normal; font-size: 10.5px; width: 100%; }
-    #searchPanel { top: 122px; right: 10px; width: calc(100vw - 20px); max-height: 56vh; }
+    #searchPanel { top: 152px; right: 10px; width: calc(100vw - 20px); max-height: 56vh; }
   }
   @media (max-width: 800px) { aside { width: 100%; } input[type=search] { width: 110px; } }
   @media (max-width: 600px) {
+    .gh-star-strip { height: 28px; padding: 0 8px; gap: 6px; font-size: 11px; }
+    .gh-star-repo, .gh-star-arrow { display: none; }
     .realm-step { flex: 1 1 calc(50% - 4px); min-width: 0; }
     header { padding: 8px 10px; }
     .brand h1 { font-size: 15px; }
