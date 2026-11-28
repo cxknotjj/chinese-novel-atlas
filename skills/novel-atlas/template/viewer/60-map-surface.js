@@ -410,15 +410,24 @@
     if (node && asset.type === 'architecture') {
       node._markerDy = Math.max(node._markerDy || 0, atlasNum(spec.markerOffset, 2.0));
     }
-    return true;
+    return {
+      box: { x: x - w * pivot[0] - 2, y: y - h * pivot[1] - 2, w: w + 4, h: h + 4 },
+      architecture: asset.type === 'architecture'
+    };
   }
   function drawAtlasStamps(ctx, rect) {
     const list = Array.isArray(ATLAS.stamps) ? ATLAS.stamps.slice() : [];
     const nodesById = new Map((mapModel.nodes || []).map(n => [n.id, n]));
     list.sort((a, b) => atlasNum(a.order, 0) - atlasNum(b.order, 0));
     let drawn = 0;
-    list.forEach(s => { if (drawAtlasStamp(ctx, s, rect, nodesById)) drawn++; });
-    return drawn;
+    const boxes = [];
+    list.forEach(s => {
+      const out = drawAtlasStamp(ctx, s, rect, nodesById);
+      if (!out) return;
+      drawn++;
+      if (out.architecture && out.box) boxes.push(out.box);
+    });
+    return { drawn, boxes };
   }
 
   function drawAtlasTerrain(ctx, rect) {

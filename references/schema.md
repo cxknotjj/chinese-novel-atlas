@@ -545,7 +545,7 @@ M0 只有地点列表；M1 只有示意坐标/拓扑；M2 由证据方位视图�
 | `regions[].shape` | 枚举 `land` / `sea` / `void`（void=秘境小簇/卡片） |
 | `regions[].layer` | 可空；若有必须是已有 `places` id（用来做层筛选归属） |
 | `regions[].polygon` | ≥3 个 `[x,y]`，每点 0–100 |
-| `regions[].label_at` | 可选 `[x,y]`，0–100 |
+| `regions[].label_at` | 可选 `[x,y]`，0–100；只有 y 明确低于区域底边时才作为手动锚点，否则区域名自动贴底边中点 |
 | `nodes[].place` | 必填，必须是已有 `places` id；同一 place 只能出现一次 |
 | `nodes[].x` / `y` | 必填，0–100 |
 | `nodes[].layer` | 可空；若有必须是已有 `places` id |

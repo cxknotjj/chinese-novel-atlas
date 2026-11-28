@@ -4056,15 +4056,24 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     if (node && asset.type === 'architecture') {
       node._markerDy = Math.max(node._markerDy || 0, atlasNum(spec.markerOffset, 2.0));
     }
-    return true;
+    return {
+      box: { x: x - w * pivot[0] - 2, y: y - h * pivot[1] - 2, w: w + 4, h: h + 4 },
+      architecture: asset.type === 'architecture'
+    };
   }
   function drawAtlasStamps(ctx, rect) {
     const list = Array.isArray(ATLAS.stamps) ? ATLAS.stamps.slice() : [];
     const nodesById = new Map((mapModel.nodes || []).map(n => [n.id, n]));
     list.sort((a, b) => atlasNum(a.order, 0) - atlasNum(b.order, 0));
     let drawn = 0;
-    list.forEach(s => { if (drawAtlasStamp(ctx, s, rect, nodesById)) drawn++; });
-    return drawn;
+    const boxes = [];
+    list.forEach(s => {
+      const out = drawAtlasStamp(ctx, s, rect, nodesById);
+      if (!out) return;
+      drawn++;
+      if (out.architecture && out.box) boxes.push(out.box);
+    });
+    return { drawn, boxes };
   }
 
   function drawAtlasTerrain(ctx, rect) {
@@ -4536,7 +4545,8 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     drawAtlasTerrain(ctx, rect);
 
     // 4) 手绘 stamp：地形之外的建筑/植被/云水
-    drawAtlasStamps(ctx, rect);
+    const stampResult = drawAtlasStamps(ctx, rect) || {};
+    const stampBoxes = stampResult.boxes || [];
 
     // 5) 路线：数据点列 → Catmull-Rom 平滑，不用固定 PNG
     const routeLabels = drawAtlasRoutes(ctx, rect);
@@ -4560,18 +4570,39 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     uiBoxes.push({ x: dsX - 4, y: dsY - dsFs * 1.1, w: dsW + 8, h: dsFs * 2.2 });
     regions.forEach(r => {
       if (!r.name) return;
-      const at = r.label_at || [50, 50];
-      const text = r.label || r.name;
+      const poly = (r.polygon || []).map(atlasWorldScreen);
+      if (poly.length < 3) return;
+      const minX = Math.min(...poly.map(p => p.x)), maxX = Math.max(...poly.map(p => p.x));
+      const minY = Math.min(...poly.map(p => p.y)), maxY = Math.max(...poly.map(p => p.y));
+      const text = r.label || String(r.name).replace(/[（(].*$/, '').trim() || r.name;
       const font = Math.max(17, Math.min(30, rect.width * 0.022)) * mapLabelScale();
-      const p = atlasWorldScreen(at);
-      if (!onStage(p.x, p.y, font * 0.8)) return;
+      const h = font * 1.3;
+      const gap = Math.max(6, font * 0.28);
       ctx.save();
       ctx.font = `600 ${font}px "Songti SC","SimSun",serif`;
-      const tw = ctx.measureText(text).width;
+      const tw = ctx.measureText(text).width + 12;
       ctx.restore();
-      candidates.push({
-        kind: 'region', text, x: p.x, y: p.y,
-        w: tw + 12, h: font * 1.3, priority: 0, font
+      const fitsStage = (x, y) => x - tw / 2 >= safePad && x + tw / 2 <= rect.width - safePad &&
+        y - h / 2 >= safePad && y + h / 2 <= rect.height - safePad;
+      // 区域名固定在区域底边中点附近：先试底边内侧，再退到底边外侧；
+      // label_at 只在明确落在区域底边以下时作为手动锚点。
+      const padX = (minX + maxX) / 2;
+      const insideY = Math.min(Math.max(maxY - h / 2 - gap, minY + h / 2), rect.height - safePad - h / 2);
+      const outsideY = maxY + h / 2 + gap;
+      const variants = [];
+      const at = r.label_at ? atlasWorldScreen(r.label_at) : null;
+      if (at && at.y > maxY + gap) variants.push({ x: at.x, y: at.y, seq: 0 });
+      else variants.push({ x: padX, y: insideY, seq: 0 });
+      variants.push({ x: padX, y: outsideY, seq: 1 });
+      if (Math.abs(outsideY - insideY) > h * 0.35) {
+        variants.push({ x: padX, y: Math.max(minY + h / 2, insideY - h * 0.55), seq: 2 });
+      }
+      variants.forEach(v => {
+        if (!fitsStage(v.x, v.y)) return;
+        candidates.push({
+          kind: 'region', text, x: v.x, y: v.y,
+          w: tw, h, priority: 0, font, seq: v.seq, regionGroup: r.id
+        });
       });
     });
 
@@ -4605,31 +4636,37 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     });
     routeLabels.forEach(l => { if (onStage(l.x, l.y, 12)) candidates.push(l); });
 
-    // 标记 icon 的保留框：文字不得压住别的标记；rank3 在远景不占位
-    const reserved = nodes.filter(n => !hideMarker(n) && atlasMarkerTypeOf(n) !== 'none').map(n => {
+    // 标记 icon 的保留框：文字不得压住别的标记；rank3 在远景不占位；
+    // 区域层节点不再画小点，不占标签位置。
+    const reserved = nodes.filter(n => !hideMarker(n) && !regionLayerIds.has(n.id) && atlasMarkerTypeOf(n) !== 'none').map(n => {
       const s = atlasNodeScreen(n);
       const size = markerSizes[n.id] || atlasMarkerSizeOnScreen(n.rank || 2, rect);
       return { id: n.id, box: { x: s.x - size / 2 - 2, y: s.y - size / 2 - 2, w: size + 4, h: size + 4 } };
     });
+    const obstacles = reserved.concat(stampBoxes.map(box => ({ box })));
     const boxHit = (a, b) => !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
 
-    candidates.sort((a, b) => a.priority - b.priority || (a.y - b.y));
-    const kept = [], dropped = [];
+    candidates.sort((a, b) => a.priority - b.priority || (a.seq || 0) - (b.seq || 0) || (a.y - b.y));
+    const kept = [], dropped = [], keptRegionGroups = new Set();
     candidates.forEach(c => {
+      if (c.regionGroup && keptRegionGroups.has(c.regionGroup)) { dropped.push(c); return; }
       const box = { x: c.x - c.w / 2, y: c.y - c.h / 2, w: c.w, h: c.h };
       const hitLabel = kept.some(k => boxHit(box, k.box));
-      const hitMarker = reserved.some(r => r.id !== c.id && boxHit(box, r.box));
+      const hitMarker = obstacles.some(o => o.id !== c.id && boxHit(box, o.box));
       const hitUI = uiBoxes.some(u => boxHit(box, u));
       if (hitLabel || hitMarker || hitUI) { dropped.push(c); return; }
       kept.push(Object.assign({}, c, { box }));
+      if (c.regionGroup) keptRegionGroups.add(c.regionGroup);
     });
 
     // 7) 区域名
     kept.filter(c => c.kind === 'region').forEach(c => drawAtlasRegionLabel(ctx, c.box, c.text, c.font));
 
-    // 8) 标记
+    // 8) 标记：区域层节点已由区域面承载，不再单独画小点
     nodes.forEach(n => {
-      if (n.unknown || hideMarker(n)) { n._markerR = 0; n._hidden = true; return; }
+      if (n.unknown || hideMarker(n) || regionLayerIds.has(n.id)) {
+        n._markerR = 0; n._hidden = true; return;
+      }
       const s = atlasNodeScreen(n);
       const type = atlasMarkerTypeOf(n);
       n._hidden = type === 'none';
