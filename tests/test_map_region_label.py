@@ -21,10 +21,25 @@ class MapRegionExpressionContractTest(unittest.TestCase):
         self.assertIn("maxY - h / 2 - gap", scene)
         self.assertIn("const outsideY = maxY + h / 2 + gap", scene)
         self.assertIn("keptRegionGroups", scene)
-        # 区域名必须居中绘制
+        # 区域名必须按实测宽度居中绘制
         overlays = (VIEWER / "65-map-overlays.js").read_text(encoding="utf-8")
         self.assertIn("function drawAtlasRegionLabel", overlays)
-        self.assertIn("ctx.textAlign = 'center'", overlays)
+        self.assertIn("box.x + box.w / 2 - textW / 2", overlays)
+        self.assertIn("ctx.textAlign = 'left'", overlays)
+
+    def test_region_label_uses_exact_place_name(self):
+        scene = (VIEWER / "68-map-scene.js").read_text(encoding="utf-8")
+        # 一级地区名取 layer 指向地点的原名，不能派生「越国大陆」或截掉括号
+        self.assertIn("nodesById.get(r.layer)", scene)
+        self.assertIn("regionPlace && regionPlace.name", scene)
+        self.assertNotIn("replace(/[（(].*$/, '')", scene)
+
+    def test_node_label_is_centered_under_marker(self):
+        overlays = (VIEWER / "65-map-overlays.js").read_text(encoding="utf-8")
+        self.assertIn("ctx.translate(cx - size / 2, cy - size / 2)", overlays)
+        self.assertIn("textW = ctx.measureText(cand.text).width", overlays)
+        self.assertIn("const textX = cand.x - textW / 2", overlays)
+        self.assertIn("ctx.textAlign = 'left'", overlays)
 
     def test_architecture_stamps_are_label_obstacles(self):
         surface = (VIEWER / "60-map-surface.js").read_text(encoding="utf-8")

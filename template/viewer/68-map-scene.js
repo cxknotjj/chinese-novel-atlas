@@ -57,7 +57,10 @@
       if (poly.length < 3) return;
       const minX = Math.min(...poly.map(p => p.x)), maxX = Math.max(...poly.map(p => p.x));
       const minY = Math.min(...poly.map(p => p.y)), maxY = Math.max(...poly.map(p => p.y));
-      const text = r.label || String(r.name).replace(/[（(].*$/, '').trim() || r.name;
+      // 一级地区名必须使用地区实体的原名：不从 layer 名称派生、不补「大陆」、不截括号。
+      const regionPlace = r.layer ? nodesById.get(r.layer) : null;
+      const text = String((regionPlace && regionPlace.name) || r.name || '').trim();
+      if (!text) return;
       const font = Math.max(17, Math.min(30, rect.width * 0.022)) * mapLabelScale();
       const h = font * 1.3;
       const gap = Math.max(6, font * 0.28);

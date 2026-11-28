@@ -64,7 +64,8 @@
     if (!u) return;
     const px = v => v / u;
     ctx.save();
-    ctx.translate(cx, cy);
+    // 图标局部坐标是 0–100，缩放后必须先平移到左上角，否则整个图标会向右下偏 size/2。
+    ctx.translate(cx - size / 2, cy - size / 2);
     ctx.scale(u, u);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -139,13 +140,16 @@
   function drawAtlasRegionLabel(ctx, box, text, fontPx) {
     ctx.save();
     ctx.font = `600 ${fontPx}px "Songti SC","SimSun",serif`;
-    ctx.textAlign = 'center';
+    // 用实测宽度把区域名的几何中心放在区域底边中点，不依赖浏览器 textAlign 的字形余量。
+    const textW = ctx.measureText(text).width;
+    const textX = box.x + box.w / 2 - textW / 2;
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = Math.max(3, fontPx * 0.12);
     ctx.strokeStyle = 'rgba(243,236,221,0.88)';
-    ctx.strokeText(text, box.x + box.w / 2, box.y + box.h / 2);
+    ctx.strokeText(text, textX, box.y + box.h / 2);
     ctx.fillStyle = ATLAS_THEME.ink;
-    ctx.fillText(text, box.x + box.w / 2, box.y + box.h / 2);
+    ctx.fillText(text, textX, box.y + box.h / 2);
     ctx.restore();
   }
   function drawAtlasNodeLabel(ctx, cand) {
@@ -161,13 +165,17 @@
       ctx.stroke();
     }
     ctx.font = `${cand.rank === 1 ? '600 ' : ''}${cand.font}px -apple-system,"PingFang SC",sans-serif`;
-    ctx.textAlign = 'center';
+    // 用实测文字宽度反推左边界，避免某些浏览器在 textAlign=center 下的字宽/字形偏差。
+    // 文字盒中心 = 图标中心；引线也落在同一根中轴线上。
+    const textW = ctx.measureText(cand.text).width;
+    const textX = cand.x - textW / 2;
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = Math.max(3.2, cand.font * 0.22);
     ctx.strokeStyle = 'rgba(243,236,221,0.94)';
-    ctx.strokeText(cand.text, cand.x, cand.y);
+    ctx.strokeText(cand.text, textX, cand.y);
     ctx.fillStyle = cand.color || '#2B2A26';
-    ctx.fillText(cand.text, cand.x, cand.y);
+    ctx.fillText(cand.text, textX, cand.y);
     ctx.restore();
   }
 

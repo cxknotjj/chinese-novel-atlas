@@ -522,11 +522,11 @@ M0 只有地点列表；M1 只有示意坐标/拓扑；M2 由证据方位视图�
   "note": "人工示意坐标（0–100 归一化画布，原点左上），非经纬度；坐标为叙事导航用近似摆放",
   "canvas": [100, 100],
   "regions": [
-    { "id": "r_yueguo", "name": "越国大陆", "shape": "land", "layer": "p_yueguo",
+    { "id": "r_yueguo", "name": "越国", "shape": "land", "layer": "p_yueguo",
       "label_at": [22, 46], "polygon": [[4,14],[50,10],[52,74],[8,80]] },
     { "id": "r_luanxing", "name": "乱星海", "shape": "sea", "layer": "p_luanxinghai",
       "label_at": [76, 44], "polygon": [[56,10],[97,12],[95,78],[58,74]] },
-    { "id": "r_xutian", "name": "虚天殿（秘境）", "shape": "void", "layer": "p_xutian_dian",
+    { "id": "r_xutian", "name": "虚天殿", "shape": "void", "layer": "p_xutian_dian",
       "label_at": [74, 91], "polygon": [[62,82],[90,82],[90,98],[62,98]] }
   ],
   "nodes": [
@@ -541,7 +541,7 @@ M0 只有地点列表；M1 只有示意坐标/拓扑；M2 由证据方位视图�
 | `note` | 必填，≤120 字，必须含「非经纬度/示意」字样 |
 | `canvas` | 必填，`[w,h]`，固定 `[100,100]`（归一化） |
 | `regions[].id` | `r_` 前缀，唯一 |
-| `regions[].name` | 非空 |
+| `regions[].name` | 非空；必须与 `layer` 指向地点的原名一致，不派生「大陆」「海域」等后缀 |
 | `regions[].shape` | 枚举 `land` / `sea` / `void`（void=秘境小簇/卡片） |
 | `regions[].layer` | 可空；若有必须是已有 `places` id（用来做层筛选归属） |
 | `regions[].polygon` | ≥3 个 `[x,y]`，每点 0–100 |
