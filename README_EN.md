@@ -5,7 +5,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/cxknotjj/chinese-novel-atlas?style=social)](https://github.com/cxknotjj/chinese-novel-atlas)
 [![contract](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml/badge.svg)](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
-![Skills](https://img.shields.io/badge/Skills-6-5A7A5E)
+![Skills](https://img.shields.io/badge/Skills-1%20skill%2C%206%20flows-5A7A5E)
 
 **[Live demo](http://deerfect.me/chinese-novel-atlas/demo/)** — 500 chapters of a real 7.2M-character web novel · [中文版](README.md) · [Data contract](references/schema.md)
 
@@ -23,9 +23,9 @@ A Chinese web serial runs 2,000+ chapters and several million characters. Charac
 
 Novel Atlas parses the whole book into a structured archive, then publishes it truncated to a reading cutoff.
 
-## Why skills, not a website
+## Why one skill, not a website
 
-The product is six Agent Skills (Claude Code / Codex / any agent that reads `SKILL.md`). Analysis, Q&A, cross-book comparison, export, map generation and anomaly review are all invoked by natural language. `reader/` and `atlas.html` are just publication surfaces over the same data.
+The product is **one Agent Skill** (Claude Code / Codex / any agent that reads `SKILL.md`) with six flows: analyze, ask, audit, compare, export and map. Its entry `SKILL.md` routes by intent and loads only the relevant `references/*.md`, so a simple question never drags in the whole 900-line manual. `reader/` and `atlas.html` are just publication surfaces over the same data.
 
 - **Every claim carries a source coordinate.** People, places, relations, plot threads and map nodes all reference `chN:pM`. Inferences without textual evidence are not written into the archive.
 - **One dataset, many outputs.** Reader site, single-file eight-view HTML, map, setting compendium, character table, cross-book metrics.
@@ -38,9 +38,9 @@ The product is six Agent Skills (Claude Code / Codex / any agent that reads `SKI
 npx skills add cxknotjj/chinese-novel-atlas -y -g
 ```
 
-The skills are **self-contained**: `scripts/`, `template/` and `references/` ship inside each skill directory (`atlas-analyze` ~1.7 MB, the others ~0.2 MB each), so there is nothing to clone. Those copies are generated from source by `scripts/sync_skills.py`, and CI fails if a copy drifts from its source.
+The skill is **self-contained**: `novel-atlas` is ~2.1 MB with `scripts/`, `template/` and `references/` inside it. All six flows share one copy of the CLI and viewer template, so there is nothing to clone. Those copies are generated from source by `scripts/sync_skills.py`, and CI fails if a copy drifts from its source.
 
-The one exception is `atlas-map`: map rendering needs the 20 MB hand-drawn `atlas-kit/` assets, which are not vendored. Clone the repo if you want to build maps.
+The one exception is the `map` flow: map rendering needs the 20 MB hand-drawn `atlas-kit/` assets, which are not vendored. Clone the repo if you want to build maps.
 
 ## Quick start
 
@@ -58,9 +58,9 @@ python scripts/validate.py output/mybook/data.json
 python scripts/build.py --data output/mybook/data.json --out output/mybook/
 ```
 
-For long books (100+ chapters), split the batches across 4–8 sub-agents in parallel: the parent only dispatches, validates each batch, and runs the final merge. Output is identical to serial extraction, just faster — rules in `skills/atlas-analyze/SKILL.md` step 2.
+For long books (100+ chapters), split the batches across 4–8 sub-agents in parallel: the parent only dispatches, validates each batch, and runs the final merge. Output is identical to serial extraction, just faster — rules in `skills/novel-atlas/references/analyze.md`, step 2.
 
-Point your agent at `skills/` (or read the relevant `SKILL.md` directly). No server, no external model calls at render time.
+Point your agent at `skills/novel-atlas/` (or read its `SKILL.md` directly). No server, no external model calls at render time.
 
 Cost reference: 720k characters (500 chapters) costs about ¥5 / $0.7 of model usage.
 
@@ -77,7 +77,7 @@ Extracting in batches of 10 chapters means each batch numbers realms independent
 
 ## What this is not
 
-- **Not GIS.** Maps are schematic; no coordinates, scale bars or real coastlines.
+- **Not GIS.** Maps are schematic; node positions may be randomized from containment, and carry no geographic coordinates, scale bars or real coastlines.
 - **Not a SaaS.** Local by default. Manuscripts are never uploaded or used for training.
 - **Not for short fiction.** The value comes from scale — 100+ chapters, 100+ characters.
 

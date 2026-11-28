@@ -75,18 +75,20 @@
 
 ---
 
-## 六个 Skill
+## 一个 Skill · 六个流程
 
-| Skill | 自然语言入口 | 职责 | 主要产物 |
+六个流程装一次就有：入口 `SKILL.md` 只做意图路由，按需读 `references/*.md`，不把六份流程一次塞进上下文。
+
+| 流程 | 自然语言入口 | 职责 | 主要产物 |
 |---|---|---|---|
-| `atlas-analyze` | “分析《我的书》完本” | 分章、批次抽取、合并、校验、快照 | `data.json`、`atlas.html` |
-| `atlas-ask` | “韩立第几章筑基？” | 先查结构，再回原文；答案带坐标 | 带 `chN:pM` 的回答 |
-| `atlas-compare` | “对比两本书的伏笔回收率” | 节奏、伏笔、战力、势力、疑点密度 | `metrics.md`、`diff.json`、`compare.html` |
-| `atlas-export` | “导出《我的书》读者站” | 读者站 / 单文件 / 设定集 / 角色表 | `reader/`、`atlas.html`、MD/CSV |
-| `atlas-map` | “给《我的书》做地图” | M0–M4 分级、JSON 编排、地图审计、渲染 | `map_layout`、PNG/SVG、地图页 |
-| `atlas-audit` | “复核《我的书》的疑点” | 疑点列表、证据回看、标记已核实/误报；可选 `--web` 联网核对（只碰别名/归属/术语等非剧情字段） | `anomalies-verdicts.json`、`review/web-leads.md` |
+| `analyze` | “分析《我的书》完本” | 分章、批次抽取、合并、校验、快照 | `data.json`、`atlas.html` |
+| `ask` | “韩立第几章筑基？” | 先查结构，再回原文；答案带坐标 | 带 `chN:pM` 的回答 |
+| `compare` | “对比两本书的伏笔回收率” | 节奏、伏笔、战力、势力、疑点密度 | `metrics.md`、`diff.json`、`compare.html` |
+| `export` | “导出《我的书》读者站” | 读者站 / 单文件 / 设定集 / 角色表 | `reader/`、`atlas.html`、MD/CSV |
+| `map` | “给《我的书》做地图” | M0–M4 分级、JSON 编排、地图审计、渲染 | `map_layout`、PNG/SVG、地图页 |
+| `audit` | “复核《我的书》的疑点” | 疑点列表、证据回看、标记已核实/误报；可选 `--web` 联网核对（只碰别名/归属/术语等非剧情字段） | `anomalies-verdicts.json`、`review/web-leads.md` |
 
-把 `skills/` 整体挂到 Agent 的 skill root，或让 Agent 直接读取对应 `SKILL.md` 即可；不需要启动服务，也不调用外部模型 API。
+把 `skills/novel-atlas/` 挂到 Agent 的 skill root（或让 Agent 直接读它的 `SKILL.md`）即可；不需要启动服务，也不调用外部模型 API。
 
 ---
 
@@ -98,7 +100,7 @@ npx skills add cxknotjj/chinese-novel-atlas -y -g
 
 `-g` 全局安装，所有目录可用；去掉 `-g` 只装到当前目录。更新时重跑同一条命令即可。
 
-**skill 是自包含的**：`scripts/`、`template/`、`references/` 都随 skill 一起装进去（`atlas-analyze` 约 1.7MB，其余各约 0.2MB），装完即可运行，**不需要 clone 仓库**。资源由 `scripts/sync_skills.py` 从源码同步，CI 会校验副本与源码逐字节一致。
+**skill 是自包含的**：`novel-atlas` 约 2.1MB，`scripts/`、`template/`、`references/` 都随它一起装进去（六个流程共用同一套脚本与模板，不再各带一份），装完即可运行，**不需要 clone 仓库**。唯一的例外是地图渲染需要仓库里 20MB 的 `atlas-kit/` 手绘素材。资源由 `scripts/sync_skills.py` 从源码同步，CI 会校验副本与源码逐字节一致。
 
 装完后在你正在用的 Agent（Claude Code / Codex / 任何能读 `SKILL.md` 的工具）里直接说：
 
@@ -120,10 +122,10 @@ npx skills add cxknotjj/chinese-novel-atlas -y -g
 **B. 下载 ZIP 手动放**
 
 1. 下载 <https://github.com/cxknotjj/chinese-novel-atlas/archive/refs/heads/master.zip>
-2. 解压后把 `skills/` 下的 6 个目录拷进 skill root：Claude Code 是 `~/.claude/skills/`，WorkBuddy 是 `~/.workbuddy/skills/`
-3. 重开会话，skill 列表里出现 `atlas-analyze` 等条目即成功
+2. 解压后把 `skills/novel-atlas/` 这一个目录拷进 skill root：Claude Code 是 `~/.claude/skills/`，WorkBuddy 是 `~/.workbuddy/skills/`
+3. 重开会话，skill 列表里出现 `novel-atlas` 即成功
 
-**唯一例外是 `atlas-map`**：地图渲染依赖 `atlas-kit/` 的 20MB 手绘素材，没法随 skill 分发，所以做地图时要有一份仓库：
+**唯一例外是地图流程**：地图渲染依赖 `atlas-kit/` 的 20MB 手绘素材，没法随 skill 分发，所以做地图时要有一份仓库：
 
 ```bash
 git clone https://github.com/cxknotjj/chinese-novel-atlas.git
@@ -139,7 +141,7 @@ git clone https://github.com/cxknotjj/chinese-novel-atlas.git
 
 输入支持 `.txt`（utf-8 / GBK / Big5 自动探测）、`.md`、`.epub`，直接给路径即可，不用预转换。
 
-按 [`skills/atlas-analyze/SKILL.md`](skills/atlas-analyze/SKILL.md) 执行。CLI 负责切分、合并、校验和构建，逐批抽取由执行 Agent 完成：
+按 [`skills/novel-atlas/SKILL.md`](skills/novel-atlas/SKILL.md) 与 `references/analyze.md` 执行。CLI 负责切分、合并、校验和构建，逐批抽取由执行 Agent 完成：
 
 ```bash
 python scripts/chunk.py "path/我的书.txt" --out output/我的书
@@ -162,8 +164,8 @@ python scripts/compare.py --a output/A/data.json --b output/B/data.json --out ou
 
 ```bash
 python scripts/anomalies.py --data output/我的书/data.json
-python skills/atlas-audit/scripts/audit.py stats --data output/我的书/data.json
-python skills/atlas-audit/scripts/audit.py list  --data output/我的书/data.json --severity warning
+python skills/novel-atlas/scripts/audit.py stats --data output/我的书/data.json
+python skills/novel-atlas/scripts/audit.py list  --data output/我的书/data.json --severity warning
 ```
 
 `--cutoff N` 可只保留证据不晚于第 N 章的疑点；复核结果写入 `anomalies-verdicts.json`，不修改原索引。
@@ -183,16 +185,16 @@ python scripts/build_reader.py --data output/我的书/data.json --out output/�
 ### 5. 地图
 
 ```bash
-python skills/atlas-map/scripts/atlas_map.py --project-root . levels --data output/我的书/data.json
-python skills/atlas-map/scripts/atlas_map.py --project-root . audit  --data output/我的书/data.json
+python skills/novel-atlas/scripts/atlas_map.py --project-root . levels --data output/我的书/data.json
+python skills/novel-atlas/scripts/atlas_map.py --project-root . audit  --data output/我的书/data.json
 ```
 
-地图是 `atlas-map` 的输出，不是产品入口：
+地图是 `map` 流程的输出，不是产品入口：
 
 1. **M0–M4 自动分级**：M0 地点索引；M1 拓扑/示意；M2 方向/距离证据 ≥3 条；M3 多层；M4 `time_slices` 时态切片。
 2. **网页编排器**：示意 2D 里点「编排」，拖节点、给节点选层、挂/移除 21 件底件、导出 `map-layout.json`；M4 数据出现时间切片下拉；PNG/SVG 导出当前视图。
 3. **读者版截断**：只画 `first_ch <= cutoff_ch` 的区域、节点、路线、stamp；未来层不画。
-4. **示意坐标不是经纬度**：`map_layout` 坐标是 0–100 的示意坐标，不是原文方位证据；只有 `spatial_relations` 的 direction/distance 才对回原文。
+4. **示意 2D 可以随机摆放**：`map_layout` 只保证 `places.parent` 包含关系；原文没写方位时可随机/自动摆放并避开建筑。坐标仍不是经纬度或原文方位证据，只有 `spatial_relations` 的 direction/distance 才对回原文。
 5. **缩放不裁装饰**：地图内容随缩放变化，纸底、题签和工具条保持屏幕尺寸；桌面右键拖拽、移动端单指拖拽平移，缩放百分比实时更新。
 
 ---
@@ -216,7 +218,7 @@ python skills/atlas-map/scripts/atlas_map.py --project-root . audit  --data outp
 
 ## Reader 只是发布面
 
-`atlas-export` 把同一份 `data.json` 投影成读者站。它做三件事：
+`export` 流程把同一份 `data.json` 投影成读者站。它做三件事：
 
 - **按章截断**：实体、地点、势力、关系、伏笔、地图层、疑点都受 `cutoff_ch` 约束；
 - **不剧透**：未来节点不显示，未来命中只提示“第 N 章后解锁”；

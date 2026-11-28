@@ -82,11 +82,15 @@
       ctx.font = `${n.rank === 1 ? '600 ' : ''}${font}px -apple-system,"PingFang SC",sans-serif`;
       const tw = ctx.measureText(n.name).width;
       ctx.restore();
-      let ly = s.y + size / 2 + font * 1.1;
-      if (ly + font > rect.height - 12) ly = s.y - size / 2 - font * 0.9;
+      // 文字固定在图标正下方（空间不够才翻到上方），x 与图标中心严格一致；
+      // anchorY 记下图标边缘，画一条短连接线，避免看起来像属于旁边的图标。
+      let below = true;
+      let ly = s.y + size / 2 + font * 1.25;
+      if (ly + font > rect.height - 12) { below = false; ly = s.y - size / 2 - font * 1.15; }
       if (ly < framePad + font * 0.9 || ly > rect.height - framePad - font * 0.9) return;
       candidates.push({
         kind: 'node', id: n.id, text: n.name, x: s.x, y: ly,
+        anchorY: s.y + (below ? size / 2 : -size / 2),
         w: tw + 10, h: font * 1.35, priority: n.rank === 1 ? 1 : (n.rank === 3 ? 4 : 2),
         font, rank: n.rank
       });

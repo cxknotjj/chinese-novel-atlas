@@ -7,7 +7,7 @@
 `python scripts/chunk.py`，而 `scripts/` 留在仓库根，用户装完就找不到脚本。
 所以脚本必须复制进 skill 本体。
 
-但复制会带来第二个问题：六份副本必然发散。有人改了 `scripts/merge.py`
+但复制会带来第二个问题：副本与源码必然发散。有人改了 `scripts/merge.py`
 却忘了同步，用户装到的就是旧逻辑。所以本脚本同时提供 `--check`：
 CI 用它做契约检查，源码与副本不一致就直接失败。
 
@@ -44,23 +44,21 @@ NEVER_VENDOR = {"sync_skills.py"}
 # template: True = 带 viewer 源码 + 模板真正引用的 23 张素材
 # references / atlas_kit: 额外的按需资源
 #
-# atlas-map 不在此列：它依赖 atlas-kit 的 20MB 手绘素材，没法塞进 skill。
-# 那个 skill 继续以「完整仓库」为工作目录，SKILL.md 里已写明。
+# 只有一个 skill：六个流程（拆书/问答/疑点/对比/导出/地图）共用一套脚本与模板，
+# 拆成六个 skill 时每个都要带一份 300KB 的 scripts/，装齐要 5MB 且六份副本互相发散。
+# 现在 SKILL.md 只做路由，具体流程放 references/*.md，按需读取。
 VENDOR = {
-    "atlas-analyze": {
+    "novel-atlas": {
         "scripts": "all",
         "template": True,
         "references": ["schema.md"],
         "atlas_kit": ["manifest.json"],
     },
-    "atlas-ask": {"scripts": "all"},
-    "atlas-audit": {"scripts": "all"},
-    "atlas-compare": {"scripts": "all"},
-    "atlas-export": {"scripts": "all", "template": True},
 }
 
 # skill 自有文件：不参与同步，也绝不能被 prune 删掉。
-# audit.py / atlas_map.py 是 skill 自己维护的包装脚本，源码不在 scripts/ 下。
+# audit.py / atlas_map.py 是 skill 自己维护的包装脚本，源码不在 scripts/ 下；
+# references/*.md 是六个流程的说明，.md 一律视为自有（见 is_own）。
 OWN_REL = {"SKILL.md", "_VENDORED.md", "scripts/audit.py", "scripts/atlas_map.py"}
 
 

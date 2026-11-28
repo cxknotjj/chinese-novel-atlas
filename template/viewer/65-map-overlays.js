@@ -150,6 +150,16 @@
   }
   function drawAtlasNodeLabel(ctx, cand) {
     ctx.save();
+    // 图标底缘 → 文字顶缘的短引线：文字始终在图标正下方，不会看成旁边点的标签
+    if (cand.anchorY != null) {
+      const below = cand.y > cand.anchorY;
+      ctx.beginPath();
+      ctx.moveTo(cand.x, cand.anchorY + (below ? 1 : -1));
+      ctx.lineTo(cand.x, cand.y + (below ? -cand.h / 2 - 1 : cand.h / 2 + 1));
+      ctx.strokeStyle = 'rgba(43,42,38,0.26)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
     ctx.font = `${cand.rank === 1 ? '600 ' : ''}${cand.font}px -apple-system,"PingFang SC",sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

@@ -1,4 +1,4 @@
-"""atlas-audit 的联网核对模式：问题生成、线索校验、报告落盘。"""
+"""novel-atlas 审计流程的联网核对模式：问题生成、线索校验、报告落盘。"""
 
 import contextlib
 import importlib.util
@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-AUDIT = ROOT / "skills" / "atlas-audit" / "scripts" / "audit.py"
+AUDIT = ROOT / "skills" / "novel-atlas" / "scripts" / "audit.py"
 
 
 def load_audit():
