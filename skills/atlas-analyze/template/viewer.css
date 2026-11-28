@@ -12,6 +12,10 @@
     --ok: #5A7A5E;
   }
   * { box-sizing: border-box; }
+  /* hidden 属性必须真的隐藏。本文件里 .map-fallback / .map-tray 等用了 display:flex，
+     类选择器优先级高于 UA 的 [hidden]{display:none}，会让一个 position:absolute;inset:0
+     的透明层盖住地图画布，吃掉滚轮与右键事件。 */
+  [hidden] { display: none !important; }
   html, body { height: 100%; margin: 0; }
   body {
     display: flex; flex-direction: column;
