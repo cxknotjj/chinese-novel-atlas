@@ -5,15 +5,15 @@
 [![GitHub stars](https://img.shields.io/github/stars/cxknotjj/chinese-novel-atlas?style=social)](https://github.com/cxknotjj/chinese-novel-atlas)
 [![contract](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml/badge.svg)](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
-![Skills](https://img.shields.io/badge/Skills-6-5A7A5E)
+![Skills](https://img.shields.io/badge/Skills-1%20skill%2C%206%20flows-5A7A5E)
 
-**[八视图档案](http://deerfect.me/chinese-novel-atlas/demo/)** ·
-**[读者站（按阅读进度截断，不剧透）](http://deerfect.me/chinese-novel-atlas/demo/reader/)** ·
+**[八视图档案](https://deerfect.me/chinese-novel-atlas/demo/)** ·
+**[读者站（按阅读进度截断，不剧透）](https://deerfect.me/chinese-novel-atlas/demo/reader/)** ·
 [数据契约](references/schema.md) ·
 [功能文档](docs/功能文档.md) ·
 [English](README_EN.md)
 
-![读者世界档案：384 实体 · 199 角色 · 119 地点 · 215 伏笔，八个视图共用一份数据](docs/screenshots/reader-home-fanren.png)
+![读者世界档案：682 实体 · 360 角色 · 205 地点 · 336 伏笔，八个视图共用一份数据](docs/screenshots/reader-home-fanren.png)
 
 同一份 `data.json` 投影出八个视图：人物图谱、设定百科、地点志、世界地图、势力版图、节奏曲线、境界轨迹、伏笔台账。拖动顶部进度条，整站内容跟着截断到你读到的那一章。
 
@@ -21,7 +21,7 @@
 
 ## 为什么是 Skill 而不是网页
 
-- **核心是 6 个 Agent Skill。** 分析、问答、对比、导出、地图、疑点复核都能被 Agent 直接调用；`reader/` 和 `atlas.html` 只是同一份数据的发布面。
+- **核心是 1 个 Agent Skill，内含 6 条流程。** 分析、问答、对比、导出、地图、疑点复核都能被 Agent 直接调用；`reader/` 和 `atlas.html` 只是同一份数据的发布面。
 - **每条结论都能回到原文。** 人物、地点、关系、伏笔、地图节点都带 `chN:pM` 坐标；没有证据的推断不写入档案。
 - **一份 `data.json` 投影成多种产物。** 读者站、单文件八视图、地图、设定集、角色表、跨书指标，共享同一套实体与证据。
 - **读者向，不剧透。** 用 `cutoff_ch` 按阅读进度截断人物、关系、伏笔和地图层；未来内容默认锁定。
@@ -33,41 +33,41 @@
 |---|---|
 | **S — Situation** | 一本完本网文动辄几十万到几百万字，人物、地点、伏笔、境界和地图散落在几千章正文里。 |
 | **T — Task** | 把整本书拆成可查询、可复核、可按阅读进度发布的世界档案，而不是再做一个读完就忘的摘要页。 |
-| **A — Action** | 用 6 个 Skill 跑完「分批抽取 → 合并校验 → 疑点/地图/读者站投影」，所有结论落到 `data.json` 和原文坐标。 |
+| **A — Action** | 用 1 个 Skill 的 6 条流程跑完「分批抽取 → 合并校验 → 疑点/地图/读者站投影」，所有结论落到 `data.json` 和原文坐标。 |
 | **R — Result** | 读者能按进度逛人物、地点、关系、伏笔、境界和地图；研究者能拿同一份数据做问答、对比与二次导出。 |
 
 ---
 
 ## 效果
 
-下面的截图不是概念图，是在《凡人修仙传》前 500 章上真实跑出来的。**在线 demo 就是这份档案**：
+下面的截图不是概念图，是在《凡人修仙传》前 800 章上真实跑出来的。**在线 demo 就是这份档案**：
 
-**[→ 打开在线档案](http://deerfect.me/chinese-novel-atlas/demo/)** · 384 实体 · 119 地点 · 215 伏笔
+**[→ 打开在线档案](https://deerfect.me/chinese-novel-atlas/demo/)** · 682 实体 · 205 地点 · 336 伏笔
 
 总览页直接给出**证据覆盖率**：多少实体/关系/地点/伏笔带章节坐标、其中多少精确到段落（`chN:pM`），并随阅读进度实时重算。
 
 | | |
 |---|---|
 | 原文 | 2443 章 · 720.9 万字 |
-| 本次分析 | 前 500 章（占 20%） |
-| 产出 | 384 实体（199 角色）· 459 关系 · 119 地点 · 215 伏笔 |
-| 成本 / 耗时 | 约 ¥5 · 40 分钟（8 并发，DeepSeek） |
+| 本次分析 | 前 800 章（占 33%） |
+| 产出 | 682 实体（360 角色）· 764 关系 · 205 地点 · 336 伏笔 |
+| 抽取方式 | 80 批 × 10 章，8 并发 → 合并校验 |
 
 跑完得到三个结论：
 
-**一、215 条伏笔里，79 条到第 500 章仍未回收。** 判据不是「埋了多久」，而是**多久没被再提过**——第 7 章埋、第 196 章还在提的主线不该报警；第 20 章埋、第 73 章后再没出现的才该报。这一条否掉了两种常见做法，理由见[判定规则](references/schema.md#status-判定规则)。
+**一、336 条伏笔里，101 条已回收；另有 92 条到第 800 章已超期仍未回收。** 判据不是「埋了多久」，而是**多久没被再提过**——第 7 章埋、第 196 章还在提的主线不该报警；第 20 章埋、第 73 章后再没出现的才该报。这一条否掉了两种常见做法，理由见[判定规则](references/schema.md#status-判定规则)。
 
-**二、沉默最久的一条从第 7 章起就没再出现，跨 493 章。** 它是韩立修行的起点（一丝与正阳劲截然不同的凉气），此后再未被文本提及。工具标「超期」是对的——对读者来说，这个来历确实悬了 493 章。
+**二、沉默最久的一条从第 7 章起就没再出现，跨 793 章。** 它是韩立修行的起点（一丝与正阳劲截然不同的凉气），此后再未被文本提及。工具标「超期」是对的——对读者来说，这个来历确实悬了 793 章。
 
-**三、原著用的是功法层数，不是「练气 / 筑基」。** 前 500 章里标准境界词几乎不出现。逐批抽取时 10 个批次有 9 个的 `realms` 是空的，剩下那个自己编了 `order: 1` 的「筑基」。所以境界必须**全局定义**（`realms.py` 全文扫描 → 人工确认 → `merge.py` 注入），不能由批次各自建立。这正是 [schema v2.1](references/schema.md) 那条硬约束的来历。
+**三、原著用的是功法层数，不是「练气 / 筑基」。** 前 800 章里标准境界词几乎不出现。逐批抽取时 10 个批次有 9 个的 `realms` 是空的，剩下那个自己编了 `order: 1` 的「筑基」。所以境界必须**全局定义**（`realms.py` 全文扫描 → 人工确认 → `merge.py` 注入），不能由批次各自建立。这正是 [schema v2.1](references/schema.md) 那条硬约束的来历。
 
 | 疑点索引：每条带证据，可标已核实/误报 | 境界轨迹：多色相 + 同境界浅到深 |
 |---|---|
-| ![疑点索引：第 7 章埋下的线索，到第 500 章仍未再提，沉默 493 章](docs/screenshots/reader-anomalies-fanren.png) | ![境界轨迹：同境界内由浅到深，突破换色](docs/screenshots/realm-colors-fanren.png) |
+| ![疑点索引：第 7 章埋下的线索，到第 800 章仍未再提，沉默 793 章](docs/screenshots/reader-anomalies-fanren.png) | ![境界轨迹：同境界内由浅到深，突破换色](docs/screenshots/realm-colors-fanren.png) |
 
 ![《凡人修仙传》多层地图：21 件手绘 PNG + 9 类 SVG 变量层](docs/screenshots/map-fanren.png)
 
-> **「未回收」不等于「作者忘了」。** 只分析了前 500 章，全书 2443 章，大量线索在第 500 章后才收。准确表述是「到第 500 章为止仍未回收」——这是读者视角的事实记录，不是对作品的判断。原文与分析档案不随仓库分发（`novals/`、`output/` 均已忽略）。
+> **「未回收」不等于「作者忘了」。** 只分析了前 800 章，全书 2443 章，大量线索在第 800 章后才收。准确表述是「到第 800 章为止仍未回收」——这是读者视角的事实记录，不是对作品的判断。原文与分析档案不随仓库分发（`novals/`、`output/` 均已忽略）。
 
 读者站与地图在 500px 宽度下可用；地图桌面端右键拖拽平移、移动端单指拖拽平移，缩放百分比实时显示。
 
@@ -106,7 +106,7 @@ npx skills add cxknotjj/chinese-novel-atlas -y -g
 
 > 拆《我的书》
 
-六个 skill 会按需加载，不需要单独配模型或起服务。
+六条流程会按需加载，不需要单独配模型或起服务。
 
 ### 装不上怎么办
 
@@ -287,9 +287,9 @@ python -m unittest discover -s tests -v
 ## 目录
 
 ```text
-skills/               六个 Agent Skill（产品本体，自带 scripts/template/references）
+skills/               novel-atlas 单 Skill（六条流程，自带 scripts/template/references）
 scripts/              分析、合并、校验、导出、读者站、地图 CLI（源码）
-scripts/sync_skills.py 把 CLI 同步进各 skill；--check 供 CI 校验副本一致性
+scripts/sync_skills.py 把 CLI 同步进 novel-atlas；--check 供 CI 校验副本一致性
 references/schema.md  数据契约
 atlas-kit/            21 件 PNG + 9 件变量层
 template/             读者站渲染模板
