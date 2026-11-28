@@ -4,6 +4,14 @@ version: 0.1.0
 description: "基于已拆解的网文数据回答问题，答案带原文坐标可溯源。查角色境界、查伏笔回收、查势力关系、查某人在第几章出场。触发词：这本书里XX是谁、问书、查设定、XX现在什么境界、XX在第几章出现、这本书的XX组织是什么、XX和XX什么关系、有没有提到XX、atlas ask。"
 ---
 
+> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
+> 若尚未获取仓库：
+> ```bash
+> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+> cd chinese-novel-atlas
+> ```
+> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+
 # atlas-ask · 书内问答
 
 基于 `atlas-analyze` 产出的 `data.json` 回答问题。
