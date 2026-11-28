@@ -61,6 +61,7 @@
       t.classList.toggle('on', t.dataset.view === v));
     if (v === 'home') renderHome();
     if (v === 'graph') { resize(); alpha = Math.max(alpha, 0.3); }
+    if (v === 'wiki') renderWiki();
     if (v === 'geo') renderGeo();
     if (v === 'map') renderMap();
     if (v === 'power') renderPower();

@@ -256,6 +256,26 @@
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+  /* 地点层级树：容器复用，随阅读进度重算（截断后可能有地点消失或父级被隐藏） */
+  const byFirstCh = (a, b) => (a.first_ch || 9999) - (b.first_ch || 9999) ||
+    a.name.localeCompare(b.name, 'zh');
+  const placeChildren = new Map();
+  const placeRoots = [];
+  function rebuildPlaceTree() {
+    placeChildren.clear();
+    placeRoots.length = 0;
+    PLACES.forEach(p => {
+      if (p.parent && placeById.has(p.parent)) {
+        if (!placeChildren.has(p.parent)) placeChildren.set(p.parent, []);
+        placeChildren.get(p.parent).push(p);
+      } else {
+        placeRoots.push(p);
+      }
+    });
+    placeRoots.sort(byFirstCh);
+    placeChildren.forEach(list => list.sort(byFirstCh));
+  }
+
   function rebuildIndexes() {
     [byId, allById, realmById, placeById, chapterByCh, orgByName,
      orgRootCache, placeOwnerCache, deg].forEach(m => m.clear());
@@ -277,6 +297,8 @@
         if (k && !orgByName.has(k)) orgByName.set(k, o);
       });
     });
+
+    rebuildPlaceTree();
 
     D.relations.forEach(r => {
       deg.set(r.s, (deg.get(r.s) || 0) + 1);
@@ -366,20 +388,6 @@
     placeOwnerCache.set(p.id, info);
     return info;
   }
-
-  const placeChildren = new Map();
-  const placeRoots = [];
-  PLACES.forEach(p => {
-    if (p.parent && placeById.has(p.parent)) {
-      if (!placeChildren.has(p.parent)) placeChildren.set(p.parent, []);
-      placeChildren.get(p.parent).push(p);
-    } else {
-      placeRoots.push(p);
-    }
-  });
-  const byFirstCh = (a, b) => (a.first_ch || 9999) - (b.first_ch || 9999) || a.name.localeCompare(b.name, 'zh');
-  placeRoots.sort(byFirstCh);
-  placeChildren.forEach(list => list.sort(byFirstCh));
 
   const GEO_STAGES = [
     { label: '山门一带', max: 40, color: '#2A5666', note: '第 1–40 章' },
@@ -489,7 +497,6 @@
   }
 
   /* ================= 顶栏 ================= */
-  const overdueCnt = FORESHADOWS.filter(f => fsStatus(f) === 'overdue').length;
   const analyzedCh = (D.meta.coverage && D.meta.coverage.chapters_done) || D.chapters.length;
   const isPartial = analyzedCh < D.meta.chapters;
   let cutoff = CURRENT_CH;
@@ -497,16 +504,22 @@
   document.getElementById('tag').textContent =
     [D.meta.genre, D.meta.platform, D.meta.status].filter(Boolean).join(' · ') +
     (isPartial ? ` · 已分析 ${analyzedCh} 章` : ' · 全书');
-  document.getElementById('stats').innerHTML =
-    `<span class="cov"><b>${cutoff}</b> / ${D.meta.chapters} 章可读</span>` +
-    `<span class="book"><b>${(D.meta.chars / 10000).toFixed(0)}</b> 万字</span>` +
-    `<span><b>${D.entities.filter(e => e.type === 'character').length}</b> 角色</span>` +
-    `<span class="entities"><b>${D.entities.length}</b> 实体</span>`;
-  if (overdueCnt) {
+
+  /** 顶栏数字随进度热更新：角色/实体数与超期伏笔红点都要重算 */
+  function renderHeaderStats() {
+    document.getElementById('stats').innerHTML =
+      `<span class="cov"><b>${cutoff}</b> / ${D.meta.chapters} 章可读</span>` +
+      `<span class="book"><b>${(D.meta.chars / 10000).toFixed(0)}</b> 万字</span>` +
+      `<span><b>${D.entities.filter(e => e.type === 'character').length}</b> 角色</span>` +
+      `<span class="entities"><b>${D.entities.length}</b> 实体</span>`;
+    const overdueCnt = FORESHADOWS.filter(f => fsStatus(f) === 'overdue').length;
     const dot = document.getElementById('fsDot');
-    dot.hidden = false;
-    dot.title = overdueCnt + ' 个伏笔在当前进度已超期';
+    if (dot) {
+      dot.hidden = !overdueCnt;
+      dot.title = overdueCnt ? overdueCnt + ' 个伏笔在当前进度已超期' : '';
+    }
   }
+  renderHeaderStats();
 
   /* ---------- 阅读进度控件 ---------- */
   function renderReaderBar() {
@@ -583,6 +596,9 @@
     hoverId = hoverLink = null;
 
     // 4) 重渲染
+    renderHeaderStats();             // 顶栏角色/实体数、伏笔红点跟着变
+    resetSearchIndex();              // 搜索索引必须按新进度重建
+    renderLegend();                  // 图例里的阵营与孤立角色数也会变
     renderReaderBar();
     setView(curView);                // setView 无幂等短路，同视图也会重画
     updateGraphTools();

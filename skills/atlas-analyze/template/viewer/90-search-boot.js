@@ -50,6 +50,8 @@
     return out;
   }
   let searchIndexCache = null;
+  /** 切换进度后必须丢弃缓存，否则搜到的还是旧范围的实体 */
+  function resetSearchIndex() { searchIndexCache = null; }
   function getSearchIndex() {
     if (!searchIndexCache) searchIndexCache = indexEntries(D, cutoff, false);
     return searchIndexCache;
@@ -132,23 +134,27 @@
   }
 
   /* ================= 图例 ================= */
-  document.getElementById('legend').innerHTML =
-    `<div class="legend-types legend-types-row">
-      <span>${entityIcon('character')}人物</span>
-      <span>${entityIcon('org')}势力</span>
-      <span>${entityIcon('item')}器物</span>
-      <span>${entityIcon('creature')}妖兽</span>
-    </div>` +
-    `<div class="legend-types rel-legend">
-      ${Object.keys(REL_STYLE).map(k => {
-        const st = REL_STYLE[k];
-        const style = st.dash.length ? (st.dash[0] <= 2 ? 'dotted' : 'dashed') : 'solid';
-        return `<span><i style="border-top-color:${st.color};border-top-style:${style}"></i>${REL_CN[k]}</span>`;
-      }).join('')}
-    </div>` +
-    [...new Set(D.entities.map(e => e.group))].map(g =>
-      `<span><i style="background:${GROUP_COLOR[g] || '#999'}"></i>${g}</span>`).join('') +
-    (isolatedCount ? `<span style="color:#9A9488">另有 ${isolatedCount} 个角色无关系连线（见百科）</span>` : '');
+  /** 图例随进度重画：阵营集合与「无关系连线」的人数都会变 */
+  function renderLegend() {
+    document.getElementById('legend').innerHTML =
+      `<div class="legend-types legend-types-row">
+        <span>${entityIcon('character')}人物</span>
+        <span>${entityIcon('org')}势力</span>
+        <span>${entityIcon('item')}器物</span>
+        <span>${entityIcon('creature')}妖兽</span>
+      </div>` +
+      `<div class="legend-types rel-legend">
+        ${Object.keys(REL_STYLE).map(k => {
+          const st = REL_STYLE[k];
+          const style = st.dash.length ? (st.dash[0] <= 2 ? 'dotted' : 'dashed') : 'solid';
+          return `<span><i style="border-top-color:${st.color};border-top-style:${style}"></i>${REL_CN[k]}</span>`;
+        }).join('')}
+      </div>` +
+      [...new Set(D.entities.map(e => e.group))].map(g =>
+        `<span><i style="background:${GROUP_COLOR[g] || '#999'}"></i>${g}</span>`).join('') +
+      (isolatedCount ? `<span style="color:#9A9488">另有 ${isolatedCount} 个角色无关系连线（见百科）</span>` : '');
+  }
+  renderLegend();
 
   /* ================= 启动 ================= */
   if (location.search.includes('debug=1')) {
