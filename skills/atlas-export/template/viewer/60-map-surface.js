@@ -206,7 +206,7 @@
     if (explicit) return explicit;
     if (n.marker) return n.marker;
     const name = n.name || '';
-    if (/禁地|秘境|遗迹|洞府|古墓|深渊|墟|虚天/.test(name)) return 'secret';
+    if (/禁地|秘境|遗迹|洞府|古墓|深渊|墟/.test(name)) return 'secret';
     if (/险|魔|绝|死|断魂|血|凶|禁/.test(name)) return 'danger';
     if (/宗|门|派|阁|殿|寺|观|山门|道观/.test(name)) return 'sect';
     if (/城|京|都|镇|堡|关|州|国|村|寨|集|市|街/.test(name)) return 'city';

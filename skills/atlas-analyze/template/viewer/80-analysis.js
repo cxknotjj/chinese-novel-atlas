@@ -102,7 +102,7 @@
         <div class="power-extra-card">
           <h3>交界与共管（不强行归给单方）</h3>
           <div class="chips">${[...disputed, ...special].length ? [...disputed, ...special].map(p => placeChip(p)).join('') : '<span class="power-gap">无</span>'}</div>
-          <p>落沙坡按描述列为七玄门/野狼帮交界；血色禁地及其子地点按「七派共管」单列。</p>
+          <p>按原文描述标注：明确写「交界 / 争议」的地点列出双方，明确写「共管」的单列；其余不强行归给单一势力。</p>
         </div>
         <div class="power-extra-card">
           <h3>未归属地点（${unassigned.length}）</h3>

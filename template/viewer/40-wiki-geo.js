@@ -122,7 +122,21 @@
   }
 
   /* ================= 地点志 ================= */
-  let geoSelected = (placeById.get('p_yueguo') || placeRoots[0] || {}).id || '';
+  /** 默认选中：子树最大的根地点；不依赖任何具体书名或地点 id */
+  function defaultGeoPlaceId() {
+    let best = placeRoots[0] || null, bestN = -1;
+    placeRoots.forEach(root => {
+      let n = 0;
+      const stack = [root];
+      while (stack.length) {
+        const x = stack.pop(); n++;
+        (placeChildren.get(x.id) || []).forEach(k => stack.push(k));
+      }
+      if (n > bestN) { bestN = n; best = root; }
+    });
+    return best ? best.id : '';
+  }
+  let geoSelected = defaultGeoPlaceId();
   const geoExpanded = new Set([...placeChildren.keys()]);
 
   function placeOwnerText(p, short) {
@@ -260,7 +274,7 @@
   }
 
   function renderGeo() {
-    if (!geoSelected || !placeById.has(geoSelected)) geoSelected = (placeById.get('p_yueguo') || placeRoots[0] || {}).id || '';
+    if (!geoSelected || !placeById.has(geoSelected)) geoSelected = defaultGeoPlaceId();
     const scrollTop = views.geo.scrollTop;
     const p = placeById.get(geoSelected);
     const counts = GEO_STAGES.map(s => ({
@@ -268,7 +282,7 @@
     }));
     views.geo.innerHTML = `
       <div class="geo-note">
-        ${PLACES.length} 个地点按 <b>parent</b> 组成层级容器，按首现章分四个地理阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
+        ${PLACES.length} 个地点按 <b>parent</b> 组成层级容器，按卷/首现章分 ${GEO_STAGES.length} 个阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
       </div>
       <div class="geo-stage-strip">${counts.map(s => `
         <span class="geo-stage-chip"><i style="background:${s.color}"></i><b>${s.label}</b>

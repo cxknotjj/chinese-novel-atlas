@@ -1092,6 +1092,45 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
   let PLACES = [];
   let orgEntities = [];
 
+  /* 地点阶段：优先生成自分卷（data.volumes 的卷名与章界），没有分卷时按当前进度均分。
+     书名、地名、章界一律不写死在代码里。 */
+  const STAGE_COLORS = ['#2A5666', '#4E7C8F', '#B8925A', '#A6314A', '#6B4A7A', '#5A7A5E'];
+  let GEO_STAGES = [];
+  function rebuildGeoStages() {
+    const vols = (D.volumes || []).filter(v =>
+      typeof v.ch_start === 'number' && v.ch_start > 0 &&
+      typeof v.ch_end === 'number' && v.ch_end >= v.ch_start);
+    if (vols.length >= 2) {
+      GEO_STAGES = vols.map((v, i) => ({
+        label: v.name || `第 ${v.ch_start}–${v.ch_end} 章`,
+        max: v.ch_end,
+        color: STAGE_COLORS[i % STAGE_COLORS.length],
+        note: `第 ${v.ch_start}–${v.ch_end} 章`
+      }));
+      const last = vols[vols.length - 1];
+      if (CURRENT_CH > last.ch_end) {
+        GEO_STAGES.push({
+          label: `第 ${last.ch_end + 1} 章以后`,
+          max: 999999,
+          color: STAGE_COLORS[GEO_STAGES.length % STAGE_COLORS.length],
+          note: `第 ${last.ch_end + 1}–${CURRENT_CH} 章`
+        });
+      }
+      return;
+    }
+    const span = Math.max(CURRENT_CH, 1), n = 4;
+    GEO_STAGES = Array.from({ length: n }, (_, i) => {
+      const from = Math.floor(span * i / n) + 1;
+      const to = Math.round(span * (i + 1) / n);
+      return {
+        label: `第 ${from}–${to} 章`,
+        max: i === n - 1 ? 999999 : to,
+        color: STAGE_COLORS[i % STAGE_COLORS.length],
+        note: `第 ${from}–${to} 章`
+      };
+    });
+  }
+
   const keyName = s => String(s || '').replace(/\s+/g, '').trim();
   const escHtml = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -1140,6 +1179,7 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
     });
 
     rebuildPlaceTree();
+    rebuildGeoStages();
 
     D.relations.forEach(r => {
       deg.set(r.s, (deg.get(r.s) || 0) + 1);
@@ -1222,7 +1262,7 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
     }
 
     if (!info.roots.length && !info.special && /共管/.test(desc)) {
-      info.special = '七派共管';
+      info.special = '多方共管';
       info.basis = '描述明确为多派共管，不强行归给单一势力';
     }
 
@@ -1230,15 +1270,9 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
     return info;
   }
 
-  const GEO_STAGES = [
-    { label: '山门一带', max: 40, color: '#2A5666', note: '第 1–40 章' },
-    { label: '门内深处与下山', max: 143, color: '#4E7C8F', note: '第 41–143 章' },
-    { label: '黄枫谷', max: 178, color: '#B8925A', note: '第 144–178 章' },
-    { label: '秘境', max: 9999, color: '#A6314A', note: '第 179 章以后' }
-  ];
   function placeStage(p) {
     const ch = p.first_ch || 0;
-    return GEO_STAGES.find(s => ch <= s.max) || GEO_STAGES[GEO_STAGES.length - 1];
+    return GEO_STAGES.find(s => ch <= s.max) || GEO_STAGES[GEO_STAGES.length - 1] || { label: '—', color: '#9A9488', note: '' };
   }
 
   function placeDepth(p) {
@@ -2662,7 +2696,21 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
   }
 
   /* ================= 地点志 ================= */
-  let geoSelected = (placeById.get('p_yueguo') || placeRoots[0] || {}).id || '';
+  /** 默认选中：子树最大的根地点；不依赖任何具体书名或地点 id */
+  function defaultGeoPlaceId() {
+    let best = placeRoots[0] || null, bestN = -1;
+    placeRoots.forEach(root => {
+      let n = 0;
+      const stack = [root];
+      while (stack.length) {
+        const x = stack.pop(); n++;
+        (placeChildren.get(x.id) || []).forEach(k => stack.push(k));
+      }
+      if (n > bestN) { bestN = n; best = root; }
+    });
+    return best ? best.id : '';
+  }
+  let geoSelected = defaultGeoPlaceId();
   const geoExpanded = new Set([...placeChildren.keys()]);
 
   function placeOwnerText(p, short) {
@@ -2800,7 +2848,7 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
   }
 
   function renderGeo() {
-    if (!geoSelected || !placeById.has(geoSelected)) geoSelected = (placeById.get('p_yueguo') || placeRoots[0] || {}).id || '';
+    if (!geoSelected || !placeById.has(geoSelected)) geoSelected = defaultGeoPlaceId();
     const scrollTop = views.geo.scrollTop;
     const p = placeById.get(geoSelected);
     const counts = GEO_STAGES.map(s => ({
@@ -2808,7 +2856,7 @@ window.ATLAS_DATA = {"meta":{"schema_version":"2.0","title":"凡人修仙传","a
     }));
     views.geo.innerHTML = `
       <div class="geo-note">
-        ${PLACES.length} 个地点按 <b>parent</b> 组成层级容器，按首现章分四个地理阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
+        ${PLACES.length} 个地点按 <b>parent</b> 组成层级容器，按卷/首现章分 ${GEO_STAGES.length} 个阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
       </div>
       <div class="geo-stage-strip">${counts.map(s => `
         <span class="geo-stage-chip"><i style="background:${s.color}"></i><b>${s.label}</b>
@@ -3591,7 +3639,7 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     if (explicit) return explicit;
     if (n.marker) return n.marker;
     const name = n.name || '';
-    if (/禁地|秘境|遗迹|洞府|古墓|深渊|墟|虚天/.test(name)) return 'secret';
+    if (/禁地|秘境|遗迹|洞府|古墓|深渊|墟/.test(name)) return 'secret';
     if (/险|魔|绝|死|断魂|血|凶|禁/.test(name)) return 'danger';
     if (/宗|门|派|阁|殿|寺|观|山门|道观/.test(name)) return 'sect';
     if (/城|京|都|镇|堡|关|州|国|村|寨|集|市|街/.test(name)) return 'city';
@@ -5185,7 +5233,7 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
         <div class="power-extra-card">
           <h3>交界与共管（不强行归给单方）</h3>
           <div class="chips">${[...disputed, ...special].length ? [...disputed, ...special].map(p => placeChip(p)).join('') : '<span class="power-gap">无</span>'}</div>
-          <p>落沙坡按描述列为七玄门/野狼帮交界；血色禁地及其子地点按「七派共管」单列。</p>
+          <p>按原文描述标注：明确写「交界 / 争议」的地点列出双方，明确写「共管」的单列；其余不强行归给单一势力。</p>
         </div>
         <div class="power-extra-card">
           <h3>未归属地点（${unassigned.length}）</h3>

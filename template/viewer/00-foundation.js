@@ -251,6 +251,45 @@
   let PLACES = [];
   let orgEntities = [];
 
+  /* 地点阶段：优先生成自分卷（data.volumes 的卷名与章界），没有分卷时按当前进度均分。
+     书名、地名、章界一律不写死在代码里。 */
+  const STAGE_COLORS = ['#2A5666', '#4E7C8F', '#B8925A', '#A6314A', '#6B4A7A', '#5A7A5E'];
+  let GEO_STAGES = [];
+  function rebuildGeoStages() {
+    const vols = (D.volumes || []).filter(v =>
+      typeof v.ch_start === 'number' && v.ch_start > 0 &&
+      typeof v.ch_end === 'number' && v.ch_end >= v.ch_start);
+    if (vols.length >= 2) {
+      GEO_STAGES = vols.map((v, i) => ({
+        label: v.name || `第 ${v.ch_start}–${v.ch_end} 章`,
+        max: v.ch_end,
+        color: STAGE_COLORS[i % STAGE_COLORS.length],
+        note: `第 ${v.ch_start}–${v.ch_end} 章`
+      }));
+      const last = vols[vols.length - 1];
+      if (CURRENT_CH > last.ch_end) {
+        GEO_STAGES.push({
+          label: `第 ${last.ch_end + 1} 章以后`,
+          max: 999999,
+          color: STAGE_COLORS[GEO_STAGES.length % STAGE_COLORS.length],
+          note: `第 ${last.ch_end + 1}–${CURRENT_CH} 章`
+        });
+      }
+      return;
+    }
+    const span = Math.max(CURRENT_CH, 1), n = 4;
+    GEO_STAGES = Array.from({ length: n }, (_, i) => {
+      const from = Math.floor(span * i / n) + 1;
+      const to = Math.round(span * (i + 1) / n);
+      return {
+        label: `第 ${from}–${to} 章`,
+        max: i === n - 1 ? 999999 : to,
+        color: STAGE_COLORS[i % STAGE_COLORS.length],
+        note: `第 ${from}–${to} 章`
+      };
+    });
+  }
+
   const keyName = s => String(s || '').replace(/\s+/g, '').trim();
   const escHtml = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -299,6 +338,7 @@
     });
 
     rebuildPlaceTree();
+    rebuildGeoStages();
 
     D.relations.forEach(r => {
       deg.set(r.s, (deg.get(r.s) || 0) + 1);
@@ -381,7 +421,7 @@
     }
 
     if (!info.roots.length && !info.special && /共管/.test(desc)) {
-      info.special = '七派共管';
+      info.special = '多方共管';
       info.basis = '描述明确为多派共管，不强行归给单一势力';
     }
 
@@ -389,15 +429,9 @@
     return info;
   }
 
-  const GEO_STAGES = [
-    { label: '山门一带', max: 40, color: '#2A5666', note: '第 1–40 章' },
-    { label: '门内深处与下山', max: 143, color: '#4E7C8F', note: '第 41–143 章' },
-    { label: '黄枫谷', max: 178, color: '#B8925A', note: '第 144–178 章' },
-    { label: '秘境', max: 9999, color: '#A6314A', note: '第 179 章以后' }
-  ];
   function placeStage(p) {
     const ch = p.first_ch || 0;
-    return GEO_STAGES.find(s => ch <= s.max) || GEO_STAGES[GEO_STAGES.length - 1];
+    return GEO_STAGES.find(s => ch <= s.max) || GEO_STAGES[GEO_STAGES.length - 1] || { label: '—', color: '#9A9488', note: '' };
   }
 
   function placeDepth(p) {
