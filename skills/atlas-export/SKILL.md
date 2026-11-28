@@ -4,6 +4,14 @@ version: 0.2.0
 description: "把拆解结果导出成读者能直接用的东西：读者站、单文件世界档案、Markdown 设定集、角色表、伏笔索引、地图 PNG/SVG。读者/同人/书评考据者拿去查设定；不再产出作者改稿清单。触发词：导出读者站、导出设定集、导出人物表、生成世界档案、做成 Wiki、导出一份设定文档、给我 CSV、atlas export、导出到第 N 章。"
 ---
 
+> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
+> 若尚未获取仓库：
+> ```bash
+> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+> cd chinese-novel-atlas
+> ```
+> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+
 # atlas-export · 导出读者世界档案
 
 `data.json` 是内部格式。这个 skill 把它变成读者能直接打开、能按阅读进度截断的产物。
