@@ -21,7 +21,12 @@
     const max = maxChapter(data);
     let value = null;
     try { value = localStorage.getItem(titleKey(data)); } catch (e) {}
-    const q = new URLSearchParams(location.search).get('cutoff');
+    let q = new URLSearchParams(location.search).get('cutoff');
+    if (q === null || q === '') {
+      // 兼容 #cutoff-349 / #cutoff=349 这类旧地址
+      const m = String(location.hash || '').match(/cutoff[-=](\d+)/);
+      if (m) q = m[1];
+    }
     if (q !== null && q !== '') value = Number(q);
     value = Number(value);
     if (!Number.isFinite(value) || value <= 0) value = max;
@@ -546,11 +551,12 @@
     cutoff = next;
     try { localStorage.setItem(titleKey(FULL_D), String(next)); } catch (e) {}
 
-    // URL 同步但不跳转：刷新或分享后仍停在同一个进度
+    // URL 同步但不跳转：刷新或分享后仍停在同一个进度。
+    // 视图参数由 setView 写，这里只认领 cutoff，别把 view 覆盖掉。
     const url = new URL(location.href);
     url.searchParams.set('cutoff', String(next));
-    url.hash = '';
-    history.replaceState(null, '', url.toString());
+    if (/^#\/?(?:view=|cutoff[-=])/.test(location.hash || '')) url.hash = '';
+    try { history.replaceState(null, '', url.toString()); } catch (e) {}
 
     // 1) 换数据
     D = cutForReader(FULL_D, next);

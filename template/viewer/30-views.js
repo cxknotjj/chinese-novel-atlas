@@ -14,10 +14,48 @@
     foreshadow: document.getElementById('foreshadow'),
     anomalies: document.getElementById('anomalies')
   };
+  const VIEW_LABEL = {
+    home: '总览', graph: '图谱', wiki: '百科', geo: '地点志', map: '地图',
+    power: '版图', rhythm: '节奏', realms: '境界', foreshadow: '伏笔', anomalies: '疑点'
+  };
+  const isView = v => typeof v === 'string' &&
+    Object.prototype.hasOwnProperty.call(VIEW_LABEL, v);
   let curView = 'home';
 
+  /** URL 是视图的真相来源：?view=graph。
+      同时兼容 #graph / #view=graph 这类把状态塞进 hash 的地址（hash 视为手动指定，优先）。 */
+  function readViewParam() {
+    let v = new URLSearchParams(location.search).get('view');
+    const h = String(location.hash || '').replace(/^#\/?/, '');
+    if (/^view=/.test(h)) v = h.slice(5);
+    else if (isView(h)) v = h;
+    return isView(v) ? v : 'home';
+  }
+
+  /** 只改地址栏：不刷新、不新增历史，刷新与分享都停在当前视图 */
+  function syncViewUrl(v) {
+    try {
+      const url = new URL(location.href);
+      if (v === 'home') url.searchParams.delete('view');
+      else url.searchParams.set('view', v);
+      // 进度也写进地址：任意时刻复制链接，对方看到的都是同一章
+      url.searchParams.set('cutoff', String(cutoff));
+      // 把 hash 里遗留的 atlas 状态迁回查询串并清掉，地址栏只保留一份真相
+      const frag = String(location.hash || '').replace(/^#\/?/, '');
+      const legacyCut = frag.match(/^cutoff[-=](\d+)/);
+      if (legacyCut) url.searchParams.set('cutoff', legacyCut[1]);
+      if (isView(frag) || /^(?:view=|cutoff[-=])/.test(frag)) url.hash = '';
+      history.replaceState(null, '', url.toString());
+    } catch (e) { /* file:// 等环境不支持时静默忽略，不影响页面 */ }
+  }
+
   function setView(v) {
+    if (!isView(v)) v = 'home';
     curView = v;
+    syncViewUrl(v);
+    if (D.meta && D.meta.title) {
+      document.title = `${D.meta.title} · ${VIEW_LABEL[v]} · Novel Atlas`;
+    }
     Object.keys(views).forEach(k => { views[k].hidden = k !== v; });
     document.querySelectorAll('.tab').forEach(t =>
       t.classList.toggle('on', t.dataset.view === v));
@@ -33,6 +71,11 @@
   }
   document.querySelectorAll('.tab').forEach(t =>
     t.addEventListener('click', () => setView(t.dataset.view)));
+  // 手动改 hash（或在地址被外部重写时）也能切视图：#graph / #view=map
+  window.addEventListener('hashchange', () => {
+    const v = readViewParam();
+    if (v !== curView) setView(v);
+  });
 
   /* ================= 总览 ================= */
   function statNumber(n) { return Number(n || 0).toLocaleString('zh-CN'); }

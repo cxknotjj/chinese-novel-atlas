@@ -172,8 +172,7 @@
   if (!Number.isFinite(bootZoomPending) || bootZoomPending <= 0) bootZoomPending = 0;
   if (bootQuery.get('edit') === '1') mapEditMode = true;
   if (bootQuery.get('slice')) mapSlice = bootQuery.get('slice');
-  const bootView = bootQuery.get('view');
-  setView(views[bootView] ? bootView : 'home');
+  setView(readViewParam());
   requestAnimationFrame(loop);
   for (let i = 0; i < 900; i++) tick();
   spreadLayoutAspect();
