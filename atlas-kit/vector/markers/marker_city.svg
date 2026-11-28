@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 100 100" role="img" aria-label="atlas marker city">
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#3B332A" stroke-width="1.8" opacity="0.38"/>
+  <circle cx="50" cy="50" r="40" fill="#E8DCC5" opacity="0.22"/>
+  <polyline points="27,64 27,50 32,50 32,46 38,46 38,50 44,50 44,46 50,46 50,50 56,50 56,46 62,46 62,50 68,50 68,64 27,64" fill="none" stroke="#3B332A" stroke-width="2.4" opacity="0.84"/>
+  <line x1="27" y1="57" x2="68" y2="57" stroke="#3B332A" stroke-width="1.6" opacity="0.5"/>
+  <polyline points="46,64 46,58 47.5,55.5 50,54.5 52.5,55.5 54,58 54,64" fill="none" stroke="#3B332A" stroke-width="2" opacity="0.88"/>
+  <polygon points="47.4,64 47.4,59 49,57.5 50,57.5 51,57.5 52.6,59 52.6,64" fill="#A93828" opacity="0.45"/>
+</svg>

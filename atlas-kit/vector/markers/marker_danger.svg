@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 100 100" role="img" aria-label="atlas marker danger">
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#3B332A" stroke-width="1.8" opacity="0.34"/>
+  <circle cx="50" cy="50" r="40" fill="#E8DCC5" opacity="0.22"/>
+  <polyline points="50,26 74,68 26,68 50,26" fill="none" stroke="#A93828" stroke-width="2.8" opacity="0.84"/>
+  <line x1="50" y1="43" x2="50" y2="56" stroke="#A93828" stroke-width="2.4" opacity="0.86"/>
+  <circle cx="50" cy="61" r="2.2" fill="#A93828" opacity="0.86"/>
+</svg>

@@ -18,3 +18,9 @@ jobs:
         run: python scripts/validate.py samples/fictional/data.json
       - name: Build sample viewer
         run: python scripts/build.py --data samples/fictional/data.json --out build-check --name index.html
+      - name: Generate anomalies
+        run: python scripts/anomalies.py --data samples/fictional/data.json --out build-check/anomalies.json
+      - name: Map levels
+        run: python scripts/map_levels.py --data samples/fictional/data.json
+      - name: Build reader
+        run: python scripts/build_reader.py --data samples/fictional/data.json --out build-reader --single --allow-partial

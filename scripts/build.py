@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """build.py — 把 data.json 注入视图模板，产出可双击打开的 atlas.html。
 
-模板源码放在 template/：viewer.html 是页面骨架，viewer.css 与 viewer.js
-分别负责样式和交互；build 时把两者内联回单文件，demo 和每本书的
+模板源码放在 template/：viewer.html 是页面骨架，viewer.css 负责样式，
+viewer.js 只是很薄的入口；实际交互按职责拆在 template/viewer/*.js，
+build 时按文件名顺序拼进入口 IIFE，再内联回单文件。demo 和每本书的
 atlas.html 都由同一份源码生成，不再手工复制，避免模板分叉。
 
 默认产出**单文件** HTML（数据内嵌，发给别人只用传一个文件）；
@@ -16,6 +17,7 @@ atlas.html 都由同一份源码生成，不再手工复制，避免模板分叉
 """
 
 import argparse
+import base64
 import json
 import re
 import sys
@@ -25,25 +27,71 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_TAG = '<script src="./data.js"></script>'
 CSS_TAG = "/*__ATLAS_CSS__*/"
 JS_TAG = "/*__ATLAS_JS__*/"
+VIEWER_MODULE_TAG = "// __VIEWER_MODULES__"
+
+# 图片占位：模板里写 __ASSET__:map/web/base-clean.webp，构建时换成 data URI。
+# 路径相对 template/assets/，这样单文件 HTML 里不带任何外部图片依赖。
+ASSET_RE = re.compile(r"__ASSET__:([A-Za-z0-9_./-]+)")
+MIME = {".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
+_inline_stats = {"count": 0, "bytes": 0, "files": []}
+
+
+def inline_images(text, tpl_path):
+    """把 __ASSET__:<相对 template/assets/ 的路径> 换成 base64 data URI。"""
+    def repl(m):
+        rel = m.group(1)
+        src = tpl_path.parent / "assets" / rel
+        if not src.exists():
+            raise SystemExit(f"找不到占位图片 {rel}（应在 {tpl_path.parent / 'assets'} 下）")
+        mime = MIME.get(src.suffix.lower())
+        if not mime:
+            raise SystemExit(f"不认识的图片格式 {src.suffix}（{src}）")
+        raw = src.read_bytes()
+        _inline_stats["count"] += 1
+        _inline_stats["bytes"] += len(raw)
+        _inline_stats["files"].append((rel, len(raw)))
+        return f"data:{mime};base64," + base64.b64encode(raw).decode("ascii")
+
+    return ASSET_RE.sub(repl, text)
 
 
 def load_json(p):
     return json.loads(Path(p).read_text(encoding="utf-8"))
 
 
+def load_viewer_source(tpl_path):
+    """读取薄入口 viewer.js；若入口含模块占位，则按文件名拼接 template/viewer/*.js。
+
+    模块本身不带 IIFE，由入口统一包住，保证所有模块共享同一份闭包状态。
+    这样源码可以按职责拆分，产物仍然是单文件、单 script。
+    """
+    js_path = tpl_path.parent / "viewer.js"
+    if not js_path.exists():
+        raise SystemExit(f"找不到交互源 {js_path}")
+    js = js_path.read_text(encoding="utf-8")
+    if VIEWER_MODULE_TAG not in js:
+        return js
+    module_dir = tpl_path.parent / "viewer"
+    modules = sorted(module_dir.glob("*.js"))
+    if not modules:
+        raise SystemExit(f"入口含模块占位，但 {module_dir} 下没有 .js 模块")
+    body = "\n\n".join(p.read_text(encoding="utf-8") for p in modules)
+    return js.replace(VIEWER_MODULE_TAG, body, 1)
+
+
 def inline_assets(tpl, tpl_path):
-    """把模板目录里的 viewer.css / viewer.js 内联回 HTML 骨架。"""
+    """把模板目录里的 viewer.css / viewer.js 组装并内联回 HTML 骨架。"""
     if CSS_TAG in tpl:
         css_path = tpl_path.parent / "viewer.css"
         if not css_path.exists():
             raise SystemExit(f"找不到样式源 {css_path}")
-        tpl = tpl.replace(CSS_TAG, css_path.read_text(encoding="utf-8"), 1)
+        css = css_path.read_text(encoding="utf-8")
+        tpl = tpl.replace(CSS_TAG, inline_images(css, tpl_path), 1)
     if JS_TAG in tpl:
-        js_path = tpl_path.parent / "viewer.js"
-        if not js_path.exists():
-            raise SystemExit(f"找不到交互源 {js_path}")
-        tpl = tpl.replace(JS_TAG, js_path.read_text(encoding="utf-8"), 1)
-    return tpl
+        js = load_viewer_source(tpl_path)
+        tpl = tpl.replace(JS_TAG, inline_images(js, tpl_path), 1)
+    return inline_images(tpl, tpl_path)
 
 
 def main():
@@ -119,6 +167,10 @@ def main():
                   f"<title>{data['meta']['title']} · Novel Atlas</title>",
                   html, count=1)
 
+    # 占位没被替换干净就直接失败，免得发出去的单文件缺图
+    if "__ASSET__:" in html:
+        raise SystemExit("构建后有未替换的 __ASSET__: 占位，请检查模板里的图片路径")
+
     out_file.write_text(html, encoding="utf-8")
 
     # 汇报关键指标，方便一眼判断这份视图值不值得发
@@ -126,6 +178,10 @@ def main():
     print(f"数据    {args.data}")
     print(f"输出    {out_file}（{out_file.stat().st_size / 1024:.1f} KB，"
           f"{'外链 data.js' if args.external else '单文件内嵌'}）")
+    if _inline_stats["count"]:
+        files = "、".join(f"{n}({b / 1024:.0f}KB)" for n, b in _inline_stats["files"])
+        print(f"图片    内联 {_inline_stats['count']} 张 / 原始 {_inline_stats['bytes'] / 1024:.1f} KB"
+              f"（base64 后约 {_inline_stats['bytes'] * 1.34 / 1024:.0f} KB）：{files}")
     print(f"内容    {data['meta']['title']} · {len(data.get('entities') or [])} 实体 · "
           f"{len(data.get('chapters') or [])} 章 · {len(data.get('foreshadows') or [])} 伏笔")
     expired = sum(1 for f in data.get("foreshadows") or [] if f.get("status") == "overdue")

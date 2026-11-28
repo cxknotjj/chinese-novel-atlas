@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="179" viewBox="0 0 470 150" role="img" aria-label="atlas route style sea">
+  <path d="M 24 86 C 80 32 120 126 176 74 C 220 34 270 86 318 56 C 360 32 410 44 446 74" fill="none" stroke="#6E8E96" stroke-opacity="0.18" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 24 78 C 80 24 120 118 176 66 C 220 26 270 78 318 48 C 360 24 410 36 446 66" fill="none" stroke="#6E8E96" stroke-opacity="0.85" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 9"/>
+  <circle cx="24" cy="84" r="4" fill="#6E8E96" fill-opacity="0.55"/>
+  <circle cx="446" cy="62" r="4" fill="#6E8E96" fill-opacity="0.55"/>
+</svg>

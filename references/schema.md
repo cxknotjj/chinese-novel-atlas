@@ -26,9 +26,56 @@
   "knowledge":   [ /* 三界认知：谁知道什么 */ ],
   "places":      [ /* 地点，支持层级 */ ],
   "spatial_relations": [ /* 空间关系，可选；每条带原文证据 */ ],
+  "map_layout":  { /* 2D 示意坐标，可选；人工近似摆放，非经纬度、非证据 */ },
   "concepts":    [ /* 世界观 / 金手指 / 功法 / 品阶 */ ]
 }
 ```
+
+---
+
+## 读者向派生字段（v2.0-reader，可选）
+
+`data.json` 仍是唯一事实源；下面四个字段由 `novel_atlas.reader` 在构建读者站时注入，
+**不是作者手写字段，也不进入 `validate.py` 的原始数据校验**。
+
+| 字段 | 生成者 | 说明 |
+|---|---|---|
+| `anomalies` | `reader.anomalies.build_anomalies` | 疑点索引；见 5.3 对象结构 |
+| `_anomalyMeta` | `reader.publish.annotate` | 疑点统计、阈值、live 章、规则错误等 |
+| `_mapLevels` | `reader.map_levels.compute_map_levels` | 地图 M0–M4 分级；按层给 `direction_constraints` |
+| `_reader` | `reader.cutoff.reader_meta` | `cutoff_ch / analyzed_ch / chapter_max / total_chapters / analysis_complete / is_spoiler_safe` |
+
+**按章截断**：`filter_data(data, cutoff)` 返回 UI 投影，只保留
+`first_ch <= cutoff` 的实体/地点/关系/概念、`truth_ch/reader_known_ch <= cutoff`
+的认知记录、`plant_ch <= cutoff` 的伏笔（未来 `payoff_ch` 置 null）、
+`first_ch <= cutoff` 的地图节点/区域/路线/stamp，以及证据章不晚于 cutoff 的疑点。
+这是**前端投影**，不替代服务端鉴权；真正不发布未来内容时应按 cutoff 生成静态副本。
+
+**疑点对象**（每条必须有 `id` 和至少一条 `evidence`）：
+
+```jsonc
+{
+  "id": "an_fs_001",
+  "kind": "foreshadow_unresolved",
+  "kind_cn": "伏笔未回收",
+  "severity": "info",          // high / warning / info
+  "confidence": "high",        // high / medium / low
+  "title": "抽髓丸：第 20 章埋下，第 73 章后未再提",
+  "detail": "沉默 427 章，超过当前阈值 75 章",
+  "chapter_range": [20, 73],
+  "entities": ["f_chousuiwan"],
+  "evidence": [
+    {"coordinate": "ch20:p8", "quote": "……"},
+    {"coordinate": "ch73", "quote": "第 73 章后未再出现"}
+  ],
+  "reader_note": "可能是作者有意留白；读者自行判断",
+  "verified": false,
+  "silent_chapters": 427
+}
+```
+
+坐标口径：源数据有段落坐标时用 `chN:pM`；当前 `chapters` 只有摘要、没有段落表，
+规则引擎会退化为 `chN` 章节级证据。**不允许伪造 `pM`。** 无证据的条目不会进入索引。
 
 ---
 
@@ -399,14 +446,23 @@ silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
 | M3 | 多层地图 | 位面、上下界、星域、楼层、父地图下钻 | z 轴没有叙事依据就不上 3D |
 | M4 | 时态地图 | 地点状态、国界、控制权、路线随章节变化 | 不用修改旧数据的方式隐藏变化 |
 
-**本项目当前支持 M1 + M2 证据化示意**：M1 消费 `places.parent` 与 `spatial_relations` 中非二维类型；M2 只消费带原文证据的 `direction` / `distance` / `contain`(带位置值) / `adjacent`。M3（多层下钻）、M4（按章节切片的时态地图）暂未实现。
+**「地图」tab 当前含三个子视图**，默认进示意 2D：
+
+| 子视图 | 定位 | 数据 | 默认 |
+|---|---|---|---|
+| **示意 2D（map2d）** | 默认地图视图。人工近似坐标的示意布局，用于叙事导航；有 `atlas.stamps` 时叠 21 件手绘底件 | `map_layout.nodes` + `.regions`；连线来自 `spatial_relations` | ✅ 打开「地图」即进入 |
+| **证据方位**（原 M2） | 只消费带原文证据的 `direction` / `distance` / `contain`(带位置值) / `adjacent` | `spatial_relations` | 手动切换 |
+| **拓扑（topo）**（原 M1） | 次要视图。保留 `places.parent` 层级/拓扑树，不做美化 | `places.parent` | 手动切换 |
+
+M0 只有地点列表；M1 只有示意坐标/拓扑；M2 由证据方位视图承接（层内 ≥3 条方向/距离约束才开放）；M3 用**层筛选**下钻父地图；M4 在示意 2D 里出现**时间切片**下拉，由 `map_layout.time_slices` 驱动。M3/M4 只在数据里真有显式层/切片时显示，不硬造。
 
 ### 层（layer）
 
 一层 = 一个根地点（`parent` 为 null 的地点）及其整棵子树。
 
-- M1：默认显示某层子树；另有「全部」视图。
-- M2：只对**带 ≥3 条 direction/distance 约束**的层开放；不足时显示回退卡片（`该层方位证据不足（N 条方向/距离约束），已回退到 M1 拓扑图`），不得硬画。
+- 拓扑：默认显示某层子树；另有「全部」视图。
+- 证据方位：只对**带 ≥3 条 direction/distance 约束**的层开放；不足时显示回退卡片（`该层方位证据不足（N 条方向/距离约束），已回退到 M1 拓扑图`），不得硬画。
+- 示意 2D 层筛选选项：`越国` / `乱星海` / `虚天殿` / `全部`，**默认 `全部`**（两簇同框：左「越国 · 七派并立」、右「乱星海 · 海外势力」，虚天殿收成右下小簇/卡片）。归属判定：`nodes[].layer` 或 `regions[].layer` 指向的根地点子树包含该节点；没有 `layer` 的节点归 `全部`。切层时只显示该层节点/区域；「全部」显示整体关系。
 
 ### 条目结构
 
@@ -440,21 +496,219 @@ silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
 
 方向语义统一为「s 位于 t 的该方位」。
 
-| kind | value | 进 M2？ |
+| kind | value | 进证据方位？ |
 |---|---|---|
 | `direction` | `north_of` `south_of` `east_of` `west_of` `northeast_of` `northwest_of` `southeast_of` `southwest_of` | 是 |
 | `distance` | 原文距离/时长短语，如 `百余里`、`一天一夜`、`三天路程` | 是（弱约束） |
 | `contain` | `north_part` `south_part` `east_part` `west_part` `center` `edge` `northeast_edge` 等区域位置；s=父，t=子 | 是（区域提示，不进象限） |
 | `adjacent` | `borders` 或 `nearby` | 是（软约束） |
-| `portal` | 自由短语，如 `古传送阵`、`随机降落` | 否，只画 M1 |
-| `travel_path` | 自由短语，如 `神风舟一天一夜` | 否，只画 M1 |
-| `road` / `river` | 自由短语 | 否，只画 M1 |
+| `portal` | 自由短语，如 `古传送阵`、`随机降落` | 否，只画拓扑 |
+| `travel_path` | 自由短语，如 `神风舟一天一夜` | 否，只画拓扑 |
+| `road` / `river` | 自由短语 | 否，只画拓扑 |
 | `separated_by` | 分隔物短语，如 `山脉` | 否 |
 | `in_between` | `p_x|p_y`（两个已有地点 id） | 否 |
 
 ### 可选性与回退
 
-`spatial_relations` **可选**：缺失或空 list 时 M2 自动回退 M1，不算错误。没有 `spatial.json` 时，data.json 的 `spatial_relations` 为 `[]`（保持字段存在，便于视图判断）。
+`spatial_relations` **可选**：缺失或空 list 时证据方位自动回退拓扑，不算错误。没有 `spatial.json` 时，data.json 的 `spatial_relations` 为 `[]`（保持字段存在，便于视图判断）。
+
+### map_layout（示意坐标）· 可选
+
+`map_layout` 位于 data.json 顶层，是示意 2D 视图的人工近似布局；源头是书目录下的 `spatial.json`。2D 的视觉层由 `map_layout.atlas` 控制：21 件手绘 PNG 作为 `stamps` 景物层，9 件代码/SVG 作为路线、标记、题签、印章、罗盘。
+
+```json
+"map_layout": {
+  "mode": "schematic",
+  "note": "人工示意坐标（0–100 归一化画布，原点左上），非经纬度；坐标为叙事导航用近似摆放",
+  "canvas": [100, 100],
+  "regions": [
+    { "id": "r_yueguo", "name": "越国大陆", "shape": "land", "layer": "p_yueguo",
+      "label_at": [22, 46], "polygon": [[4,14],[50,10],[52,74],[8,80]] },
+    { "id": "r_luanxing", "name": "乱星海", "shape": "sea", "layer": "p_luanxinghai",
+      "label_at": [76, 44], "polygon": [[56,10],[97,12],[95,78],[58,74]] },
+    { "id": "r_xutian", "name": "虚天殿（秘境）", "shape": "void", "layer": "p_xutian_dian",
+      "label_at": [74, 91], "polygon": [[62,82],[90,82],[90,98],[62,98]] }
+  ],
+  "nodes": [
+    { "place": "p_yuejing", "x": 44, "y": 50, "layer": "p_yueguo", "rank": 1, "label": true }
+  ]
+}
+```
+
+| 字段 | 规则 |
+|---|---|
+| `mode` | 必填，固定 `schematic` |
+| `note` | 必填，≤120 字，必须含「非经纬度/示意」字样 |
+| `canvas` | 必填，`[w,h]`，固定 `[100,100]`（归一化） |
+| `regions[].id` | `r_` 前缀，唯一 |
+| `regions[].name` | 非空 |
+| `regions[].shape` | 枚举 `land` / `sea` / `void`（void=秘境小簇/卡片） |
+| `regions[].layer` | 可空；若有必须是已有 `places` id（用来做层筛选归属） |
+| `regions[].polygon` | ≥3 个 `[x,y]`，每点 0–100 |
+| `regions[].label_at` | 可选 `[x,y]`，0–100 |
+| `nodes[].place` | 必填，必须是已有 `places` id；同一 place 只能出现一次 |
+| `nodes[].x` / `y` | 必填，0–100 |
+| `nodes[].layer` | 可空；若有必须是已有 `places` id |
+| `nodes[].rank` | 可选，1=关键（低缩放显示）、2=次级、3=细节；默认 2 |
+| `nodes[].label` | 可选布尔，默认 `true`（受 LOD 控制） |
+
+#### terrain（可选，2D 会渲染）
+
+`terrain` 是示意 2D 的代码地形层。山脊默认摆 `terrain_ridge_01/02` 手绘 stamp；河流、湖泊、岛链由代码绘制。坐标 0–100：
+
+```json
+"terrain": {
+  "ridges": [ { "points": [[x,y],...], "width": 2.4, "region": "r_yueguo", "name": "太岳山脉" } ],
+  "rivers": [ { "points": [[x,y],...], "width": 1.1, "region": "r_yueguo", "name": "…" } ],
+  "lakes":  [ { "polygon": [[x,y],...], "region": "r_yueguo" } ],
+  "islets": [ { "x": 70, "y": 34, "r": 1.6 } ]
+}
+```
+
+| 字段 | 规则 |
+|---|---|
+| `ridges[]` | 可选山脉脊线：`points` 为 ≥2 个 `[x,y]` 折线点，0–100；`width` 线宽；`region` 可空，若有必须是已有 `regions[].id`；`name` 可空 |
+| `rivers[]` | 可选河流：`points` 折线点 0–100；`width` 线宽；`region` 可空；`name` 可空 |
+| `lakes[]` | 可选湖泊：`polygon` ≥3 个 `[x,y]`，0–100；`region` 可空 |
+| `islets[]` | 可选岛链：`x` / `y` 0–100；`r` 半径；必须是对象，不能写成 `[x,y,r]` 数组 |
+
+`terrain` 缺失不报错；`atlas.terrainStamps=false` 时山脊回退代码墨线。
+
+#### routes（弯曲航路，可选）
+
+```json
+"routes": [
+  { "s": "p_yueguo", "t": "p_luanxinghai", "kind": "portal", "curve": [[40,70],[50,60]], "label": "古传送阵" }
+]
+```
+
+| 字段 | 规则 |
+|---|---|
+| `routes[].s` / `t` | 必填，必须是已有 `places` id |
+| `routes[].kind` | 枚举 `portal` / `travel_path` / `road` / `river` |
+| `routes[].curve` | 可选 `[x,y]` 控制点列表，0–100；无则自动弧度 |
+| `routes[].label` | 可选短语，如 `古传送阵`、`一天一夜` |
+
+网页端把 `s/t` 点列和 `curve` 一起做 Catmull-Rom 平滑，按 `kind` 区分线型、端点、虚线和箭头。`routes` 缺失则不画航路；弯曲虚线表达的是传送/航线，**不是可测量的距离**。
+
+#### time_slices（时态地图，可选，M4）
+
+`map_layout.time_slices` 是“按章节切片”的显式数据。有它才升级 M4；没有就不硬造时间轴。
+
+```json
+"time_slices": [
+  {
+    "ch": 120,
+    "label": "越国篇",
+    "note": "韩立离开越国前",
+    "regions": ["r_yueguo"],
+    "nodes": ["p_yuejing", "p_huangfenggu"],
+    "routes": ["rt_yueguo_luanxinghai"]
+  },
+  {
+    "ch": 500,
+    "label": "乱星海篇",
+    "regions": ["r_luanxinghai"],
+    "nodes": ["p_luanxinghai"]
+  }
+]
+```
+
+| 字段 | 规则 |
+|---|---|
+| `ch` | 必填，切片对应的读者章号；`first_ch` 可作为兼容回退 |
+| `label` / `note` | 可选，给读者看的切片名与说明 |
+| `regions` / `nodes` / `routes` | 可选，引用已有 id；读者版按 cutoff 只保留 `ch <= cutoff` 的切片 |
+
+M4 只表示“数据里有时态切片”，不表示渲染器必须做动画。读者站按 `cutoff` 隐藏未来切片，并在示意 2D 工具栏提供切片下拉：`全部` 或 `第 N 章 · 切片名`；选中切片后按 `regions` / `nodes` / `routes` 过滤。没有 `time_slices` 时不显示该控件。
+
+#### atlas（视觉风格包，可选）
+
+`map_layout.atlas` 是示意 2D 的“风格包 + UI 配置”。不写时使用默认纸面、代码罗盘和自动题签：
+
+```json
+"atlas": {
+  "title": { "text": "越国舆图", "x": 4.2, "y": 8.8, "size": 3.1, "direction": "vertical", "sealCh": "越" },
+  "seal": { "ch": "越", "size": 2.55, "angle": -0.035 },
+  "compass": { "x": 8.5, "y": 88, "size": 6.2, "opacity": 0.38 },
+  "disclaimer": { "text": "示意舆图 · 方位与比例非精确", "x": 1.7, "y": 95.5 },
+  "markers": { "p_yuejing": "city", "p_huangfenggu": "sect", "p_xutian_dian": "secret" },
+  "titleByLayer": { "p_luanxinghai": { "text": "乱星海舆图", "sealCh": "乱" } },
+  "stamps": [
+    { "asset": "terrain_peak_02", "x": 28, "y": 32, "w": 13, "opacity": 0.6, "layer": "p_yueguo" },
+    { "asset": "arch_city_wall_01", "attach": "p_yuejing", "w": 8.5, "markerOffset": 2.2 }
+  ],
+  "seaTexture": false,
+  "terrainStamps": true
+}
+```
+
+| 字段 | 规则 |
+|---|---|
+| `title` | `text`、`x` / `y` 0–100、`size` 占画布宽百分比、`direction: vertical/horizontal`、`sealCh` 回退印章字 |
+| `seal` | 单字 `ch` 必填（不含空白）；`size`、`angle`；`x/y` 省略时自动落在题签正下方，题签变长也不会压住末字 |
+| `compass` | `{x,y,size,opacity}` 或 `false` 关闭；固定 UI，不随地图缩放 |
+| `disclaimer` | 左下免责小印：`text` / `x` / `y` |
+| `markers` | `place_id → "city" / "sect" / "secret" / "danger" / "place" / "none"`；`none` 不画标记，也不占标签保留框 |
+| `titleByLayer` | 层 id → 题签覆盖项（`text` / `sealCh` / 可选 `size`）；只在该层筛选时生效 |
+| `stamps[]` | 见下表 |
+| `seaTexture` | 默认 `false`；`true` 时把 `water_sea_01.webp` 叠在海面，仍保留代码波纹与湿边 |
+| `terrainStamps` | 默认 `true`；`false` 时山脊改用代码墨线 |
+| `palette` | 可选颜色 token 覆盖：`ink` / `accent` / `seal` / `paper` / `water` / `route` |
+
+**`stamps[]` 字段**：
+
+| 字段 | 规则 |
+|---|---|
+| `asset` | 必填，必须是 21 件网页资产之一（见下） |
+| `attach` | 可选，必须是已有 `places` id；吸附到节点坐标，节点被层筛选隐藏时整个 stamp 一并隐藏 |
+| `x` / `y` | 无 `attach` 时必填，0–100 绝对坐标 |
+| `w` | 可选，占画布宽百分比；默认按资产类型（地形 14 / 水 10 / 建筑 8 / 植被 6） |
+| `opacity` | 可选 0–1，默认 0.86 |
+| `rotation` | 可选，角度 |
+| `flip` | 可选布尔，水平翻转 |
+| `anchor` | 可选 `center`；默认用资产 manifest 的 pivot（多为脚底 `[0.5,0.875]`） |
+| `markerOffset` | 可选，建筑 stamp 会让节点点击标记向下让位的百分比 |
+| `order` / `offsetY` / `layer` | 可选绘制顺序、Y 偏移、层归属 |
+
+**21 件网页资产**：
+
+| 类型 | id |
+|---|---|
+| 地形 7 | `terrain_far_01` `terrain_far_02` `terrain_peak_01` `terrain_peak_02` `terrain_ridge_01` `terrain_ridge_02` `terrain_slope_01` |
+| 水 4 | `water_cloud_01` `water_cloud_02` `water_bank_01` `water_bank_02` |
+| 建筑 6 | `arch_sect_gate_01` `arch_city_wall_01` `arch_pass_01` `arch_cave_01` `arch_village_01` `arch_dock_01` |
+| 植被 4 | `veg_pine_01` `veg_bamboo_01` `veg_reeds_01` `veg_dead_tree_01` |
+
+另有两件 support asset：`ui_paper_ornate`（纸底，始终全幅绘制）、`water_sea_01`（可选海纹）。
+
+#### 位图资源与内联约定（asset）
+
+示意 2D 的网页素材在 `template/assets/map/atlas/`，由 `scripts/prepare_atlas_web.py` 从 `atlas-kit/manifest.json` 生成：
+
+- 21 件 PNG 转 webp（质量 86，保持 640 画布与 pivot），复制 `ui_paper_ornate.webp`、`water_sea_01.webp`；
+- 生成网页侧 `manifest.json`，字段 `id / name / type / pivot / size / file / source / bytes`；
+- `template/viewer/60-map-surface.js` 的资产表读这份 manifest；缺图时构建失败。
+
+**内联机制**：模板 JS 用占位符 `__ASSET__:map/atlas/terrain_peak_02.webp`；`scripts/build.py` 构建时按 `template/assets/<相对路径>` 读文件，转 `data:<mime>;base64,…` 内联进单文件 HTML。占位符残留或图片缺失时构建**直接失败**；构建日志打印「内联 N 张 / 原始 KB / base64 后约 KB」。
+
+**体积预算**：21 件 PNG 原始约 11 MB，转 webp 后约 1.07 MB；构建内联 23 张，原始 1,075 KB，base64 后约 1.44 MB。实测单文件：虚构样例 **1.66 MB**，凡人 500 章 **2.24 MB**。
+
+**缺失行为**：`map_layout` 缺失时不报错，2D 视图显示「未提供示意坐标，已回退拓扑视图」并给切换按钮。`atlas` 缺失时用默认纸面、自动题签、代码罗盘。
+
+#### 示意坐标 ≠ 证据坐标（含纸面免责）
+
+- `map_layout` 的坐标是**人工近似摆放**，用于叙事导航，**不是原文方位证据**；只有 `spatial_relations` 里的 `direction` / `distance` 才是原文方位证据。
+- 节点若在 `spatial_relations` 里存在 `kind ∈ {direction, distance}` 且以它为端点 → 徽标 `有原文方位证据`；其余节点 → 徽标 `近似摆放`。
+- 示意坐标不写回 `places`，不进证据方位/拓扑的约束求解；不得渲染成证据坐标，不得显示比例尺/经纬网。
+- 纸面上的山、海、建筑是**视觉底件**，不表达真实地理；`map_layout` 整体仍是人工示意坐标（非经纬度、非证据）。界面免责小印 `示意舆图 · 方位与比例非精确` 常在。
+
+### validate 地图规则
+
+规则标签「地图」。规则类别如下（error/warning 具体条数以 `validate.py` 实际实现为准）：
+
+- **error 类别**：`mode` 非 `schematic`；`canvas` 非 `[100,100]`；`note` 超长或缺「非经纬度/示意」字样；`regions` / `nodes` 条目非对象；`regions[].id` 缺 `r_` 前缀或重复；`shape` 不在 `land/sea/void`；`layer` 指向不存在的 `places` id；`polygon` 不足 3 点或坐标越出 0–100；`nodes[].place` 不存在或重复；`x` / `y` 越出 0–100；`terrain` 内 `ridges` / `rivers` 折点不足或越界、`lakes.polygon` 不足 3 点、`islets` 必须是 `{x,y,r}` 对象且坐标/半径越界、`region` 指向不存在的 region id；`routes[].s` / `t` 不存在，`kind` 不在 `portal/travel_path/road/river`，`curve` 控制点越出 0–100；`atlas.title` / `atlas.seal` / `atlas.markers` / `atlas.stamps` 条目非对象、`seal.ch` 非单字、`asset` 不在 21 件、`attach` 指向不存在节点、`stamps[].x/y` 无 `attach` 时缺失或越界。
+- **warning 类别**：`label_at` 坐标越界或格式异常；`rank` / `label` 取值非法；`islets` 少于 4 个时海面可能偏空（以实现为准）。`terrain` 缺失不触发回退告警。
 
 ### validate 空间规则
 
@@ -476,25 +730,28 @@ silent = 当前章 - last_mention_ch  多久没管它   ← 判定用这个
 
 ### spatial.json（书目录下的可选输入文件）
 
-每本书目录下可有 `spatial.json`，三段结构：
+每本书目录下可有 `spatial.json`，结构含 `meta` / `places` / `spatial_relations`，以及可选的 `map_layout`：
 
 ```json
 { "meta": { "note": "人工证据化整理" },
   "places": [ { "id": "p_yuanwuguo", "name": "元武国", "parent": null, "desc": "...", "first_ch": 144, "attrs": {} } ],
-  "spatial_relations": [ ... ] }
+  "spatial_relations": [ ... ],
+  "map_layout": { ... } }
 ```
 
 merge 行为：
 
 - `places` 里 data.json 没有的 id 追加进 `places`（已存在则报冲突并跳过）；
 - `spatial_relations` 原样挂到 data.json 顶层（并校验两端 id）；
-- 没有 `spatial.json` 时，data.json 的 `spatial_relations` 为 `[]`。
+- `map_layout` 原样挂到 data.json 顶层（并校验其中引用的 `places` id）；
+- 没有 `spatial.json` 时，data.json 的 `spatial_relations` 为 `[]`；`map_layout` 缺失时 2D 回退拓扑，不算错误。
 
 ### 禁忌
 
-- 不把自动布局坐标写回 `places`，也不把自动布局坐标当成事实坐标展示。
+- 不把自动布局或示意坐标写回 `places`，也不把它们当成事实坐标展示。
 - 不把「旁边」「不远处」「一天路程」折算成里数或像素距离。
-- 不给无原文证据的地点编方位；没有原文句子就不写、不进 M2。
+- 不给无原文证据的地点编方位；没有原文句子就不写、不进证据方位。
+- 不把 `map_layout` 示意坐标当证据坐标；不显示比例尺/经纬网/指北针。空图上不存在任何地形，不得补成原文没有的山脉、河流、海岸轮廓；`terrain` 是装饰性示意，只在数据显式给出时绘制，不得按原文没有的地形补骨架或把它当原文地理。
 
 ---
 
@@ -535,7 +792,7 @@ merge 行为：
 9. `foreshadows.payoff_ch` 若存在必须 ≥ `plant_ch`
 10. `coverage.chapters_done + chapters_skipped == chapters`
 
-空间关系（`spatial_relations`）的校验规则见上文「spatial_relations（空间关系与地图分级）· 可选」一节的「validate 空间规则」清单（8 条 error + 2 条 warning，规则标签「空间」）。
+空间关系（`spatial_relations`）的校验规则见上文「spatial_relations（空间关系与地图分级）· 可选」一节的「validate 空间规则」清单（规则标签「空间」）；`map_layout` 的校验见同节「validate 地图规则」（规则标签「地图」）。
 
 ---
 
@@ -562,3 +819,9 @@ v1.0 的古典小说样例已归档到 `samples/_archive/`，不再维护，不�
 | 2.1 | 境界体系改为**全局定义**（`realms.json` + `scripts/realms.py`）。禁止逐批建立 `realms`，`power_history` 须逐条对回原文 |
 | 2.2 | 伏笔新增 `last_mention_ch` / `keywords`。超期判定从「埋了多久」改为「多久没提」，四处实现统一口径 |
 | 2.3 | 新增可选 `spatial_relations`（每条带 `evidence` 章号 + 原文片段）与「地图」视图（M1 拓扑 / M2 证据化示意）；`places` 语义不变、无坐标字段；M2 约束不足自动回退 M1 |
+| 2.4 | 地图视图调整为三子视图：示意 2D（默认，可选 `map_layout` 人工近似坐标）/ 证据方位（原 M2）/ 拓扑（原 M1，次要）；示意坐标与原文方位证据分开标注，缺失 `map_layout` 时 2D 回退拓扑 |
+| 2.5 | `map_layout` 新增可选 `terrain`（装饰地形：脊线/河流/湖泊/岛链）与 `routes`（弯曲航路）；地形与海岸轮廓标注为装饰性示意、非原文地理事实，印章 `示意地图 · 非精确比例` |
+| 2.6 | 2D 改为位图底图（`template/assets/map/web/`，`__ASSET__` 占位符构建内联）；`terrain` 字段保留但当前视图不渲染；默认层改「全部」；字号/节点半径/LOD 按 1920 底图尺度更新 |
+| 2.7 | 2D 改为空地图背景（`backgrounds/web/blank-map-light.webp` / `blank-map-dark.webp`）+ 图标组织（徽章/头像/标记）；撤掉地形底图、浮空岛、祥云、山林等资产（保留备用、当前不消费）；两簇构图、仅一条远海航路；印章改 `空图示意 · 非精确比例`；体积预算按当前消费资产重算（原始约 0.95MB / base64 后约 1.27MB） |
+| 2.8 | 读者向：新增 `_reader` / `anomalies` / `_mapLevels` / `_anomalyMeta` 派生字段；支持 `cutoff_ch` 投影、疑点索引、M0–M4 分级、`time_slices` 时态切片 |
+| 2.9 | 地图编排器内置拖拽节点、节点分层、挂/移除 21 件底件并导出 map-layout；示意 2D 显示 M 等级、层筛选、时间切片下拉与 PNG/SVG |

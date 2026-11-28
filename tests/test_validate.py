@@ -198,6 +198,218 @@ class ContractTest(unittest.TestCase):
         self.assertTrue(any("M2 会回退" in msg for _, msg in report.warnings),
                         f"没有提示层内约束不足回退 M2：{report.warnings[:5]}")
 
+    # ---------- map_layout（2D 示意布局，可选字段） ----------
+
+    def _map_region(self, **overrides):
+        reg = {
+            "id": "r_one", "name": "东区", "shape": "land",
+            "layer": "p_dongyu", "label_at": [20, 30],
+            "polygon": [[5, 5], [60, 5], [60, 60], [5, 60]],
+        }
+        reg.update(overrides)
+        return reg
+
+    def _map_node(self, place, **overrides):
+        node = {"place": place, "x": 50, "y": 50, "rank": 2, "label": True}
+        node.update(overrides)
+        return node
+
+    def _map_terrain(self, **overrides):
+        terrain = {
+            "ridges": [{"points": [[10, 20], [30, 40]], "width": 2.4,
+                        "region": "r_one", "name": "太岳山脉"}],
+            "rivers": [{"points": [[10, 20], [30, 40]], "width": 1.1,
+                        "region": "r_one"}],
+            "lakes": [{"polygon": [[10, 10], [20, 10], [15, 20]],
+                       "region": "r_one"}],
+            "islets": [{"x": 70 + i * 3, "y": 34, "r": 1.6} for i in range(4)],
+        }
+        terrain.update(overrides)
+        return terrain
+
+    def _map_route(self, **overrides):
+        route = {"s": "p_dongyu", "t": "p_qingyunshan", "kind": "portal",
+                 "curve": [[40, 70], [50, 60]], "label": "古传送阵"}
+        route.update(overrides)
+        return route
+
+    def _map_layout(self, **overrides):
+        layout = {
+            "mode": "schematic",
+            "note": "人工示意坐标，非经纬度；近似摆放",
+            "canvas": [100, 100],
+            "regions": [self._map_region()],
+            "nodes": [self._map_node(p) for p in
+                      ("p_dongyu", "p_qingyunshan", "p_zayiyuan",
+                       "p_yanwuchang", "p_houshan")],
+            "terrain": self._map_terrain(),
+            "routes": [self._map_route()],
+        }
+        layout.update(overrides)
+        return layout
+
+    def _load_layout(self, layout):
+        data = copy.deepcopy(self.sample)
+        data["map_layout"] = layout
+        return data
+
+    def test_map_layout_missing_passes(self):
+        data = copy.deepcopy(self.sample)
+        data.pop("map_layout", None)
+        report = self.check(data)
+        self.assertFalse(any(rule == "地图" for rule, _ in report.errors),
+                         f"缺失 map_layout 不应报地图错误：{report.errors[:5]}")
+        self.assertFalse(any(rule == "地图" for rule, _ in report.warnings),
+                         f"缺失 map_layout 不应报地图警告：{report.warnings[:5]}")
+
+    def test_map_mode_invalid_rejected(self):
+        report = self.check(self._load_layout(self._map_layout(mode="topo")))
+        self.assertTrue(any("mode 必须为 schematic" in msg for _, msg in report.errors),
+                        f"没有拒绝非 schematic 模式：{report.errors[:5]}")
+
+    def test_map_canvas_invalid_rejected(self):
+        report = self.check(self._load_layout(self._map_layout(canvas=[80, 80])))
+        self.assertTrue(any("canvas 必须为 [100,100]" in msg for _, msg in report.errors),
+                        f"没有拒绝非 [100,100] 画布：{report.errors[:5]}")
+
+    def test_map_region_coord_out_of_range_rejected(self):
+        region = self._map_region(polygon=[[120, 10], [5, 5], [60, 60]])
+        report = self.check(self._load_layout(self._map_layout(regions=[region])))
+        self.assertTrue(any("坐标越界" in msg for _, msg in report.errors),
+                        f"没有拒绝区域越界坐标：{report.errors[:5]}")
+
+    def test_map_node_coord_out_of_range_rejected(self):
+        nodes = [self._map_node("p_dongyu", y=-5)]
+        report = self.check(self._load_layout(self._map_layout(nodes=nodes)))
+        self.assertTrue(any("y 越界" in msg for _, msg in report.errors),
+                        f"没有拒绝节点越界坐标：{report.errors[:5]}")
+
+    def test_map_node_place_dangling_rejected(self):
+        nodes = [self._map_node("p_no_such_place")]
+        report = self.check(self._load_layout(self._map_layout(nodes=nodes)))
+        self.assertTrue(any("place 不存在" in msg for _, msg in report.errors),
+                        f"没有拒绝悬空 place：{report.errors[:5]}")
+
+    def test_map_node_place_duplicate_rejected(self):
+        nodes = [self._map_node("p_dongyu"), self._map_node("p_dongyu")]
+        report = self.check(self._load_layout(self._map_layout(nodes=nodes)))
+        self.assertTrue(any("place 重复" in msg for _, msg in report.errors),
+                        f"没有拒绝重复 place：{report.errors[:5]}")
+
+    def test_map_shape_invalid_rejected(self):
+        region = self._map_region(shape="city")
+        report = self.check(self._load_layout(self._map_layout(regions=[region])))
+        self.assertTrue(any("shape 越界" in msg for _, msg in report.errors),
+                        f"没有拒绝越界 shape：{report.errors[:5]}")
+
+    def test_map_rank_invalid_rejected(self):
+        nodes = [self._map_node("p_dongyu", rank=5)]
+        report = self.check(self._load_layout(self._map_layout(nodes=nodes)))
+        self.assertTrue(any("rank 越界" in msg for _, msg in report.errors),
+                        f"没有拒绝越界 rank：{report.errors[:5]}")
+
+    def test_map_polygon_too_few_points_rejected(self):
+        region = self._map_region(polygon=[[1, 1], [2, 2]])
+        report = self.check(self._load_layout(self._map_layout(regions=[region])))
+        self.assertTrue(any("至少需要 3 个点" in msg for _, msg in report.errors),
+                        f"没有拒绝点数不足的 polygon：{report.errors[:5]}")
+
+    def test_map_sparse_warn(self):
+        nodes = [self._map_node("p_dongyu"), self._map_node("p_qingyunshan")]
+        report = self.check(self._load_layout(self._map_layout(nodes=nodes)))
+        self.assertFalse(report.errors, f"稀疏 fixture 不应报错：{report.errors[:5]}")
+        self.assertTrue(any("过于稀疏" in msg for _, msg in report.warnings),
+                        f"没有提示节点稀疏：{report.warnings[:5]}")
+
+    def test_map_regions_empty_warn(self):
+        layout = self._map_layout(regions=[], terrain=None)
+        report = self.check(self._load_layout(layout))
+        self.assertFalse(report.errors, f"空区域 fixture 不应报错：{report.errors[:5]}")
+        self.assertTrue(any("只剩点" in msg for _, msg in report.warnings),
+                        f"没有提示缺少区域块：{report.warnings[:5]}")
+
+    def test_map_note_missing_keyword_warn(self):
+        report = self.check(self._load_layout(
+            self._map_layout(note="精确坐标，不可外推")))
+        self.assertFalse(report.errors, f"note fixture 不应报错：{report.errors[:5]}")
+        self.assertTrue(any("把示意坐标说成精确坐标" in msg for _, msg in report.warnings),
+                        f"没有提示 note 缺少示意字样：{report.warnings[:5]}")
+
+    def test_map_terrain_unknown_key_rejected(self):
+        terrain = self._map_terrain(foo=[])
+        report = self.check(self._load_layout(self._map_layout(terrain=terrain)))
+        self.assertTrue(any("未知子键" in msg for _, msg in report.errors),
+                        f"没有拒绝 terrain 未知子键：{report.errors[:5]}")
+
+    def test_map_ridge_points_too_few_rejected(self):
+        ridge = {"points": [[1, 1]]}
+        terrain = self._map_terrain(ridges=[ridge])
+        report = self.check(self._load_layout(self._map_layout(terrain=terrain)))
+        self.assertTrue(any("点数应为" in msg for _, msg in report.errors),
+                        f"没有拒绝点数不足的 ridge：{report.errors[:5]}")
+
+    def test_map_ridge_coord_out_of_range_rejected(self):
+        ridge = {"points": [[120, 10], [1, 1]]}
+        terrain = self._map_terrain(ridges=[ridge])
+        report = self.check(self._load_layout(self._map_layout(terrain=terrain)))
+        self.assertTrue(any("坐标越界" in msg for _, msg in report.errors),
+                        f"没有拒绝 ridge 越界坐标：{report.errors[:5]}")
+
+    def test_map_lake_polygon_too_few_rejected(self):
+        lake = {"polygon": [[1, 1], [2, 2]]}
+        terrain = self._map_terrain(lakes=[lake])
+        report = self.check(self._load_layout(self._map_layout(terrain=terrain)))
+        self.assertTrue(any("点数应为" in msg for _, msg in report.errors),
+                        f"没有拒绝点数不足的 lake：{report.errors[:5]}")
+
+    def test_map_islet_r_invalid_rejected(self):
+        islets = [{"x": 70, "y": 34, "r": 9}]
+        terrain = self._map_terrain(islets=islets)
+        report = self.check(self._load_layout(self._map_layout(terrain=terrain)))
+        self.assertTrue(any("r 越界" in msg for _, msg in report.errors),
+                        f"没有拒绝越界 islet 半径：{report.errors[:5]}")
+
+    def test_map_route_dangling_s_rejected(self):
+        route = self._map_route(s="p_no_such_place")
+        report = self.check(self._load_layout(self._map_layout(routes=[route])))
+        self.assertTrue(any("s 不存在" in msg for _, msg in report.errors),
+                        f"没有拒绝悬空 route 起点：{report.errors[:5]}")
+
+    def test_map_route_kind_invalid_rejected(self):
+        route = self._map_route(kind="adjacent")
+        report = self.check(self._load_layout(self._map_layout(routes=[route])))
+        self.assertTrue(any("kind 越界" in msg for _, msg in report.errors),
+                        f"没有拒绝越界 route kind：{report.errors[:5]}")
+
+    def test_map_route_curve_malformed_rejected(self):
+        too_few = self._map_route(curve=[])
+        report = self.check(self._load_layout(self._map_layout(routes=[too_few])))
+        self.assertTrue(any("点数应为" in msg for _, msg in report.errors),
+                        f"没有拒绝点数不足的 curve：{report.errors[:5]}")
+        bad_pt = self._map_route(curve=[["a", "b"]])
+        report = self.check(self._load_layout(self._map_layout(routes=[bad_pt])))
+        self.assertTrue(any("坐标越界或格式错误" in msg for _, msg in report.errors),
+                        f"没有拒绝格式错误的 curve：{report.errors[:5]}")
+
+    def test_map_islets_sparse_warn(self):
+        terrain = self._map_terrain(islets=[{"x": 70, "y": 34, "r": 1.6}] * 2)
+        report = self.check(self._load_layout(self._map_layout(terrain=terrain)))
+        self.assertFalse(report.errors, f"稀疏岛链 fixture 不应报错：{report.errors[:5]}")
+        self.assertTrue(any("岛链偏少" in msg for _, msg in report.warnings),
+                        f"没有提示岛链偏少：{report.warnings[:5]}")
+
+    def test_map_terrain_missing_warn(self):
+        report = self.check(self._load_layout(self._map_layout(terrain=None)))
+        self.assertFalse(report.errors, f"缺 terrain 不应报错：{report.errors[:5]}")
+        self.assertTrue(any("地形骨架" in msg for _, msg in report.warnings),
+                        f"没有提示缺少地形骨架：{report.warnings[:5]}")
+
+    def test_map_routes_empty_warn(self):
+        report = self.check(self._load_layout(self._map_layout(routes=[])))
+        self.assertFalse(report.errors, f"空 routes 不应报错：{report.errors[:5]}")
+        self.assertTrue(any("跨区航路未配置" in msg for _, msg in report.warnings),
+                        f"没有提示未配置航路：{report.warnings[:5]}")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -44,6 +44,8 @@ def main():
     print(f"境界    {stats['realms']}")
     print(f"地点    {stats['places']}　设定 {stats['concepts']}")
     print(f"空间关系 {stats['spatial']} 条（新增地点 {stats['spatial_places']} 个）")
+    if stats.get("spatial_nodes"):
+        print(f"示意坐标 {stats['spatial_nodes']} 个节点 / {stats['spatial_regions']} 个区域")
     print(f"字数    {stats['chars']:,}")
     print(f"输出    {out}")
     return 0

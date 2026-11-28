@@ -1,0 +1,71 @@
+{
+  "id": "fanren-yue",
+  "title": "凡人修仙传 · 越国",
+  "caption": "示意舆图 · 方位与比例非精确",
+  "theme": {
+    "paper": "#E8DCC5",
+    "paper_image": "base/ui/paper_ornate.webp",
+    "paper_tint": "#C49A62",
+    "paper_tint_alpha": 0.035,
+    "ink": "#3B332A",
+    "accent": "#A66A45",
+    "seal": "#A93828",
+    "water": "#6E8E96",
+    "route": "#8A7254",
+    "label": "#2F2922"
+  },
+  "layers": {
+    "water_bodies": [
+      {
+        "points": [[0.60, 0.10], [0.96, 0.08], [0.96, 0.84], [0.88, 0.80], [0.78, 0.72], [0.70, 0.60], [0.66, 0.44], [0.62, 0.28]],
+        "opacity": 0.50,
+        "feather": 0.035,
+        "waves": true,
+        "wave_count": 8
+      }
+    ],
+    "terrain": [
+      {"asset": "terrain_far_01", "x": 0.24, "y": 0.27, "w": 0.28, "opacity": 0.60},
+      {"asset": "terrain_far_02", "x": 0.50, "y": 0.24, "w": 0.28, "opacity": 0.56},
+      {"asset": "terrain_peak_01", "x": 0.50, "y": 0.38, "w": 0.19, "opacity": 0.88},
+      {"asset": "terrain_ridge_01", "x": 0.30, "y": 0.44, "w": 0.24, "opacity": 0.82},
+      {"asset": "terrain_slope_01", "x": 0.48, "y": 0.60, "w": 0.18, "opacity": 0.80}
+    ],
+    "water": [
+      {"asset": "water_cloud_01", "x": 0.17, "y": 0.40, "w": 0.26, "opacity": 0.60},
+      {"asset": "terrain_slope_01", "x": 0.86, "y": 0.38, "w": 0.10, "opacity": 0.55},
+      {"asset": "water_bank_01", "x": 0.68, "y": 0.58, "w": 0.24, "opacity": 0.80}
+    ],
+    "architecture": [
+      {"asset": "arch_city_wall_01", "x": 0.33, "y": 0.55, "w": 0.075},
+      {"asset": "arch_sect_gate_01", "x": 0.45, "y": 0.43, "w": 0.060},
+      {"asset": "arch_village_01", "x": 0.55, "y": 0.64, "w": 0.060},
+      {"asset": "arch_dock_01", "x": 0.78, "y": 0.66, "w": 0.070}
+    ],
+    "vegetation": [
+      {"asset": "veg_pine_01", "x": 0.53, "y": 0.51, "w": 0.055},
+      {"asset": "veg_bamboo_01", "x": 0.60, "y": 0.55, "w": 0.055},
+      {"asset": "veg_reeds_01", "x": 0.70, "y": 0.70, "w": 0.060}
+    ],
+    "routes": [
+      {"points": [[0.33, 0.55], [0.39, 0.49], [0.45, 0.43]], "style": "land"},
+      {"points": [[0.45, 0.43], [0.50, 0.56], [0.55, 0.64]], "style": "land"},
+      {"points": [[0.55, 0.64], [0.68, 0.65], [0.78, 0.66]], "style": "land"},
+      {"points": [[0.78, 0.66], [0.84, 0.52], [0.81, 0.30]], "style": "sea"}
+    ],
+    "markers": [
+      {"type": "city", "x": 0.33, "y": 0.55, "w": 0.040, "label": "天罗城"},
+      {"type": "sect", "x": 0.45, "y": 0.43, "w": 0.038, "label": "黄枫谷"},
+      {"type": "secret", "x": 0.62, "y": 0.74, "w": 0.040, "label": "虚天殿"}
+    ],
+    "labels": [
+      {"text": "越国", "x": 0.20, "y": 0.17, "size": 0.055, "kind": "accent"},
+      {"text": "乱星海", "x": 0.82, "y": 0.20, "size": 0.052, "kind": "accent"}
+    ],
+    "ui": [
+      {"type": "cartouche", "x": 0.105, "y": 0.24, "w": 0.058, "text": "人界舆图"},
+      {"type": "seal", "x": 0.105, "y": 0.35, "w": 0.028, "text": "凡"},
+      {"type": "compass", "x": 0.90, "y": 0.82, "w": 0.075}
+    ]
+  }
+}

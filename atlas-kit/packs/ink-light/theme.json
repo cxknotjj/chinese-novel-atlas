@@ -1,0 +1,16 @@
+{
+  "name": "浅绛",
+  "id": "ink-light",
+  "description": "赭石、花青、淡墨，宣纸暖底；最贴近参考图，也是当前默认风格。",
+  "paper": "#E8DCC5",
+  "paper_image": "base/ui/paper_ornate.webp",
+  "paper_tint": "#C49A62",
+  "paper_tint_alpha": 0.035,
+  "ink": "#3B332A",
+  "accent": "#A66A45",
+  "seal": "#A93828",
+  "water": "#6E8E96",
+  "route": "#8A7254",
+  "label": "#2F2922",
+  "recommended_asset_opacity": 1.0
+}

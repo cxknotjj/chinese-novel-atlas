@@ -1,0 +1,233 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-11-28T03:54:39.660043+00:00",
+  "source_title": "青云签到三十年",
+  "source_file": "qingyun.txt",
+  "coverage": {
+    "chapters_done": 120,
+    "chapters_skipped": 180
+  },
+  "threshold": 50,
+  "live_ch": 120,
+  "counts": {
+    "foreshadow_unresolved": 7,
+    "battle_gap": 1
+  },
+  "total": 8,
+  "anomalies": [
+    {
+      "id": "an_foreshadow_9abbefb766",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "签到系统的来源与代价：第 1 章埋下，1 章后未再提",
+      "detail": "沉默 119 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        1,
+        1
+      ],
+      "entities": [
+        "f_xitong"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch1:p6",
+          "quote": "签到系统的来源与代价"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.9,
+      "silent_chapters": 119
+    },
+    {
+      "id": "an_foreshadow_20ad871ae3",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "阿福枕下的半张残页，只剩「血刀门」三字：第 11 章埋下，11 章后未再提",
+      "detail": "沉默 109 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        11,
+        11
+      ],
+      "entities": [
+        "f_canye"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch11:p22",
+          "quote": "阿福枕下的半张残页，只剩「血刀门」三字"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.85,
+      "silent_chapters": 109
+    },
+    {
+      "id": "an_foreshadow_0de786ea24",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "阿福托小翠转交的东西不见了：第 12 章埋下，12 章后未再提",
+      "detail": "沉默 108 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        12,
+        12
+      ],
+      "entities": [
+        "f_dongxi"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch12:p16",
+          "quote": "阿福托小翠转交的东西不见了"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.8,
+      "silent_chapters": 108
+    },
+    {
+      "id": "an_foreshadow_cbe5b50b0a",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "high",
+      "title": "后山禁地石台下「青云子留」四字：第 18 章埋下，18 章后未再提",
+      "detail": "沉默 102 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        18,
+        18
+      ],
+      "entities": [
+        "f_jindi"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch18:p20",
+          "quote": "后山禁地石台下「青云子留」四字"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.75,
+      "silent_chapters": 102
+    },
+    {
+      "id": "an_foreshadow_6ce4d24cb1",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "warning",
+      "confidence": "medium",
+      "title": "李长老评「根基不像杂役出身」：第 45 章埋下，45 章后未再提",
+      "detail": "沉默 75 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        45,
+        45
+      ],
+      "entities": [
+        "f_chushen"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch45:p14",
+          "quote": "李长老评「根基不像杂役出身」"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.7,
+      "silent_chapters": 75
+    },
+    {
+      "id": "an_foreshadow_19a3eac426",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 8 章突破当夜，院外停顿的脚步声：第 8 章埋下，8 章后未再提",
+      "detail": "沉默 112 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        8,
+        8
+      ],
+      "entities": [
+        "f_benjian"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch8:p22",
+          "quote": "第 8 章突破当夜，院外停顿的脚步声"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.5,
+      "silent_chapters": 112
+    },
+    {
+      "id": "an_foreshadow_e65719ff77",
+      "kind": "foreshadow_unresolved",
+      "kind_cn": "伏笔未回收",
+      "severity": "info",
+      "confidence": "high",
+      "title": "苏清剑穗上的一缕黑线：第 15 章埋下，15 章后未再提",
+      "detail": "沉默 105 章，超过当前阈值 50 章。",
+      "chapter_range": [
+        15,
+        15
+      ],
+      "entities": [
+        "f_jiansui"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch15:p18",
+          "quote": "苏清剑穗上的一缕黑线"
+        }
+      ],
+      "reader_note": "可能是作者有意留白或续作钩子；是否算“坑”由读者判断。",
+      "verified": false,
+      "importance": 0.6,
+      "silent_chapters": 105
+    },
+    {
+      "id": "an_battle_gap_41f05b363c",
+      "kind": "battle_gap",
+      "kind_cn": "越级战斗",
+      "severity": "info",
+      "confidence": "high",
+      "title": "第 60 章：林云 vs 赵虎，境界差 -2",
+      "detail": "战斗记录显示境界差 -2；绝对值 ≥2，属于越级战斗候选。",
+      "chapter_range": [
+        60,
+        60
+      ],
+      "entities": [
+        "e_linyun",
+        "e_zhaohu"
+      ],
+      "evidence": [
+        {
+          "coordinate": "ch60",
+          "quote": "练气七层越两级击败九层，靠玄铁剑"
+        }
+      ],
+      "reader_note": "越级本身是爽点结构，不等于错误；列为疑点是因为缺少前置铺垫时容易崩。",
+      "verified": false,
+      "battle": {
+        "a": "e_linyun",
+        "b": "e_zhaohu",
+        "result": "win",
+        "gap": -2,
+        "note": "练气七层越两级击败九层，靠玄铁剑"
+      }
+    }
+  ]
+}

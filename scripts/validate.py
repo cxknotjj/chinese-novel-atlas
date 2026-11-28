@@ -39,6 +39,13 @@ DIRECTION_VALUES = {"north_of", "south_of", "east_of", "west_of",
                     "southwest_of"}
 SPATIAL_CONFIDENCE = {"high", "medium", "low"}
 
+# 2D 示意布局（map_layout，可选；契约见 output/<书名>/_contract/maplayout-contract.md）
+MAP_MODE = "schematic"
+MAP_SHAPES = {"land", "sea", "void"}
+TERRAIN_KEYS = {"ridges", "rivers", "lakes", "islets"}
+ROUTE_KINDS = {"portal", "travel_path", "road", "river"}
+MARKER_TYPES = {"city", "sect", "secret", "danger", "place", "none"}
+
 ID_PREFIX = {"entities": "e_", "places": "p_", "concepts": "c_",
              "realms": "r_", "foreshadows": "f_", "knowledge": "k_",
              "volumes": "v"}
@@ -371,6 +378,330 @@ def validate(data, report):
         for layer, n in layer_constraints.items():
             if 1 <= n <= 2:
                 report.warn("空间", f"该层仅 {n} 条方向/距离约束，M2 会回退")
+
+    # ---------- 2D 示意布局（map_layout，可选） ----------
+    # 缺失时不报错：2D 视图回退拓扑是视图行为，不是数据问题。
+    layout = data.get("map_layout")
+    if layout is not None:
+        if not isinstance(layout, dict):
+            report.err("地图", "map_layout 必须是对象")
+        else:
+            def in_canvas(v):
+                return num(v) and 0 <= v <= 100
+
+            def check_point(pt, where):
+                if (not isinstance(pt, list) or len(pt) != 2
+                        or not in_canvas(pt[0]) or not in_canvas(pt[1])):
+                    report.err("地图", f"{where} 坐标越界或格式错误：{pt}")
+                    return False
+                return True
+
+            def check_points(pts, where, min_pts, max_pts=None):
+                if not isinstance(pts, list):
+                    report.err("地图", f"{where} 必须是坐标数组")
+                    return False
+                too_few = len(pts) < min_pts
+                too_many = max_pts is not None and len(pts) > max_pts
+                if too_few or too_many:
+                    span = f"{min_pts}–{max_pts}" if max_pts else f"{min_pts} 以上"
+                    report.err("地图", f"{where} 点数应为 {span}，当前 {len(pts)}")
+                    return False
+                ok = True
+                for j, pt in enumerate(pts):
+                    if not check_point(pt, f"{where}[{j}]"):
+                        ok = False
+                return ok
+
+            if layout.get("mode") != MAP_MODE:
+                report.err("地图",
+                           f"map_layout.mode 必须为 schematic，当前 {layout.get('mode')}")
+
+            note = layout.get("note")
+            if not isinstance(note, str) or not note.strip():
+                report.err("地图", "map_layout.note 为空")
+            else:
+                if len(note) > 120:
+                    report.err("地图", "map_layout.note 超过 120 字")
+                if "示意" not in note and "非经纬度" not in note:
+                    report.warn("地图", "note 未含「示意」或「非经纬度」，"
+                                       "可能把示意坐标说成精确坐标")
+
+            canvas = layout.get("canvas")
+            if (not isinstance(canvas, list) or len(canvas) != 2
+                    or not num(canvas[0]) or canvas[0] != 100
+                    or not num(canvas[1]) or canvas[1] != 100):
+                report.err("地图", f"canvas 必须为 [100,100]，当前 {canvas}")
+
+            regions = layout.get("regions")
+            if regions is None:
+                regions = []
+            elif not isinstance(regions, list):
+                report.err("地图", "regions 必须是 list")
+                regions = []
+            region_ids = set()
+            for i, reg in enumerate(regions):
+                where = f"regions[{i}]"
+                if not isinstance(reg, dict):
+                    report.err("地图", f"{where} 条目必须是对象")
+                    continue
+                rid = reg.get("id")
+                if not rid:
+                    report.err("地图", f"{where} 缺少 id")
+                else:
+                    if not str(rid).startswith("r_"):
+                        report.err("地图", f"区域 id {rid} 未使用 r_ 前缀")
+                    if rid in region_ids:
+                        report.err("地图", f"区域 id 重复：{rid}")
+                    region_ids.add(rid)
+                if not (isinstance(reg.get("name"), str) and reg["name"].strip()):
+                    report.err("地图", f"{where} name 为空")
+                if reg.get("shape") not in MAP_SHAPES:
+                    report.err("地图", f"{where} shape 越界：{reg.get('shape')}")
+                if reg.get("layer") and reg["layer"] not in place:
+                    report.err("地图", f"{where} layer 不存在：{reg['layer']}")
+                label_at = reg.get("label_at")
+                if label_at is not None:
+                    check_point(label_at, f"区域 {rid or where} label_at")
+                polygon = reg.get("polygon")
+                if not isinstance(polygon, list) or len(polygon) < 3:
+                    report.err("地图", f"{where} polygon 至少需要 3 个点")
+                else:
+                    for j, pt in enumerate(polygon):
+                        check_point(pt, f"区域 {rid or where} polygon[{j}]")
+
+            nodes = layout.get("nodes")
+            if nodes is None:
+                nodes = []
+            elif not isinstance(nodes, list):
+                report.err("地图", "nodes 必须是 list")
+                nodes = []
+            node_places = set()
+            for i, node in enumerate(nodes):
+                where = f"nodes[{i}]"
+                if not isinstance(node, dict):
+                    report.err("地图", f"{where} 条目必须是对象")
+                    continue
+                place_id = node.get("place")
+                if place_id not in place:
+                    report.err("地图", f"{where} place 不存在：{place_id}")
+                elif place_id in node_places:
+                    report.err("地图", f"节点 place 重复：{place_id}")
+                node_places.add(place_id)
+                if not in_canvas(node.get("x")):
+                    report.err("地图", f"节点 {place_id or where} x 越界：{node.get('x')}")
+                if not in_canvas(node.get("y")):
+                    report.err("地图", f"节点 {place_id or where} y 越界：{node.get('y')}")
+                if node.get("layer") and node["layer"] not in place:
+                    report.err("地图", f"{where} layer 不存在：{node['layer']}")
+                rank = node.get("rank")
+                if rank is not None:
+                    if not (isinstance(rank, int) and not isinstance(rank, bool)
+                            and 1 <= rank <= 3):
+                        report.err("地图", f"{where} rank 越界：{rank}")
+                label = node.get("label")
+                if label is not None and not isinstance(label, bool):
+                    report.err("地图", f"{where} label 必须是布尔：{label}")
+
+            if len(nodes) < 5:
+                report.warn("地图", "示意地图过于稀疏")
+            if not regions:
+                report.warn("地图", "没有任何区域块，2D 视图只剩点")
+
+            # ---------- terrain（装饰地形，可选；缺失只告警） ----------
+            def check_ref_region(ref, where):
+                if ref is not None and ref not in region_ids:
+                    report.err("地图", f"{where} region 不存在：{ref}")
+
+            def check_short_name(name, where):
+                if name is not None and (not isinstance(name, str) or len(name) > 20):
+                    report.err("地图", f"{where} name 超过 20 字或类型错误：{name}")
+
+            terrain = layout.get("terrain")
+            if terrain is None:
+                report.warn("地图", "2D 地图没有地形骨架，只有色块")
+            elif not isinstance(terrain, dict):
+                report.err("地图", "terrain 必须是对象")
+            else:
+                unknown = set(terrain) - TERRAIN_KEYS
+                if unknown:
+                    report.err("地图", f"terrain 含未知子键：{sorted(unknown)}")
+
+                for coll in ("ridges", "rivers"):
+                    items = terrain.get(coll)
+                    if items is None:
+                        continue
+                    if not isinstance(items, list):
+                        report.err("地图", f"terrain.{coll} 必须是 list")
+                        continue
+                    for i, item in enumerate(items):
+                        where = f"terrain.{coll}[{i}]"
+                        if not isinstance(item, dict):
+                            report.err("地图", f"{where} 条目必须是对象")
+                            continue
+                        check_points(item.get("points"), f"{where} points", 2)
+                        w = item.get("width")
+                        if w is not None and not (num(w) and 0 < w <= 6):
+                            report.err("地图", f"{where} width 越界：{w}")
+                        check_ref_region(item.get("region"), where)
+                        check_short_name(item.get("name"), where)
+
+                lakes = terrain.get("lakes")
+                if lakes is not None:
+                    if not isinstance(lakes, list):
+                        report.err("地图", "terrain.lakes 必须是 list")
+                    else:
+                        for i, item in enumerate(lakes):
+                            where = f"terrain.lakes[{i}]"
+                            if not isinstance(item, dict):
+                                report.err("地图", f"{where} 条目必须是对象")
+                                continue
+                            check_points(item.get("polygon"), f"{where} polygon", 3)
+                            check_ref_region(item.get("region"), where)
+
+                islets = terrain.get("islets")
+                if islets is not None:
+                    if not isinstance(islets, list):
+                        report.err("地图", "terrain.islets 必须是 list")
+                    else:
+                        for i, item in enumerate(islets):
+                            where = f"terrain.islets[{i}]"
+                            if not isinstance(item, dict):
+                                report.err("地图", f"{where} 条目必须是对象")
+                                continue
+                            if not in_canvas(item.get("x")):
+                                report.err("地图", f"{where} x 越界：{item.get('x')}")
+                            if not in_canvas(item.get("y")):
+                                report.err("地图", f"{where} y 越界：{item.get('y')}")
+                            r = item.get("r")
+                            if not (num(r) and 0 < r <= 5):
+                                report.err("地图", f"{where} r 越界：{r}")
+                        if len(islets) < 4:
+                            report.warn("地图", "岛链偏少，海面会显得空")
+
+            # ---------- routes（弯曲航路，可选；缺失不告警） ----------
+            routes = layout.get("routes")
+            if routes is not None:
+                if not isinstance(routes, list):
+                    report.err("地图", "routes 必须是 list")
+                elif not routes:
+                    report.warn("地图", "跨区航路未配置")
+                else:
+                    for i, route in enumerate(routes):
+                        where = f"routes[{i}]"
+                        if not isinstance(route, dict):
+                            report.err("地图", f"{where} 条目必须是对象")
+                            continue
+                        rs, rt = route.get("s"), route.get("t")
+                        if rs not in place:
+                            report.err("地图", f"{where} s 不存在：{rs}")
+                        if rt not in place:
+                            report.err("地图", f"{where} t 不存在：{rt}")
+                        if rs in place and rt in place and rs == rt:
+                            report.err("地图", f"{where} 自环：{rs}")
+                        if route.get("kind") not in ROUTE_KINDS:
+                            report.err("地图", f"{where} kind 越界：{route.get('kind')}")
+                        curve = route.get("curve")
+                        if curve is not None:
+                            check_points(curve, f"{where} curve", 1, 6)
+                        label = route.get("label")
+                        if label is not None and (not isinstance(label, str) or len(label) > 20):
+                            report.err("地图", f"{where} label 超过 20 字或类型错误：{label}")
+
+            # ---------- atlas（网页版视觉层，可选；21 PNG + 9 代码/SVG） ----------
+            atlas = layout.get("atlas")
+            if atlas is not None:
+                if not isinstance(atlas, dict):
+                    report.err("地图", "atlas 必须是对象")
+                else:
+                    import json as _json
+                    from pathlib import Path as _Path
+                    kit_manifest = _Path(__file__).resolve().parent.parent / "atlas-kit" / "manifest.json"
+                    known_assets = set()
+                    if kit_manifest.exists():
+                        _m = _json.loads(kit_manifest.read_text(encoding="utf-8"))
+                        known_assets = {a["id"] for a in _m.get("assets", []) if a.get("media") == "png"}
+
+                    title = atlas.get("title")
+                    if title is not None:
+                        if not isinstance(title, dict):
+                            report.err("地图", "atlas.title 必须是对象")
+                        else:
+                            if not (isinstance(title.get("text"), str) and title["text"].strip()):
+                                report.err("地图", "atlas.title.text 为空")
+                            elif len(title["text"]) > 12:
+                                report.err("地图", "atlas.title.text 超过 12 字")
+                            if title.get("direction") not in (None, "vertical", "horizontal"):
+                                report.err("地图", f"atlas.title.direction 越界：{title.get('direction')}")
+                            for key in ("x", "y"):
+                                if title.get(key) is not None and not in_canvas(title[key]):
+                                    report.err("地图", f"atlas.title.{key} 越界：{title[key]}")
+                            if title.get("size") is not None and not (num(title["size"]) and 1 <= title["size"] <= 8):
+                                report.err("地图", f"atlas.title.size 越界：{title.get('size')}")
+
+                    seal = atlas.get("seal")
+                    if seal is not None:
+                        if not isinstance(seal, dict):
+                            report.err("地图", "atlas.seal 必须是对象")
+                        else:
+                            if not (isinstance(seal.get("ch"), str) and len(seal["ch"]) == 1):
+                                report.err("地图", "atlas.seal.ch 必须是单字")
+                            for key in ("x", "y"):
+                                if seal.get(key) is not None and not in_canvas(seal[key]):
+                                    report.err("地图", f"atlas.seal.{key} 越界：{seal[key]}")
+
+                    compass = atlas.get("compass")
+                    if compass is not None and compass is not False:
+                        if not isinstance(compass, dict):
+                            report.err("地图", "atlas.compass 必须是对象或 false")
+                        else:
+                            for key in ("x", "y", "size"):
+                                if compass.get(key) is not None and not in_canvas(compass[key]):
+                                    report.err("地图", f"atlas.compass.{key} 越界：{compass[key]}")
+                            if compass.get("opacity") is not None and not (num(compass["opacity"]) and 0 <= compass["opacity"] <= 1):
+                                report.err("地图", f"atlas.compass.opacity 越界：{compass.get('opacity')}")
+
+                    marks = atlas.get("markers")
+                    if marks is not None:
+                        if not isinstance(marks, dict):
+                            report.err("地图", "atlas.markers 必须是对象")
+                        else:
+                            for pid, kind in marks.items():
+                                if pid not in node_places:
+                                    report.err("地图", f"atlas.markers 引用了不存在的节点：{pid}")
+                                if kind not in MARKER_TYPES:
+                                    report.err("地图", f"atlas.markers[{pid}] 类型越界：{kind}")
+
+                    stamps = atlas.get("stamps")
+                    if stamps is not None:
+                        if not isinstance(stamps, list):
+                            report.err("地图", "atlas.stamps 必须是 list")
+                        else:
+                            for i, st in enumerate(stamps):
+                                where = f"atlas.stamps[{i}]"
+                                if not isinstance(st, dict):
+                                    report.err("地图", f"{where} 条目必须是对象")
+                                    continue
+                                asset = st.get("asset")
+                                if not isinstance(asset, str) or not asset:
+                                    report.err("地图", f"{where} asset 为空")
+                                elif known_assets and asset not in known_assets:
+                                    report.err("地图", f"{where} asset 不在 atlas-kit：{asset}")
+                                attach = st.get("attach")
+                                if attach is not None:
+                                    if attach not in node_places:
+                                        report.err("地图", f"{where} attach 不存在：{attach}")
+                                elif not (in_canvas(st.get("x")) and in_canvas(st.get("y"))):
+                                    report.err("地图", f"{where} 缺少 attach 或合法 x/y")
+                                if st.get("layer") and st["layer"] not in place:
+                                    report.err("地图", f"{where} layer 不存在：{st['layer']}")
+                                if st.get("w") is not None and not (num(st["w"]) and 1 <= st["w"] <= 40):
+                                    report.err("地图", f"{where} w 越界：{st.get('w')}")
+                                if st.get("opacity") is not None and not (num(st["opacity"]) and 0 <= st["opacity"] <= 1):
+                                    report.err("地图", f"{where} opacity 越界：{st.get('opacity')}")
+                                if st.get("rotation") is not None and not (num(st["rotation"]) and -180 <= st["rotation"] <= 180):
+                                    report.err("地图", f"{where} rotation 越界：{st.get('rotation')}")
+                                if st.get("markerOffset") is not None and not (num(st["markerOffset"]) and -10 <= st["markerOffset"] <= 10):
+                                    report.err("地图", f"{where} markerOffset 越界：{st.get('markerOffset')}")
 
     # ---------- 卷 ----------
     vols = data.get("volumes") or []

@@ -1,9 +1,9 @@
 # 地图方案调研：从 “画地图” 到 “证据化空间视图”
 
 > **实现状态（2026-11-27 追加）**：本调研的 §6 结论已部分落地，正文保留调研时点口径，以本段为准。
-> - `地图` 视图已作为第 8 个顶级视图实现，内部 M1 / M2 切换；M1 = `places.parent` 层级拓扑（位置仅避让），M2 = 只消费带 evidence 的 `direction` / `distance` / `contain` / `adjacent`。
-> - `spatial_relations` 已进 schema（`references/schema.md`），`validate.py` 有 8 条 error + 2 条 warning 的空间规则；`spatial.json` 作为书目录下的可选输入由 merge 接线。
-> - 《凡人修仙传》实测：20 条空间关系（13 high / 4 medium / 3 low），**只有越国层能进 M2**（47 节点 / 15 条边 / 9 个有方向或距离证据 / 38 个进“方位未知”区）；乱星海、虚天殿、血色禁地层按 <3 条约束的阈值**自动回退 M1**。
+> - `地图` 视图是第 8 个顶级视图，内部三个子视图：**示意 2D（默认）/ 证据方位 / 拓扑**。示意 2D 用人工近似坐标（`map_layout`，0–100 归一化画布），证据方位只消费带 evidence 的 `direction`/`distance`/`contain`/`adjacent`，拓扑 = `places.parent` 层级图（位置仅避让）。
+> - `spatial_relations` 与 `map_layout` 均已进 schema（`references/schema.md`），`validate.py` 有「空间」与「地图」两套规则；`spatial.json` 作为书目录下的可选输入由 merge 接线。
+> - 《凡人修仙传》实测：20 条空间关系（13 high / 4 medium / 3 low）、39 个示意节点 / 3 个区域；只有越国层能进证据方位（47 节点 / 15 条边 / 9 个有方向或距离证据 / 38 个进“方位未知”区），乱星海、虚天殿、血色禁地层按 <3 条约束的阈值**自动回退拓扑**。
 > - 因此 §0 结论 2「本项目当前只到 M1」与 §6.5「不建议一上来加第八个顶级视图」属于调研时点的判断，已被上面的实现取代；§6.3 的草稿示例里 `evidence` 为字符串、kind 写作 `contains`，实际契约为 `evidence: {ch, quote}` 与 `contain`。
 > - 仍未做：真实经纬度、地形/河流/海岸线、图片底图打点、M3 多层、M4 时态。
 

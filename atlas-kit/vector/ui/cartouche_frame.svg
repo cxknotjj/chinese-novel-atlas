@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="368" viewBox="0 0 100 205" role="img" aria-label="atlas cartouche frame">
+  <rect x="5" y="5" width="90" height="195" rx="2.5" fill="#E8DCC5" fill-opacity="0.20" stroke="#3B332A" stroke-width="4"/>
+  <rect x="11" y="11" width="78" height="183" rx="1.8" fill="none" stroke="#3B332A" stroke-opacity="0.55" stroke-width="2"/>
+  <line x1="17" y1="23" x2="17" y2="182" stroke="#8D8070" stroke-opacity="0.34" stroke-width="3"/>
+  <line x1="83" y1="23" x2="83" y2="182" stroke="#8D8070" stroke-opacity="0.34" stroke-width="3"/>
+  <path d="M20 16 H14 V22 M80 16 H86 V22 M20 189 H14 V183 M80 189 H86 V183" fill="none" stroke="#A66A45" stroke-opacity="0.55" stroke-width="2"/>
+</svg>

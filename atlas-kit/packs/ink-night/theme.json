@@ -1,0 +1,16 @@
+{
+  "name": "夜色",
+  "id": "ink-night",
+  "description": "深纸、暖灯、冷月；实验性主题。使用时应把地形/水体不透明度降到 0.7 左右，避免雾面发亮。",
+  "paper": "#2F3230",
+  "paper_image": "base/ui/paper_ornate.webp",
+  "paper_tint": "#0E1A1C",
+  "paper_tint_alpha": 0.22,
+  "ink": "#D8D2C2",
+  "accent": "#C9A46A",
+  "seal": "#B24A38",
+  "water": "#8FB0B5",
+  "route": "#B8A887",
+  "label": "#EDE7D8",
+  "recommended_asset_opacity": 0.72
+}

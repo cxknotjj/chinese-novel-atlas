@@ -1,246 +1,234 @@
 # Novel Atlas
 
-> 写到第 300 章，你还记得第 12 章埋的那块玉佩吗？
+**把一本完本网文，编译成可追溯、可按阅读进度发布的读者档案。**
 
-Novel Atlas 读一遍你的稿子，然后给你一份一致性档案：
+[![GitHub stars](https://img.shields.io/github/stars/cxknotjj/chinese-novel-atlas?style=social)](https://github.com/cxknotjj/chinese-novel-atlas)
+[![contract](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml/badge.svg)](https://github.com/cxknotjj/chinese-novel-atlas/actions/workflows/contract.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
 
-```
-伏笔      12 个未回收，其中 7 个已超期（>50 章）
-          最长的一个从第 1 章埋到现在，119 章没动
-境界      主角平均 38 章升一级
-          第 60 章「练气七层胜九层」，无前置铺垫
-节奏      章末钩子率 62%  番茄基准 80%
-          爽点间隔 9 章     番茄基准 3 章
-```
+**[在线试玩：虚构样例《青云签到三十年》](http://deerfect.me/chinese-novel-atlas/demo/)** ·
+[GitHub](https://github.com/cxknotjj/chinese-novel-atlas) ·
+[数据契约](references/schema.md) ·
+[功能文档](docs/功能文档.md)
 
-**[→ 在线试玩：虚构样例《青云签到三十年》](http://deerfect.me/chinese-novel-atlas/demo/)**（不用装，打开就能逛）
+> 如果这个项目对你有用，点一个 ⭐ Star。Star 是这类“Skill 优先”项目最直接的投票，也能让更多正在拆书的人看到它。
 
 ---
 
-## 它查什么
+## 为什么值得 Star
 
-不是读后感生成器，是**给连载中的作者做一致性体检**。
+- **核心是 6 个 Agent Skill，不是一个网页。** 分析、问答、对比、导出、地图、疑点复核都能被 Agent 直接调用；`reader/` 和 `atlas.html` 只是同一份数据的发布面。
+- **每条结论都能回到原文。** 人物、地点、关系、伏笔、地图节点都带 `chN:pM` 坐标；没有证据的推断不写入档案。
+- **一份 `data.json` 投影成多种产物。** 读者站、单文件八视图、地图、设定集、角色表、跨书指标，共享同一套实体与证据。
+- **读者向，不剧透。** 用 `cutoff_ch` 按阅读进度截断人物、关系、伏笔和地图层；未来内容默认锁定。
+- **视觉不是贴图。** 地图由 21 件手绘 PNG + 9 类代码/SVG 变量层组成；境界轨迹用多色相时间线，同境界由浅到深，突破后换色重新变浅。
 
-| 检查项 | 查出来的问题 |
+## 用 STAR 看懂
+
+| | |
 |---|---|
-| **伏笔台账** | 哪些坑埋了没填，埋在第几章，**最后在哪一章还被提过**，沉默多少章 |
-| **战力体系** | 谁在第几章什么境界；有没有境界倒退；越级战斗有没有铺垫 |
-| **节奏指标** | 章末钩子率、爽点间隔、平均章字数，**对标番茄/起点的公开基准** |
-| **设定冲突** | 已死亡角色再出场、物品凭空消失、配角说出他不知道的事 |
-| **人物关系** | 谁和谁什么关系，从第几章开始变的 |
+| **S — Situation** | 一本完本网文动辄几十万到几百万字，人物、地点、伏笔、境界和地图散落在几千章正文里。 |
+| **T — Task** | 把整本书拆成可查询、可复核、可按阅读进度发布的世界档案，而不是再做一个读完就忘的摘要页。 |
+| **A — Action** | 用 6 个 Skill 跑完「分批抽取 → 合并校验 → 疑点/地图/读者站投影」，所有结论落到 `data.json` 和原文坐标。 |
+| **R — Result** | 读者能按进度逛人物、地点、关系、伏笔、境界和地图；研究者能拿同一份数据做问答、对比与二次导出。 |
 
 ---
 
-## 不再调用外部 API
+## 效果
 
-项目不包含外部 API 客户端、key 配置、代理地址或费用估算；分析由执行 agent 按批完成。
+截图来自仓库内的虚构样例与《凡人修仙传》500 章真实数据，不是概念图。
 
-- 不上传完整稿件，也不建云端书库
-- 不训练任何模型
-- 分章文本只进入当前执行 agent 的批次上下文；上下文如何保存由你使用的客户端决定
-- 输出文件（`data.json` / `atlas.html`）都在你自己的目录里
-
----
-
-## 八个视图
-
-前六个是给作者的，后两个是给读者和同人的。
-
-| 视图 | 给谁 | 看什么 |
-|---|---|---|
-| **伏笔台账** | 作者 | 超期的坑排在最上面，红色条纹标出超期跨度 |
-| **境界轨迹** | 作者 | 每个角色的境界甘特图，横轴是章号 |
-| **节奏曲线** | 作者 | 张力折线 + 钩子率 + 爽点间隔，带平台基准对照 |
-| **地点志** | 作者 | 按 parent 层级展开地点容器，详情卡带归属、首现章和章节证据 |
-| **势力版图** | 作者 | 势力 × 据点矩阵，附同盟/敌对关系与交界、未归属数据缺口 |
-| **地图** | 作者 | M1 层级/拓扑关系图；M2 证据化示意方位图，无证据地点进「方位未知」区 |
-| **人物图谱** | 读者 | 力导向关系图，点击看档案与境界 |
-| **设定百科** | 读者 / 同人 | 功法、势力、地名、金手指速查，支持别名搜索 |
-
-六张作者视图共用同一份数据，所以「伏笔」里点一条，能直接跳到埋它的那一章；「版图」里的据点能跳到「地点志」。
-
-### 地图视图（M1 / M2）
-
-「地图」是第八个顶级 tab，内部 `M1 / M2` 切换，两套渲染互不混用。**M1 不是地理地图**，只是层级/拓扑关系图。
-
-- **M1 拓扑/层级图**：边 = 父子包含或传送/航线/可达；节点位置只用于避让，界面标注「层级/拓扑关系图 · 节点位置仅用于避让，不代表原文方位」。数据来自 `places.parent` 和 `spatial_relations` 中非二维类型。
-- **M2 证据化示意地图**：只消费 `spatial_relations` 里带证据的 `direction` / `distance` / `contain` / `adjacent`；坐标是 0–100 的示意坐标，界面标注「示意坐标，非真实经纬度；局部位置不可精确到里」。没有方向或距离证据的节点放进「方位未知」独立区，不硬塞四象限；层内 direction+distance 约束 <3 条时自动回退 M1，并显示回退原因，不画假坐标。
-
-**怎么加空间数据**：在书目录放可选的 `spatial.json`（`meta` / `places` / `spatial_relations` 三段，字段与枚举见 [`references/schema.md`](./references/schema.md)），再走常规流程：
-
-```bash
-python scripts/merge.py output/<书名>/ --genre 仙侠 --platform 起点
-python scripts/validate.py output/<书名>/data.json
-python scripts/build.py --data output/<书名>/data.json --out output/<书名>/
-```
-
-**使用建议**：乱星海层、虚天殿层、血色禁地层这类只有传送/航线/随机落点、缺少方位距离证据的层，只做 M1 拓扑，不硬做 M2；虚天殿作为独立秘境层，不放进海图坐标。
-
----
-
-## 安装
-
-```bash
-npx skills add cxknotjj/chinese-novel-atlas
-```
-
-装完在 Claude Code / Codex / DeepSeek Harness / OpenCode 里直接用。
-
-不需要 API key 或代理地址；抽取由当前执行 agent 按 `skills/atlas-analyze` 的批次模板原生完成。
-
----
-
-## 项目结构
-
-```
-scripts/
-  merge.py / export.py     薄 CLI，只解析参数并调用实现层
-  build.py                 模板注入 + 构建前校验
-  chunk.py validate.py realms.py
-  mentions.py seek.py compare.py
-  novel_atlas/
-    names.py batches.py sources.py foreshadow_rules.py
-    merge/                  实体、关系、章节、伏笔、地点、设定、境界、清理
-    export/                 CSV、Markdown、单文件 HTML、静态站
-template/
-  viewer.html               页面骨架
-  viewer.css                样式源
-  viewer.js                 交互源
-```
-
-`template/` 下的三份源码由 `build.py` 在构建时内联回单文件 `atlas.html`，所以产物仍是“一个文件发给别人”的形态，但维护时可以分别改骨架、样式和交互。合并与导出的业务规则也各自落在独立模块中，`scripts/merge.py` / `scripts/export.py` 的调用方式保持不变。
-
----
-
-## 用法
-
-```
-/atlas-analyze 拆一下 ~/Downloads/我的书.txt
-```
-
-它会先分章并报告范围和批次数：
-
-```
-识别到 1200 章 / 312 万字
-按每批 10 章，预计 120 批
-分析范围：全书，或指定前 N 章
-```
-
-跑完得到：
-
-```
-output/我的书/
-  data.json      结构化数据
-  atlas.html     双击打开，八个视图
-```
-
-支持断点续跑——中途断了重跑，已完成的批次自动跳过。
-
----
-
-## 四个 skill
-
-| skill | 干什么 |
+| 读者档案总览 | 疑点索引 |
 |---|---|
-| `atlas-analyze` | 拆书，产出 `data.json` + `atlas.html` |
-| `atlas-ask` | 查设定，答案带原文坐标（"周执事第几章暴露的？"） |
-| `atlas-compare` | 跨书对比（"我这本书和那本爆款，节奏差在哪"） |
-| `atlas-export` | 导出设定集 / 静态站 / CSV 人物表，给同人和读者用 |
+| ![读者档案总览](docs/screenshots/reader-home.png) | ![疑点索引](docs/screenshots/reader-anomalies.png) |
+
+| 《凡人修仙传》M3 多层地图 | 境界轨迹：多色相 + 同境界浅到深 |
+|---|---|
+| ![《凡人修仙传》M3 地图](docs/screenshots/map-fanren.png) | ![境界轨迹](docs/screenshots/realm-colors.png) |
+
+读者站与地图在 500px 宽度下可用；地图桌面端右键拖拽平移、移动端单指拖拽平移，缩放百分比实时显示。
 
 ---
 
-## 支持多大的书
+## 六个 Skill
 
-| 篇幅 | 章节 | 建议批次数（每批 10 章） |
-|---|---|---|
-| 50 万字 | ~200 章 | ~20 批 |
-| 100 万字 | ~400 章 | ~40 批 |
-| 300 万字 | ~1200 章 | ~120 批 |
+| Skill | 自然语言入口 | 职责 | 主要产物 |
+|---|---|---|---|
+| `atlas-analyze` | “分析《我的书》完本” | 分章、批次抽取、合并、校验、快照 | `data.json`、`atlas.html` |
+| `atlas-ask` | “韩立第几章筑基？” | 先查结构，再回原文；答案带坐标 | 带 `chN:pM` 的回答 |
+| `atlas-compare` | “对比两本书的伏笔回收率” | 节奏、伏笔、战力、势力、疑点密度 | `metrics.md`、`diff.json`、`compare.html` |
+| `atlas-export` | “导出《我的书》读者站” | 读者站 / 单文件 / 设定集 / 角色表 | `reader/`、`atlas.html`、MD/CSV |
+| `atlas-map` | “给《我的书》做地图” | M0–M4 分级、JSON 编排、地图审计、渲染 | `map_layout`、PNG/SVG、地图页 |
+| `atlas-audit` | “复核《我的书》的疑点” | 疑点列表、证据回看、标记已核实/误报 | `anomalies-verdicts.json` |
 
-不调用外部 API，也没有 API 费用。分章文本会进入执行 agent 的批次上下文，所以必须按批读取、按批落盘；不要让整本书一次进上下文。耗时取决于执行 agent、机器和章节长度，不虚构固定时长或费用。
+把 `skills/` 整体挂到 Agent 的 skill root，或让 Agent 直接读取对应 `SKILL.md` 即可；不需要启动服务，也不调用外部模型 API。
 
 ---
 
-## 它不是什么
+## 快速开始
 
-**不是写作工具。** 不帮你写，不帮你续，不帮你改文风。做这些的已经有 [oh-story](https://github.com/zenstory-ai/oh-story-claudecode)（8.9k star）和 [inkos](https://github.com/Narcooo/inkos)（9.6k star），做得比我们好。
+### 1. 分析一本完本小说
 
-**不是拆书学写法。** 不分析"这本书为什么火"，那是拆书工具的活。
+按 [`skills/atlas-analyze/SKILL.md`](skills/atlas-analyze/SKILL.md) 执行。CLI 负责切分、合并、校验和构建，逐批抽取由执行 Agent 完成：
 
-**只做一件事**：把你已经写出来的东西，变成一份能查、能看、能发现问题的结构化档案。
+```powershell
+python scripts/chunk.py "D:\path\我的书.txt" --out output/我的书
+python scripts/merge.py output/我的书 --genre 仙侠 --platform 起点
+python scripts/mentions.py output/我的书 --apply
+python scripts/validate.py output/我的书/data.json
+python scripts/build.py --data output/我的书/data.json --out output/我的书
+```
+
+每批 10 章，抽取结果写成批次 JSON，原文不进入最终档案。
+
+### 2. 问答与对比
+
+```powershell
+python skills/atlas-ask/scripts/seek.py --data output/我的书/data.json --query "韩立第几章筑基"
+python scripts/compare.py --a output/A/data.json --b output/B/data.json --out output/_compare
+```
+
+### 3. 疑点索引与复核
+
+```powershell
+python scripts/anomalies.py --data output/我的书/data.json
+python skills/atlas-audit/scripts/audit.py stats --data output/我的书/data.json
+python skills/atlas-audit/scripts/audit.py list  --data output/我的书/data.json --severity warning
+```
+
+`--cutoff N` 可只保留证据不晚于第 N 章的疑点；复核结果写入 `anomalies-verdicts.json`，不修改原索引。
+
+### 4. 生成读者站
+
+```powershell
+python scripts/build_reader.py --data output/我的书/data.json --out output/我的书/reader --single
+python scripts/build_reader.py --data output/我的书/data.json --out output/我的书/reader --cutoff 120 --allow-partial
+```
+
+- 默认要求 `coverage.chapters_done == meta.chapters`；只分析了前 N 章时加 `--allow-partial`，manifest 会写 `publishable: false`。
+- `--cutoff N` 生成真正冻结到第 N 章的副本；不传时页面默认全书，读者拖动进度条只在已分析范围内取 `?cutoff=`。
+- `--single` 单文件；不加则 external 静态站（`index.html` + `data.js`）。
+- 读者站同时产出 `anomalies.json` 与 `reader-manifest.json`。
+
+### 5. 地图
+
+```powershell
+python skills/atlas-map/scripts/atlas_map.py --project-root . levels --data output/我的书/data.json
+python skills/atlas-map/scripts/atlas_map.py --project-root . audit  --data output/我的书/data.json
+```
+
+地图是 `atlas-map` 的输出，不是产品入口：
+
+1. **M0–M4 自动分级**：M0 地点索引；M1 拓扑/示意；M2 方向/距离证据 ≥3 条；M3 多层；M4 `time_slices` 时态切片。
+2. **网页编排器**：示意 2D 里点「编排」，拖节点、给节点选层、挂/移除 21 件底件、导出 `map-layout.json`；M4 数据出现时间切片下拉；PNG/SVG 导出当前视图。
+3. **读者版截断**：只画 `first_ch <= cutoff_ch` 的区域、节点、路线、stamp；未来层不画。
+4. **示意坐标不是经纬度**：`map_layout` 坐标是 0–100 的示意坐标，不是原文方位证据；只有 `spatial_relations` 的 direction/distance 才对回原文。
+5. **缩放不裁装饰**：地图内容随缩放变化，纸底、题签和工具条保持屏幕尺寸；桌面右键拖拽、移动端单指拖拽平移，缩放百分比实时更新。
 
 ---
 
 ## 数据契约
 
-`data.json` 的结构在 [`references/schema.md`](./references/schema.md) 里定死了。
+`data.json` 是唯一事实源，schema v2.0。读者向派生字段：
 
-关键设计：
+| 字段 | 说明 |
+|---|---|
+| `anomalies` | 疑点数组；每条必须有 `id`、`evidence` |
+| `_anomalyMeta` | 阈值、live 章、统计、规则错误 |
+| `_mapLevels` | 地图 M0–M4 分级与每层方向约束数 |
+| `_reader` | `cutoff_ch / analyzed_ch / chapter_max / total_chapters / analysis_complete / is_spoiler_safe` |
 
-- **境界是独立表**，带 `order` 序数——它是网文战力的唯一标尺，不能塞进无序的设定列表
-- **伏笔是独立表**，不放进人物关系——伏笔是"点对点的时间关系"，和"人对人"是两回事
-- **关系只取 8 类**（血亲/婚姻/情感/主从/师承/同盟/敌对/交游），不收敛就没法跨书对比
-- **空间关系独立成表**：`spatial_relations` 每条带 `evidence`（章号 + 原文片段）；证据不足的层只出 M1 拓扑，不硬画二维方位
-- **逐章摘要全量**，不抽关键章——伏笔的埋设点往往在"平淡的日常章"里
-- **超级期看「沉默时长」，不看「埋了多久」**：
+完整字段、`cutoff_ch` 投影规则、疑点对象、`map_layout` 与 `time_slices` 契约见 [`references/schema.md`](references/schema.md)。
 
+**硬规则**：所有实体、地点、关系、伏笔、地图节点都要能回到 `chN:pM`；没有证据不进入结论。疑点只给证据和可能解释，不给“应该怎么改”。
+
+---
+
+## Reader 只是发布面
+
+`atlas-export` 把同一份 `data.json` 投影成读者站。它做三件事：
+
+- **按章截断**：实体、地点、势力、关系、伏笔、地图层、疑点都受 `cutoff_ch` 约束；
+- **不剧透**：未来节点不显示，未来命中只提示“第 N 章后解锁”；
+- **证据可回看**：疑点、伏笔、地点都带 `chN:pM`，点击可跳到章节。
+
+页面入口：
+
+```text
+reader/index.html    静态读者站
+atlas.html           单文件八视图
+anomalies.json       疑点索引
+reader-manifest.json coverage / cutoff / 地图等级 / 疑点可见数
 ```
-第 7 章埋下、第 196 章还在提的   → 沉默 4 章   主线在经营，不报警
-第 20 章埋下、第 73 章后再没提   → 沉默 127 章 真该补了
+
+---
+
+## 输出结构
+
+```text
+output/我的书/
+  data.json               schema v2.0；唯一事实源
+  anomalies.json          疑点索引
+  anomalies-verdicts.json 人工复核（可选，不修改 anomalies.json）
+  atlas.html              单文件八视图
+  reader/
+    index.html            读者站入口
+    data.js               external 模式的数据
+    anomalies.json
+    reader-manifest.json  coverage / cutoff / 地图等级 / 疑点可见数
+  versions/
+    v1.json / latest.json 版本快照
 ```
 
-  这条规则是靠自动追踪每条伏笔的指纹词（`抽髓丸`、`眨眼剑谱`）在全文里的最后出现位置算出来的。同一本书，只按埋设跨度判会报 37 条超期，加上沉默时长后是 23 条，且剩下的是真问题。
+## 版本与重跑
 
-样例在 [`samples/fictional/`](./samples/fictional/)：《青云签到三十年》，虚构作品，18 角色 / 25 关系 / 4 境界 / 12 伏笔，用于 schema 回归测试。
+```powershell
+python scripts/snapshot.py --data output/我的书/data.json --label 500章
+python scripts/snapshot.py --diff output/我的书/versions/v1.json output/我的书/versions/v2.json
+```
 
----
-
-## Demo
-
-**在线看** → [deerfect.me/chinese-novel-atlas/demo](http://deerfect.me/chinese-novel-atlas/demo/)
-
-**本地看** → 下载后双击 `demo/index.html`，不需要装任何东西。
+快照记录 fingerprint、counts、实体/地点/伏笔/概念 `name → id` 映射；`diff` 输出新增、删除、ID 漂移。重跑/换版后同名对象换 ID 会被标出来。
 
 ---
 
-## 路线图
+## 测试与 CI
 
-- [x] 数据契约 v2.0（境界 / 伏笔 / 逐章 / 战力 / 认知隔离）
-- [x] 八视图 demo（图谱 / 百科 / 地点志 / 版图 / 节奏 / 境界 / 伏笔 / 地图）
-- [x] 虚构样例（含 7 条超期伏笔的完整演示）
-- [x] `chunk.py` 分章 + 编码探测 + 章节模式打分 + 兜底
-- [x] agent 原生分批抽取（无外部 API、无 key、无网络请求）
-- [x] `scripts/prompts/batch_template.md` 批次输出模板
-- [x] `novel_atlas/merge` 归并管线（实体/别名消解、关系、章节、伏笔状态、地点、设定、境界、引用清理）+ `merge-log.json` 合并审计
-- [x] `realms.py` 境界骨架扫描 + 战力体系校验
-- [x] `validate.py` schema 全量校验（含战斗 a/b 引用、coverage 交叉校验、空间关系两端 id 与 evidence 校验）
-- [x] 可选 `spatial.json` 空间关系接线（places 追加 / id 冲突跳过 / relations 原样挂载）+ 地图视图 M1 拓扑 / M2 证据化示意，证据不足自动回退
-- [x] `build.py` 单文件出图（构建前自动校验，demo 与 `atlas.html` 同源）
-- [x] `tests/` 回归（契约校验、实体归并、伏笔状态、地点父节点、导出产物）
-- [x] `.github/workflows/contract.yml` CI（单元测试 + 样例校验 + 样例构建）
-- [x] `seek.py` 原文定向检索（返回命中段 + `chN:pM` 坐标，不整章入上下文）
-- [x] `mentions.py` 伏笔提及追踪（按「沉默时长」判超期，不按埋设跨度）
-- [x] `compare.py` 跨书指标对照（`metrics.md` / `compare.html` / `diff.json`）
-- [x] `novel_atlas/export` 五种导出（伏笔 CSV / Markdown 设定集 / 角色表 / 单文件 / 静态站）
-- [x] 人物 / 势力 / 器物 / 妖兽类型图标（图谱节点、百科、详情、图例、势力版图）
-- [ ] 别名消解进阶（网文的称号极多："剑尊""魔帝""老祖"都是同一个人）
-- [ ] 真实网文样例（需自备文本，版权原因不内置）
-- [ ] README 首屏 GIF
+```powershell
+python -m unittest discover -s tests -v
+```
+
+覆盖 schema 校验、图片内联、模块拼装、导出、合并、读者 cutoff、疑点规则、版本 diff、地图 M0–M4、读者站 annotate、地图拖拽/缩放百分比、伏笔状态筛选、境界配色。CI 在 `.github/workflows/contract.yml` 跑样例校验、测试和构建。
 
 ---
 
-## 参与
+## 不做什么
 
-最值得贡献的是**数据契约**和**测试样本**。如果你有一本读过很多遍的书，欢迎手工标注一份 `data.json` 提上来——它会成为新的回归基准。
-
-别名消解是当前最大的技术风险（"老太太/史太君/老祖宗"是不是同一个人），有思路欢迎开 issue。
-
----
-
-## License
-
-MIT
+- 不写小说、不续写、不改文风。
+- 不做作者工作台、连载提醒、改稿清单、编辑审稿流。
+- 不做通用 RAG 聊天；先查结构，再回原文，答案必须带坐标。
+- 不做精确 GIS；示意地图不承担经纬度、比例尺、真实海岸线。
+- 不做 SaaS 书库；默认本地，稿件不上传、不训练。
+- 不继续加 tabs；八视图够多，下一步是收口成读者档案。
 
 ---
 
-**关键词**：网文工具 / 小说分析 / 人物关系图谱 / 伏笔台账 / 境界体系 / 战力体系 / 设定管理 / 吃书检测 / 世界观整理 / 长篇连载 / agent skill / claude code skill / webnovel / novel analysis
+## 目录
+
+```text
+skills/               六个 Agent Skill（产品本体）
+scripts/              分析、合并、校验、导出、读者站、地图 CLI
+references/schema.md  数据契约
+atlas-kit/            21 件 PNG + 9 件变量层
+template/             读者站渲染模板
+template/viewer.js    薄入口，只负责 IIFE 和模块占位
+template/viewer/      12 个按职责拆分的渲染模块（地图/图谱/百科/搜索等）
+docs/功能文档.md       产品定义与验收标准
+docs/screenshots/     README 效果截图
+samples/fictional/    虚构样例
+output/凡人修仙传/    500 章真实数据示例
+tests/                单元测试与契约回归
+```
+
+---
+
+如果这套流程帮你把一本网文拆明白了，欢迎回到 [GitHub 仓库](https://github.com/cxknotjj/chinese-novel-atlas) 点一个 ⭐ Star。

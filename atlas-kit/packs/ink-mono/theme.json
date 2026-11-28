@@ -1,0 +1,16 @@
+{
+  "name": "墨骨",
+  "id": "ink-mono",
+  "description": "去彩度，保留墨色层次；适合偏写实、冷峻的武侠或权谋故事。",
+  "paper": "#E6E1D6",
+  "paper_image": "base/ui/paper_ornate.webp",
+  "paper_tint": "#6B6252",
+  "paper_tint_alpha": 0.05,
+  "ink": "#2F2F2F",
+  "accent": "#4A4A4A",
+  "seal": "#7D2E26",
+  "water": "#6B6B6B",
+  "route": "#5A5A5A",
+  "label": "#2A2A2A",
+  "recommended_asset_opacity": 0.95
+}

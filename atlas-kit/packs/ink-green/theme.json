@@ -1,0 +1,16 @@
+{
+  "name": "青绿",
+  "id": "ink-green",
+  "description": "花青偏重、纸底偏冷；适合山林、宗门、隐修类世界。",
+  "paper": "#E3E5D6",
+  "paper_image": "base/ui/paper_ornate.webp",
+  "paper_tint": "#55785A",
+  "paper_tint_alpha": 0.06,
+  "ink": "#2F3A32",
+  "accent": "#55785A",
+  "seal": "#A93828",
+  "water": "#5C8A86",
+  "route": "#6E7C5A",
+  "label": "#2A322B",
+  "recommended_asset_opacity": 0.95
+}

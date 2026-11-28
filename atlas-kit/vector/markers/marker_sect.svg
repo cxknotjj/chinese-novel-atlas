@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 100 100" role="img" aria-label="atlas marker sect">
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#3B332A" stroke-width="1.8" opacity="0.38"/>
+  <circle cx="50" cy="50" r="40" fill="#E8DCC5" opacity="0.22"/>
+  <polyline points="29,49 35,44 42,41.5 50,40.5 58,41.5 65,44 71,49" fill="none" stroke="#3B332A" stroke-width="2.8" opacity="0.84"/>
+  <polyline points="27,51 34,46.5 42,44.5 50,44 58,44.5 66,46.5 73,51" fill="none" stroke="#3B332A" stroke-width="1.8" opacity="0.68"/>
+  <line x1="27" y1="51" x2="24" y2="48" stroke="#3B332A" stroke-width="1.8" opacity="0.68"/>
+  <line x1="73" y1="51" x2="76" y2="48" stroke="#3B332A" stroke-width="1.8" opacity="0.68"/>
+  <line x1="40" y1="51" x2="40" y2="67" stroke="#3B332A" stroke-width="2" opacity="0.76"/>
+  <line x1="60" y1="51" x2="60" y2="67" stroke="#3B332A" stroke-width="2" opacity="0.76"/>
+  <line x1="36" y1="67" x2="64" y2="67" stroke="#3B332A" stroke-width="2.2" opacity="0.6"/>
+  <polyline points="46,67 46,59 47,56 50,55 53,56 54,59 54,67" fill="none" stroke="#3B332A" stroke-width="2" opacity="0.82"/>
+  <polygon points="47,67 47,60 49,58 50,58 51,58 53,60 53,67" fill="#A66A45" opacity="0.6"/>
+</svg>

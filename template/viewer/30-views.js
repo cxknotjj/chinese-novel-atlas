@@ -1,0 +1,198 @@
+/* Novel Atlas viewer · 视图切换、总览与疑点
+   职责：setView / 首页 / 疑点索引 */
+  /* ================= 视图切换 ================= */
+  const stage = document.getElementById('stage');
+  const views = {
+    home: document.getElementById('home'),
+    graph: stage,
+    wiki: document.getElementById('wiki'),
+    geo: document.getElementById('geo'),
+    map: document.getElementById('map'),
+    power: document.getElementById('power'),
+    rhythm: document.getElementById('rhythm'),
+    realms: document.getElementById('realms'),
+    foreshadow: document.getElementById('foreshadow'),
+    anomalies: document.getElementById('anomalies')
+  };
+  let curView = 'home';
+
+  function setView(v) {
+    curView = v;
+    Object.keys(views).forEach(k => { views[k].hidden = k !== v; });
+    document.querySelectorAll('.tab').forEach(t =>
+      t.classList.toggle('on', t.dataset.view === v));
+    if (v === 'home') renderHome();
+    if (v === 'graph') { resize(); alpha = Math.max(alpha, 0.3); }
+    if (v === 'geo') renderGeo();
+    if (v === 'map') renderMap();
+    if (v === 'power') renderPower();
+    if (v === 'rhythm') renderRhythm();
+    if (v === 'realms') renderRealms();
+    if (v === 'foreshadow') renderForeshadow();
+    if (v === 'anomalies') renderAnomalies();
+  }
+  document.querySelectorAll('.tab').forEach(t =>
+    t.addEventListener('click', () => setView(t.dataset.view)));
+
+  /* ================= 总览 ================= */
+  function statNumber(n) { return Number(n || 0).toLocaleString('zh-CN'); }
+
+  function renderHome() {
+    const home = views.home;
+    if (!home) return;
+    const chars = D.entities.filter(e => e.type === 'character');
+    const anomalyN = (D.anomalies || []).length;
+    const mapLevel = (D._mapLevels && D._mapLevels.global) || 'M1';
+    const meta = FULL_D.meta || {};
+    const done = (meta.coverage && meta.coverage.chapters_done) || maxChapter(FULL_D);
+    const total = meta.chapters || maxChapter(FULL_D);
+    const entries = [
+      ['graph', '人物图谱', `${chars.length} 个角色`, '按关系网络看人，点击节点看档案'],
+      ['wiki', '设定百科', `${D.concepts.length} 条设定`, '人物、势力、地点、概念、境界速查'],
+      ['geo', '地点志', `${D.places.length} 个地点`, '按 parent 层级展开，带首现章与证据'],
+      ['map', `世界地图`, `${mapLevel} 证据等级`, '按阅读进度显示地点与路线，不剧透'],
+      ['power', '势力版图', `${D.entities.filter(e => e.type === 'org').length} 个势力`, '据点、同盟、敌对与未归属缺口'],
+      ['rhythm', '节奏曲线', `${D.chapters.length} 章`, '钩子率、爽点间隔、张力与章末钩子'],
+      ['realms', '境界轨迹', `${D.realms.length} 级体系`, '每个角色的突破章与越级战斗'],
+      ['foreshadow', '伏笔台账', `${D.foreshadows.length} 条`, '埋设、回收、沉默时长与原文证据']
+    ];
+    home.innerHTML = `
+      <section class="home-hero">
+        <div class="home-kicker">NOVEL ATLAS · 读者世界档案</div>
+        <h1 class="home-title">${escHtml(meta.title || '未命名')}</h1>
+        <div class="home-sub">${escHtml(meta.note || '把一本已完结的小说拆成可查询、可追溯的世界档案。')}</div>
+        <div class="home-meta">
+          <span>${escHtml(meta.author || '')}</span>
+          <span>${escHtml(meta.genre || '')} · ${escHtml(meta.platform || '')}</span>
+          <span><b>${escHtml(String(meta.status || '完结'))}</b></span>
+          <span>${(meta.chars / 10000).toFixed(0)} 万字 · 全书 ${total} 章</span>
+          <span>档案覆盖 <b>${done}</b> / ${total} 章</span>
+        </div>
+      </section>
+
+      <div class="home-grid">
+        <div class="home-card static">
+          <div class="hc-k">你现在读到</div>
+          <div class="hc-v">第 ${cutoff} 章</div>
+          <div class="hc-n">${cutoff < maxChapter(FULL_D)
+            ? '后续内容已锁定，拖动上方进度条继续'
+            : done < total ? `档案覆盖到第 ${done} 章；后续尚未分析` : '全书已解锁，可随意回看章节'}</div>
+        </div>
+        <div class="home-card ${anomalyN ? 'alarm' : ''}" data-home-view="anomalies">
+          <div class="hc-k">作品疑点索引</div>
+          <div class="hc-v">${anomalyN} 条</div>
+          <div class="hc-n">每条都带原文/章节证据，不是判决，供读者自行复核</div>
+        </div>
+        <div class="home-card" data-home-view="foreshadow">
+          <div class="hc-k">伏笔回收</div>
+          <div class="hc-v">${D.foreshadows.filter(f => f.payoff_ch).length} 条已回收</div>
+          <div class="hc-n">${D.foreshadows.filter(f => !f.payoff_ch).length} 条在当前进度仍未回收</div>
+        </div>
+        <div class="home-card" data-home-view="map">
+          <div class="hc-k">世界地图</div>
+          <div class="hc-v">${mapLevel}</div>
+          <div class="hc-n">${D._mapLevels ? D._mapLevels.reason : '按地图证据自动分级'}</div>
+        </div>
+      </div>
+
+      <h2>世界入口 <span class="n">八个视图，共用同一份世界档案</span></h2>
+      <div class="home-grid">
+        ${entries.map(([v, title, count, desc]) => `
+          <div class="home-card" data-home-view="${v}">
+            <div class="hc-k">${escHtml(count)}</div>
+            <div class="hc-v">${escHtml(title)}</div>
+            <div class="hc-n">${escHtml(desc)}</div>
+          </div>`).join('')}
+      </div>
+
+      <div class="home-note">
+        <b>阅读原则：</b>所有视图都只显示第 1–${cutoff} 章读者已知的内容。
+        地图坐标是叙事示意，不是经纬度；疑点是数据候选，不是对作品的判决。
+      </div>
+    `;
+    home.querySelectorAll('[data-home-view]').forEach(el => {
+      el.addEventListener('click', () => setView(el.dataset.homeView));
+    });
+  }
+
+  /* ================= 疑点索引 ================= */
+  let anomalyFilter = 'all';
+  const anomalyStateKey = id => 'novel-atlas.anomaly.' + id;
+  function anomalyState(id) {
+    try { return localStorage.getItem(anomalyStateKey(id)) || ''; } catch (e) { return ''; }
+  }
+  function setAnomalyState(id, state) {
+    try { localStorage.setItem(anomalyStateKey(id), state); } catch (e) {}
+    renderAnomalies();
+  }
+  function renderAnomalies() {
+    const wrap = views.anomalies;
+    if (!wrap) return;
+    const all = D.anomalies || [];
+    const sev = { high: 0, warning: 0, info: 0 };
+    all.forEach(a => { sev[a.severity] = (sev[a.severity] || 0) + 1; });
+    const filtered = anomalyFilter === 'warning'
+      ? all.filter(a => a.severity !== 'info')
+      : anomalyFilter === 'foreshadow'
+        ? all.filter(a => a.kind === 'foreshadow_unresolved')
+        : anomalyFilter === 'other'
+          ? all.filter(a => a.kind !== 'foreshadow_unresolved' && a.kind !== 'entity_after_last')
+          : all;
+    wrap.innerHTML = `
+      <h2>作品疑点索引 <span class="n">${all.length} 条 · 第 1–${cutoff} 章范围内</span></h2>
+      <div class="home-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px">
+        <div class="home-card"><div class="hc-k">高优先</div><div class="hc-v">${sev.high || 0}</div><div class="hc-n">明确冲突或高置信候选</div></div>
+        <div class="home-card"><div class="hc-k">待复核</div><div class="hc-v">${sev.warning || 0}</div><div class="hc-n">需要回原文确认</div></div>
+        <div class="home-card"><div class="hc-k">线索型</div><div class="hc-v">${sev.info || 0}</div><div class="hc-n">越级、别名、关系等候选</div></div>
+      </div>
+      <div class="fs-meta" style="margin:4px 0 12px">
+        只标注，不给改稿建议。每条疑点必须带章节坐标或原文片段；点证据可跳到对应章节。
+      </div>
+      <div class="power-toolbar">
+        <span>筛选</span>
+        ${[['all','全部'],['warning','高优先/待复核'],['foreshadow','伏笔未回收'],['other','其他线索']].map(([k,n]) =>
+          `<button class="power-filter${anomalyFilter === k ? ' on' : ''}" data-anomaly-filter="${k}">${n}</button>`).join('')}
+      </div>
+      ${filtered.length ? filtered.map(a => {
+        const state = anomalyState(a.id);
+        const sevCn = { high: '高优先', warning: '待复核', info: '线索' }[a.severity] || a.severity;
+        const range = (() => {
+          const r = a.chapter_range || [];
+          if (!r.length) return '';
+          return r[0] === r[r.length - 1] ? String(r[0]) : `${r[0]}–${r[r.length - 1]}`;
+        })();
+        const ev = (a.evidence || []).map(e =>
+          `<div><button class="geo-jump" data-anomaly-ch="${escHtml(String(e.coordinate || '').replace(/^ch/i, '').split(':')[0])}">${escHtml(e.coordinate || '')}</button>
+            ${escHtml(e.quote || '')}</div>`).join('');
+        return `<div class="anomaly-card ${state === 'verified' ? 'verified' : ''}">
+          <div class="anomaly-head">
+            <span class="anomaly-sev ${escHtml(a.severity)}">${sevCn}</span>
+            <span class="chip">${escHtml(a.kind_cn || a.kind)}</span>
+            <span class="chip">置信 ${escHtml(a.confidence || '—')}</span>
+            ${range ? `<span class="chip">第 ${escHtml(range)} 章</span>` : ''}
+            ${state === 'verified' ? '<span class="chip">已核实</span>' : state === 'rejected' ? '<span class="chip">已标误报</span>' : ''}
+          </div>
+          <div class="ac-title">${escHtml(a.title || '')}</div>
+          <div class="ac-meta">${escHtml(a.detail || '')}</div>
+          <div class="ac-ev">${ev || '暂无坐标证据'}</div>
+          <div class="ac-note">${escHtml(a.reader_note || '')}</div>
+          <div class="ac-actions">
+            <button data-anomaly-verify="${escHtml(a.id)}">标记已核实</button>
+            <button data-anomaly-reject="${escHtml(a.id)}">标为误报</button>
+          </div>
+        </div>`;
+      }).join('') : '<div class="anomaly-empty">当前进度没有可展示的疑点。继续阅读或换一本分析完整的书。</div>'}
+    `;
+    wrap.querySelectorAll('[data-anomaly-filter]').forEach(b => b.addEventListener('click', () => {
+      anomalyFilter = b.dataset.anomalyFilter;
+      renderAnomalies();
+    }));
+    wrap.querySelectorAll('[data-anomaly-verify]').forEach(b => b.addEventListener('click', () => setAnomalyState(b.dataset.anomalyVerify, 'verified')));
+    wrap.querySelectorAll('[data-anomaly-reject]').forEach(b => b.addEventListener('click', () => setAnomalyState(b.dataset.anomalyReject, 'rejected')));
+    wrap.querySelectorAll('[data-anomaly-ch]').forEach(b => b.addEventListener('click', () => {
+      const n = Number(b.dataset.anomalyCh);
+      const c = CHAPTERS.find(x => x.ch === n);
+      if (c) showChapter(c);
+    }));
+  }
+

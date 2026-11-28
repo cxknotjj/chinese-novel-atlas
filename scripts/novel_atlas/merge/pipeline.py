@@ -49,7 +49,7 @@ def merge_book(root, *, out="", batches="", title="", author="", genre="未标�
 
     # 人工证据化空间数据：补充地点（id 已存在则跳过，不覆盖批次抽取结果），
     # 空间关系原样挂到顶层；无 spatial.json 时关系为空 list，字段保持存在。
-    extra_places, spatial_relations = load_spatial(root)
+    extra_places, spatial_relations, map_layout = load_spatial(root)
     place_ids = {p["id"] for p in places}
     spatial_places_added = 0
     for p in extra_places:
@@ -123,6 +123,9 @@ def merge_book(root, *, out="", batches="", title="", author="", genre="未标�
         "concepts": concepts,
         "spatial_relations": spatial_relations,
     }
+    # map_layout 缺省时不写该键，视图回退拓扑；提供时原样挂到顶层。
+    if map_layout is not None:
+        data["map_layout"] = map_layout
 
     n_m = attach_mentions(root, fores)
     if n_m:
@@ -153,6 +156,8 @@ def merge_book(root, *, out="", batches="", title="", author="", genre="未标�
         "concepts": len(concepts),
         "spatial": len(spatial_relations),
         "spatial_places": spatial_places_added,
+        "spatial_nodes": len(map_layout.get("nodes", [])) if map_layout else 0,
+        "spatial_regions": len(map_layout.get("regions", [])) if map_layout else 0,
         "chars": data["meta"]["chars"],
         "status_changed": changed,
     }

@@ -1,0 +1,16 @@
+{
+  "name": "雪景",
+  "id": "ink-snow",
+  "description": "冷纸、淡墨、低饱和；适合北境、雪山、寒潭类场景。",
+  "paper": "#EDF0F0",
+  "paper_image": "base/ui/paper_ornate.webp",
+  "paper_tint": "#9FB4BE",
+  "paper_tint_alpha": 0.08,
+  "ink": "#3A4146",
+  "accent": "#5C7C8A",
+  "seal": "#A93828",
+  "water": "#8AA9B4",
+  "route": "#8A9A9A",
+  "label": "#2F363A",
+  "recommended_asset_opacity": 0.92
+}

@@ -6,6 +6,7 @@
     csv     角色表 CSV
     single  单文件 HTML 设定集
     site    多页静态站（可挂 GitHub Pages）
+    reader  读者世界档案（按进度截断 + 疑点索引 + 地图分级）
 
 用法：
     python scripts/export.py --dir output/青云签到三十年/ --format fs
@@ -25,13 +26,21 @@ from novel_atlas.export.csv import export_csv, export_fs
 from novel_atlas.export.html import export_single
 from novel_atlas.export.markdown import export_md
 from novel_atlas.export.site import export_site
+from novel_atlas.reader.publish import build_reader
+
+
+def export_reader(data: dict, out_dir: Path) -> Path:
+    """读者站默认生成到 out_dir/reader/，入口 index.html。"""
+    target = out_dir / "reader"
+    build_reader(data, target, name="index.html", external=True)
+    return target
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True)
     ap.add_argument("--format", required=True,
-                    choices=["fs", "md", "csv", "single", "site", "all"])
+                    choices=["fs", "md", "csv", "single", "site", "reader", "all"])
     ap.add_argument("--out", default="", help="默认 <dir>/export/")
     args = ap.parse_args()
 
@@ -45,6 +54,7 @@ def main():
         "csv": export_csv,
         "single": export_single,
         "site": export_site,
+        "reader": export_reader,
     }
     formats = list(exporters) if args.format == "all" else [args.format]
     made = [exporters[f](d, out_dir) for f in formats]

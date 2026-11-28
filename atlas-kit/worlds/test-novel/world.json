@@ -1,0 +1,76 @@
+{
+  "id": "test-cangwu",
+  "title": "虚构小说 · 苍梧洲",
+  "caption": "示意舆图 · 方位与比例非精确",
+  "theme": {
+    "paper": "#DFD8C8",
+    "paper_image": "base/ui/paper_ornate.webp",
+    "paper_tint": "#5F7E80",
+    "paper_tint_alpha": 0.10,
+    "ink": "#2E3638",
+    "accent": "#4F7C7D",
+    "seal": "#A93828",
+    "water": "#5E8893",
+    "route": "#6E7C6A",
+    "label": "#29302F"
+  },
+  "layers": {
+    "water_bodies": [
+      {
+        "points": [[0.66, 0.12], [0.96, 0.08], [0.96, 0.84], [0.88, 0.80], [0.78, 0.72], [0.72, 0.58], [0.70, 0.42], [0.66, 0.28]],
+        "opacity": 0.50,
+        "feather": 0.035,
+        "waves": true,
+        "wave_count": 8
+      }
+    ],
+    "terrain": [
+      {"asset": "terrain_far_02", "x": 0.24, "y": 0.28, "w": 0.28, "opacity": 0.60},
+      {"asset": "terrain_peak_02", "x": 0.56, "y": 0.37, "w": 0.18, "opacity": 0.86},
+      {"asset": "terrain_ridge_02", "x": 0.31, "y": 0.45, "w": 0.155, "opacity": 0.72},
+      {"asset": "terrain_slope_01", "x": 0.50, "y": 0.60, "w": 0.18, "opacity": 0.78}
+    ],
+    "water": [
+      {"asset": "water_cloud_02", "x": 0.17, "y": 0.42, "w": 0.26, "opacity": 0.58},
+      {"asset": "terrain_slope_01", "x": 0.88, "y": 0.38, "w": 0.09, "opacity": 0.55},
+      {"asset": "water_bank_02", "x": 0.70, "y": 0.58, "w": 0.24, "opacity": 0.82}
+    ],
+    "architecture": [
+      {"asset": "arch_pass_01", "x": 0.63, "y": 0.35, "w": 0.075},
+      {"asset": "arch_cave_01", "x": 0.58, "y": 0.56, "w": 0.070},
+      {"asset": "arch_city_wall_01", "x": 0.33, "y": 0.56, "w": 0.075},
+      {"asset": "arch_sect_gate_01", "x": 0.54, "y": 0.44, "w": 0.060},
+      {"asset": "arch_village_01", "x": 0.48, "y": 0.68, "w": 0.060},
+      {"asset": "arch_dock_01", "x": 0.78, "y": 0.66, "w": 0.070}
+    ],
+    "vegetation": [
+      {"asset": "veg_dead_tree_01", "x": 0.43, "y": 0.73, "w": 0.060},
+      {"asset": "veg_pine_01", "x": 0.65, "y": 0.53, "w": 0.055},
+      {"asset": "veg_bamboo_01", "x": 0.61, "y": 0.47, "w": 0.050},
+      {"asset": "veg_reeds_01", "x": 0.78, "y": 0.70, "w": 0.060}
+    ],
+    "routes": [
+      {"points": [[0.33, 0.56], [0.40, 0.62], [0.48, 0.68]], "style": "land"},
+      {"points": [[0.48, 0.68], [0.53, 0.61], [0.58, 0.56]], "style": "land"},
+      {"points": [[0.58, 0.56], [0.56, 0.49], [0.54, 0.44]], "style": "land"},
+      {"points": [[0.54, 0.44], [0.59, 0.39], [0.63, 0.35]], "style": "land"},
+      {"points": [[0.48, 0.68], [0.60, 0.71], [0.70, 0.66], [0.78, 0.66]], "style": "land"},
+      {"points": [[0.78, 0.66], [0.84, 0.52], [0.81, 0.30]], "style": "sea"}
+    ],
+    "markers": [
+      {"type": "city", "x": 0.33, "y": 0.56, "w": 0.040, "label": "白石城"},
+      {"type": "sect", "x": 0.54, "y": 0.44, "w": 0.038, "label": "青崖宗"},
+      {"type": "secret", "x": 0.62, "y": 0.73, "w": 0.040, "label": "归墟秘境"},
+      {"type": "danger", "x": 0.645, "y": 0.325, "w": 0.036, "label": "断魂关"}
+    ],
+    "labels": [
+      {"text": "苍梧洲", "x": 0.20, "y": 0.17, "size": 0.055, "kind": "accent"},
+      {"text": "归墟海", "x": 0.82, "y": 0.20, "size": 0.052, "kind": "accent"}
+    ],
+    "ui": [
+      {"type": "cartouche", "x": 0.105, "y": 0.24, "w": 0.058, "text": "苍梧舆图"},
+      {"type": "seal", "x": 0.105, "y": 0.35, "w": 0.028, "text": "苍"},
+      {"type": "compass", "x": 0.90, "y": 0.82, "w": 0.075}
+    ]
+  }
+}

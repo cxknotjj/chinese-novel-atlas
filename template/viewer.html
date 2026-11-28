@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Novel Atlas · 网文设定图谱</title>
+<title>Novel Atlas · 读者世界档案</title>
 <style>/*__ATLAS_CSS__*/</style>
 </head>
 <body>
@@ -15,7 +15,8 @@
   </div>
   <div class="stats" id="stats"></div>
   <div class="tabs">
-    <button class="tab on" data-view="graph">图谱</button>
+    <button class="tab on" data-view="home">总览</button>
+    <button class="tab" data-view="graph">图谱</button>
     <button class="tab" data-view="wiki">百科</button>
     <button class="tab" data-view="geo">地点志</button>
     <button class="tab" data-view="map">地图</button>
@@ -24,10 +25,25 @@
     <button class="tab" data-view="realms">境界</button>
     <button class="tab" data-view="foreshadow">伏笔<span class="dot" id="fsDot" hidden></span></button>
   </div>
-  <input type="search" id="search" placeholder="搜索人物 / 别名">
+  <input type="search" id="search" placeholder="搜索全书：人物 / 地点 / 设定 / 伏笔">
 </header>
 
+<div id="readerBar">
+  <div class="reader-progress">
+    <span class="rp-label">阅读进度</span>
+    <button id="cutoffPrev" class="rp-step" title="向前 10 章">−10</button>
+    <input id="cutoff" type="range" min="1" max="1" value="1" step="1">
+    <button id="cutoffNext" class="rp-step" title="向后 10 章">+10</button>
+    <b id="cutoffLabel">第 1 章</b>
+    <button id="cutoffAll" class="rp-all">全书</button>
+  </div>
+  <div id="readerHint" class="reader-hint">只显示当前进度之前的人物、地点、关系和地图层</div>
+</div>
+
+<div id="searchPanel" hidden></div>
+
 <main>
+  <div id="home" class="view"></div>
   <div id="stage">
     <canvas id="canvas"></canvas>
     <div id="graphTools">
@@ -47,6 +63,7 @@
   <div id="rhythm" class="view" hidden></div>
   <div id="realms" class="view" hidden></div>
   <div id="foreshadow" class="view" hidden></div>
+  <div id="anomalies" class="view" hidden></div>
 
   <aside id="panel">
     <button class="panel-close" id="panelClose">×</button>
