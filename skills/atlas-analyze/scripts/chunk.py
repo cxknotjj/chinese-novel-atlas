@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""chunk.py — 把整本 txt 切成章节文件。
+"""chunk.py — 把整本小说切成章节文件。支持 .txt / .md / .epub。
 
 设计原则：**不假设任何一本书的格式**。
 
@@ -10,20 +10,33 @@
 3. 选分最高的模式切分
 4. 全都不合格时，按固定字数切（并明确告知）
 
-诊断信息会打印出来，能一眼看出分章是否正确。
+编码自动探测（utf-8 / gb18030 / gbk / big5 / utf-16），epub 按 OPF spine 顺序读正文。
 
 用法：
     python scripts/chunk.py novals/某书.txt --out output/某书/ --limit 100
+    python scripts/chunk.py 某书.epub --out output/某书/
 """
 
 import argparse
 import json
 import re
 import sys
+import zipfile
+from html import unescape
 from pathlib import Path
 
 ENCODINGS = ["utf-8-sig", "utf-8", "gb18030", "gbk", "big5", "utf-16"]
 NUM = r"[零〇一二两三四五六七八九十百千万\d]+"
+
+# markdown 标题的 # 会挡住「第X章」的锚点匹配，切行时先剥掉前缀。
+# 只动行首的 # 号，正文里的井号不动。
+MD_HEAD = re.compile(r"^\s{0,3}#{1,6}[ \t]*")
+
+# epub 里按块级标签断行，其余标签直接删；不引入 HTML 解析依赖
+BLOCK_TAG = re.compile(r"</?(?:p|div|br|h[1-6]|li|tr|section|article|blockquote)\b[^>]*>",
+                       re.I)
+DROP_BLOCK = re.compile(r"<(script|style)\b[^>]*>.*?</\1>", re.I | re.S)
+ANY_TAG = re.compile(r"<[^>]+>")
 
 # 每种模式都必须有 num（章号）和 title（标题）两个命名组；vol/volname 可选。
 MODES = [
@@ -103,7 +116,71 @@ def cn2int(s):
     return total + section + digit
 
 
+def epub_order(zf):
+    """按 OPF 的 spine 顺序返回正文文件；解析不出来就返回 None 由调用方兜底。
+
+    必须用 spine 而不是文件名排序：epub 内部文件常叫 c01.xhtml / c02.xhtml，
+    但也有 split_000.html 这种，按名字排会把章节顺序打乱。
+    """
+    opfs = [n for n in zf.namelist() if n.lower().endswith(".opf")]
+    if not opfs:
+        return None
+    base = Path(opfs[0]).parent.as_posix()
+    try:
+        opf = zf.read(opfs[0]).decode("utf-8", "replace")
+    except Exception:                       # noqa: BLE001
+        return None
+    items = dict(re.findall(
+        r'<item\b[^>]*\bid=["\']([^"\']+)["\'][^>]*\bhref=["\']([^"\']+)["\']', opf))
+    if not items:
+        items = {m.group(2): m.group(2) for m in
+                 re.finditer(r'<item\b[^>]*\bhref=["\']([^"\']+)["\']', opf)}
+    refs = re.findall(r'<itemref\b[^>]*\bidref=["\']([^"\']+)["\']', opf)
+    names = set(zf.namelist())
+    out = []
+    for rid in refs:
+        href = items.get(rid)
+        if not href:
+            continue
+        full = href if base in ("", ".") else f"{base}/{href}"
+        if full in names:
+            out.append(full)
+    return out or None
+
+
+def read_epub(path):
+    """把 epub 的正文按 spine 顺序拼成纯文本。"""
+    p = Path(path)
+    try:
+        zf = zipfile.ZipFile(p)
+    except zipfile.BadZipFile:
+        raise SystemExit(
+            f"{p.name} 不是有效的 epub（zip 解压失败）。"
+            "若是加密 epub，请先解密，或用 Calibre 转成 txt。")
+
+    if any(n.lower() == "meta-inf/encryption.xml" for n in zf.namelist()):
+        raise SystemExit(f"{p.name} 带 DRM 加密，读不了。请先解密，或用 Calibre 转 txt。")
+
+    order = epub_order(zf) or sorted(
+        n for n in zf.namelist() if n.lower().endswith((".xhtml", ".html", ".htm")))
+    parts = []
+    for name in order:
+        raw = zf.read(name).decode("utf-8", "replace")
+        body = DROP_BLOCK.sub(" ", raw)
+        body = BLOCK_TAG.sub("\n", body)      # 块级标签换成换行，保住段落边界
+        body = ANY_TAG.sub("", body)          # 其余标签直接删
+        body = unescape(body)
+        body = "\n".join(ln.strip() for ln in body.splitlines())
+        if body.strip():
+            parts.append(body)
+    if not parts:
+        raise SystemExit(f"{p.name} 里没找到正文（xhtml/html 全为空）")
+    return "\n\n".join(parts), "epub"
+
+
 def read_text(path):
+    if Path(path).suffix.lower() == ".epub":
+        return read_epub(path)
     raw = Path(path).read_bytes()
     best = None
     for enc in ENCODINGS:
@@ -254,7 +331,8 @@ def main():
     args = ap.parse_args()
 
     text, enc = read_text(args.src)
-    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    lines = [MD_HEAD.sub("", ln)
+             for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
 
     if args.mode:
         hit = [m for m in MODES if m[0] == args.mode]

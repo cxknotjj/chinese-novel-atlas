@@ -96,6 +96,8 @@ git clone https://github.com/cxknotjj/chinese-novel-atlas.git
 
 ### 1. 分析一本完本小说
 
+输入支持 `.txt`（utf-8 / GBK / Big5 自动探测）、`.md`、`.epub`，直接给路径即可，不用预转换。
+
 按 [`skills/atlas-analyze/SKILL.md`](skills/atlas-analyze/SKILL.md) 执行。CLI 负责切分、合并、校验和构建，逐批抽取由执行 Agent 完成：
 
 ```bash
