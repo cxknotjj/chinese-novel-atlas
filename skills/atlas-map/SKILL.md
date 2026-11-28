@@ -3,6 +3,14 @@ name: atlas-map
 description: "把小说地图作为结构化数据渲染成网页，而不是生成一张固定图片。使用 atlas-kit 的 21 件手绘 PNG 景物层与 9 件代码/SVG 变量层，产出可缩放、可切层、可点击的浅绛淡彩水墨地图；支持多本小说共用同一套底件。适用于给小说做地图、给 data.json 补 map_layout、把地图接入 atlas.html、修改地图视觉与标签层级、排查地图渲染问题。触发词：小说地图、生成地图、地图渲染、地图视图、map_layout、atlas-map、世界地图、势力地图、把地图接入网页、给这本书做地图、world map、novel atlas map。"
 ---
 
+> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
+> 若尚未获取仓库：
+> ```bash
+> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+> cd chinese-novel-atlas
+> ```
+> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+
 # atlas-map · 小说地图渲染
 
 地图是**数据 + 渲染器 + 一套共用底件**，不是一张提前画好的图。不要用像素生成模型“画”地图；要改的是 `data.json` 里的 `map_layout`，再由 `template/viewer/50-map-model.js` 与 `60-map-surface.js` / `65-map-overlays.js` / `68-map-scene.js` 的 atlas 渲染段画出来。
