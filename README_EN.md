@@ -58,6 +58,8 @@ python scripts/validate.py output/mybook/data.json
 python scripts/build.py --data output/mybook/data.json --out output/mybook/
 ```
 
+For long books (100+ chapters), split the batches across 4–8 sub-agents in parallel: the parent only dispatches, validates each batch, and runs the final merge. Output is identical to serial extraction, just faster — rules in `skills/atlas-analyze/SKILL.md` step 2.
+
 Point your agent at `skills/` (or read the relevant `SKILL.md` directly). No server, no external model calls at render time.
 
 Cost reference: 720k characters (500 chapters) costs about ¥5 / $0.7 of model usage.

@@ -147,7 +147,7 @@ python scripts/validate.py output/我的书/data.json
 python scripts/build.py --data output/我的书/data.json --out output/我的书
 ```
 
-每批 10 章，抽取结果写成批次 JSON，原文不进入最终档案。
+每批 10 章，抽取结果写成批次 JSON，原文不进入最终档案。长书（100 章以上）建议把批次分给多个子 Agent 并行抽取，父 Agent 只做分派、逐批验收和最终 merge——产物与串行一致，只是更快；约束见 SKILL.md 第 2 步。
 
 ### 2. 问答与对比
 
