@@ -7,9 +7,9 @@
 [![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
 ![Skills](https://img.shields.io/badge/Skills-6-5A7A5E)
 
-**[Live demo](http://deerfect.me/chinese-novel-atlas/demo/)** · [中文版](README.md) · [Data contract](references/schema.md)
+**[Live demo](http://deerfect.me/chinese-novel-atlas/demo/)** — 500 chapters of a real 7.2M-character web novel · [中文版](README.md) · [Data contract](references/schema.md)
 
-![Reader archive: eight views over one dataset](docs/screenshots/reader-home.png)
+![Reader archive: 384 entities, 199 characters, 119 places, 215 foreshadowings — eight views over one dataset](docs/screenshots/reader-home-fanren.png)
 
 One `data.json` projects into eight views: character graph, encyclopedia, gazetteer, world map, faction map, pacing curve, cultivation-realm timeline, and a foreshadowing ledger. Drag the progress bar and the whole archive truncates to the chapter you've read.
 
