@@ -7,7 +7,7 @@
 [![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
 ![Skills](https://img.shields.io/badge/Skills-6-5A7A5E)
 
-**[在线试玩：虚构样例《青云签到三十年》](http://deerfect.me/chinese-novel-atlas/demo/)** ·
+**[在线试玩：《凡人修仙传》前 500 章真实档案](http://deerfect.me/chinese-novel-atlas/demo/)** ·
 [数据契约](references/schema.md) ·
 [功能文档](docs/功能文档.md) ·
 [English](README_EN.md)
@@ -39,7 +39,7 @@
 
 ## 效果
 
-截图来自仓库内的虚构样例与《凡人修仙传》500 章真实数据，不是概念图。
+截图来自仓库内的虚构样例与《凡人修仙传》500 章真实数据，不是概念图。真实运行的完整记录与数字见 **[案例：《凡人修仙传》前 500 章](docs/case-fanren.md)**。
 
 | 疑点索引：每条带证据，可标已核实/误报 | 境界轨迹：多色相 + 同境界浅到深 |
 |---|---|
@@ -272,7 +272,7 @@ template/viewer/      12 个按职责拆分的渲染模块（地图/图谱/百�
 docs/功能文档.md       产品定义与验收标准
 docs/screenshots/     README 效果截图
 samples/fictional/    虚构样例
-output/凡人修仙传/    500 章真实数据示例
+docs/case-fanren.md   真实案例：500 章运行的完整记录（不含原文）
 tests/                单元测试与契约回归
 ```
 
