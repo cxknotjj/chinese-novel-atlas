@@ -1,6 +1,6 @@
 ---
 name: atlas-audit
-description: "复核 Novel Atlas 的读者向疑点索引：查看 anomalies.json、按严重度/规则筛选、回到原文坐标核对、把某条标为已核实或误报，并输出考据统计。适用于读者考据、书评作者核对设定矛盾、维护疑点误报库、给读者站补疑点说明。触发词：疑点、考据、矛盾、伏笔没回收、死亡又出现、战力倒退、越级战斗、atlas-audit、anomalies.json、误报标记。"
+description: "复核 Novel Atlas 的读者向疑点索引：查看 anomalies.json、按严重度/规则筛选、回到原文坐标核对、把某条标为已核实或误报，并输出考据统计。支持可选的联网核对模式（--web）：只对外部资料里的别名、类型、上级、术语、写法生成待确认线索，不写 data.json、不碰剧情剧透。适用于读者考据、书评作者核对设定矛盾、维护疑点误报库、给读者站补疑点说明。触发词：疑点、考据、矛盾、伏笔没回收、死亡又出现、战力倒退、越级战斗、联网核对、外部线索、web 核对、别名核实、atlas-audit、anomalies.json、误报标记。"
 ---
 
 > **脚本已内置**：本 skill 自带全部 CLI 与渲染资源，装完即可运行，**不需要 clone 仓库**。
@@ -22,6 +22,8 @@ anomalies.json     # 默认取 data.json 同目录，由本 skill 的 anomalies.
 ```
 
 `--data` 传绝对路径最稳；传相对路径时先按当前目录解析，若当前目录在仓库内则按仓库根解析。不需要指定项目根，也不需要仓库存在。
+
+默认只读；`--web` 模式只写 `review/`，不修改 `data.json` 或 `anomalies.json`。
 
 ## 疑点的语义
 
@@ -83,6 +85,54 @@ python "<SKILL_DIR>/scripts/audit.py" mark --data output/凡人修仙传/data.js
 3. 每条只给“标题 + 证据坐标 + 可能解释”；
 4. 明确“这是数据候选，不是对作者的判决”；
 5. 不输出“应该改成什么”“作者写错了”这类改稿建议。
+
+## 联网核对模式（`--web`，可选）
+
+默认关闭，只产出**外部线索**，不写 `data.json`，也不改变疑点索引。它只处理规则引擎判不了、原文又没直说的字段：别名、类型、上级、术语、写法。
+
+### 1. 生成核对清单
+
+```bash
+python "<SKILL_DIR>/scripts/audit.py" --web --data output/凡人修仙传/data.json --limit 24
+```
+
+产出 `review/web-questions.json` 和 `review/web-questions.md`。问题只来自数据缺口：
+
+- 关系多但没有别名的角色/势力；
+- `alias_candidate` 这类低置信别名候选；
+- 没有归属的早期根地点；
+- 功法 / 品阶类术语的归类。
+
+### 2. 联网搜索（执行 agent 做，脚本不联网）
+
+- 用 agent 自带的 WebSearch / WebFetch，不要给脚本加 API key 或网络客户端。
+- **只查白名单字段**：`aliases` / `type` / `parent` / `terminology` / `spelling`。
+- **不查剧情**：死亡、退场、结局、伏笔回收、战力终值。外站默认覆盖全书，看到也别写进线索。
+- 每条线索至少 1 个 `http(s)` 来源，带 `retrieved_at`；同一说法尽量找两个独立来源。
+- `claim` 只写字段本身，≤ 600 字，不要整段复制百科。
+- 结果写到 `review/web-leads.json`，schema 见 `web-questions.json` 里的 `leads_schema`。
+
+### 3. 汇总与隔离
+
+```bash
+python "<SKILL_DIR>/scripts/audit.py" --web --data output/凡人修仙传/data.json --leads output/凡人修仙传/review/web-leads.json
+```
+
+产出 `review/web-leads.md`。以下情况进「已隔离」，不混进可参考区：
+
+- 目标 id 不在 `data.json`；
+- 字段不在白名单（例如 `death` / `ending` / `payoff`）；
+- 来源缺失、URL 不是 http(s)、没有 `retrieved_at`；
+- `spoiler_risk=high`。
+
+报告始终标注「外部线索不是原文证据」。确认后由人手工改 `data.json`，再跑 `merge.py` / `validate.py`；**脚本不自动改**。
+
+### 4. 什么时候值得跑
+
+- 角色称号多、改名多，搜索老是漏；
+- 两个名字疑似同一人，规则引擎只给了低置信候选；
+- 术语或势力归类影响百科与战力体系；
+- 地图、结局、伏笔回收这类剧情字段**不要**用外部资料补。
 
 ## 规则边界
 

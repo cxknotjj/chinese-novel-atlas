@@ -130,6 +130,22 @@
     margin: 16px 0 0; border-left: 2px solid var(--gold); padding: 8px 0 8px 12px;
     color: var(--ink-2); font-size: 12px; line-height: 1.8; background: #FCFAF4;
   }
+  /* 证据覆盖率：读者能直接看到多少条目带坐标，而不是只听「有证据」 */
+  .evidence-card {
+    margin: 10px 0 0; border: 1px solid var(--line); border-radius: 10px;
+    background: #fff; padding: 13px 15px 12px;
+  }
+  .evidence-card.warn { border-color: #E2C9A6; background: #FDF9F1; }
+  .evidence-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .evidence-kicker { font-size: 10.5px; letter-spacing: .1em; color: var(--ink-3); }
+  .evidence-pct { font-size: 20px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .evidence-card.warn .evidence-pct { color: #9A6A30; }
+  .evidence-bar { height: 5px; border-radius: 3px; background: #EFEAE0; margin: 9px 0 9px; overflow: hidden; }
+  .evidence-bar i { display: block; height: 100%; border-radius: 3px; background: #5A7A5E; }
+  .evidence-card.warn .evidence-bar i { background: #B8925A; }
+  .evidence-grid { display: flex; flex-wrap: wrap; gap: 5px 16px; font-size: 11.5px; color: var(--ink-2); }
+  .evidence-grid b { color: var(--ink); font-weight: 500; }
+  .evidence-note { margin-top: 6px; font-size: 11px; color: var(--ink-3); line-height: 1.7; }
   .anomaly-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .anomaly-sev { font-size: 10px; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
   .anomaly-sev.high { background: #FBEAE7; color: var(--danger); }

@@ -136,6 +136,22 @@
     margin: 16px 0 0; border-left: 2px solid var(--gold); padding: 8px 0 8px 12px;
     color: var(--ink-2); font-size: 12px; line-height: 1.8; background: #FCFAF4;
   }
+  /* 证据覆盖率：读者能直接看到多少条目带坐标，而不是只听「有证据」 */
+  .evidence-card {
+    margin: 10px 0 0; border: 1px solid var(--line); border-radius: 10px;
+    background: #fff; padding: 13px 15px 12px;
+  }
+  .evidence-card.warn { border-color: #E2C9A6; background: #FDF9F1; }
+  .evidence-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .evidence-kicker { font-size: 10.5px; letter-spacing: .1em; color: var(--ink-3); }
+  .evidence-pct { font-size: 20px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .evidence-card.warn .evidence-pct { color: #9A6A30; }
+  .evidence-bar { height: 5px; border-radius: 3px; background: #EFEAE0; margin: 9px 0 9px; overflow: hidden; }
+  .evidence-bar i { display: block; height: 100%; border-radius: 3px; background: #5A7A5E; }
+  .evidence-card.warn .evidence-bar i { background: #B8925A; }
+  .evidence-grid { display: flex; flex-wrap: wrap; gap: 5px 16px; font-size: 11.5px; color: var(--ink-2); }
+  .evidence-grid b { color: var(--ink); font-weight: 500; }
+  .evidence-note { margin-top: 6px; font-size: 11px; color: var(--ink-3); line-height: 1.7; }
   .anomaly-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .anomaly-sev { font-size: 10px; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
   .anomaly-sev.high { background: #FBEAE7; color: var(--danger); }
@@ -2408,6 +2424,59 @@
   /* ================= 总览 ================= */
   function statNumber(n) { return Number(n || 0).toLocaleString('zh-CN'); }
 
+  /* ---------- 证据覆盖率 ----------
+     读者可见指标：多少条目真的带坐标，而不是只听「有证据」。
+     口径：实体/地点看首现章；关系看首现章 + 证据坐标；伏笔看埋设章 + 埋设段落。
+     全部按当前阅读进度统计，所以拖动进度条会一起变。 */
+  const posInt = n => typeof n === 'number' && Number.isFinite(n) && n > 0;
+  const coordText = v => typeof v === 'string' && /^ch\d+(?::p\d+)?$/i.test(v.trim());
+  const paraText = v => typeof v === 'string' && /^ch\d+:p\d+$/i.test(v.trim());
+
+  function evidenceCoverage() {
+    const rows = [
+      { key: '实体', list: D.entities, ok: e => posInt(e.first_ch) },
+      { key: '关系', list: D.relations,
+        ok: r => posInt(r.first_ch) || (r.evidence || []).some(coordText),
+        para: r => (r.evidence || []).some(paraText) },
+      { key: '地点', list: D.places, ok: p => posInt(p.first_ch) },
+      { key: '伏笔', list: D.foreshadows,
+        ok: f => posInt(f.plant_ch) || coordText(f.plant_quote),
+        para: f => paraText(f.plant_quote) }
+    ].map(r => {
+      const total = r.list.length;
+      const coord = r.list.filter(r.ok).length;
+      return { key: r.key, total, coord, para: r.para ? r.list.filter(r.para).length : null };
+    });
+    const total = rows.reduce((n, r) => n + r.total, 0);
+    const coord = rows.reduce((n, r) => n + r.coord, 0);
+    const paraTotal = rows.reduce((n, r) => n + (r.para === null ? 0 : r.total), 0);
+    const para = rows.reduce((n, r) => n + (r.para === null ? 0 : r.para), 0);
+    return { rows, total, coord, para, paraTotal, pct: total ? Math.round(coord / total * 100) : 0 };
+  }
+
+  function evidenceCardHTML(ev) {
+    const paraRows = ev.rows.filter(r => r.para !== null);
+    const note = ev.total
+      ? (paraRows.length
+        ? `段级坐标（chN:pM）：${paraRows.map(r => `${r.key} ${r.para}/${r.total}`).join(' · ')}。`
+        : '坐标精确到章节。')
+      : '当前进度还没有可统计的条目。';
+    const gap = ev.total - ev.coord;
+    return `<div class="evidence-card${gap ? ' warn' : ''}">
+      <div class="evidence-head">
+        <span class="evidence-kicker" title="实体/地点=首现章；关系=首现章+证据坐标；伏笔=埋设章+埋设段落；按当前阅读进度统计">EVIDENCE COVERAGE · 证据覆盖率</span>
+        <b class="evidence-pct">${ev.pct}%</b>
+      </div>
+      <div class="evidence-bar"><i style="width:${ev.pct}%"></i></div>
+      <div class="evidence-grid">
+        ${ev.rows.map(r => `<span><b>${r.key}</b> ${r.coord} / ${r.total}</span>`).join('')}
+      </div>
+      <div class="evidence-note">${gap
+        ? `${gap} 条缺章节坐标，已在覆盖率里扣除；其余都能回到原文。`
+        : `全部 ${ev.total} 条记录都带章节坐标。`}${note}</div>
+    </div>`;
+  }
+
   function renderHome() {
     const home = views.home;
     if (!home) return;
@@ -2465,6 +2534,8 @@
           <div class="hc-n">${D._mapLevels ? D._mapLevels.reason : '按地图证据自动分级'}</div>
         </div>
       </div>
+
+      ${evidenceCardHTML(evidenceCoverage())}
 
       <h2>世界入口 <span class="n">八个视图，共用同一份世界档案</span></h2>
       <div class="home-grid">

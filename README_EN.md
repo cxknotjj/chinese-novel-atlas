@@ -9,7 +9,7 @@
 
 **[Live demo](http://deerfect.me/chinese-novel-atlas/demo/)** — 500 chapters of a real 7.2M-character web novel · [中文版](README.md) · [Data contract](references/schema.md)
 
-Every view has its own address (`?view=graph`, `?view=map`, …) so refresh and shared links stay put; add `?cutoff=349` to pin the reading progress too.
+Every view has its own address (`?view=graph`, `?view=map`, …) so refresh and shared links stay put; add `?cutoff=349` to pin the reading progress too. The home view reports evidence coverage — how many entities, relations, places and foreshadowings carry chapter coordinates, and how many are paragraph-precise.
 
 ![Reader archive: 384 entities, 199 characters, 119 places, 215 foreshadowings — eight views over one dataset](docs/screenshots/reader-home-fanren.png)
 
