@@ -117,7 +117,9 @@ def build_reader(data: dict, out_dir: str | Path, *, name: str = "index.html",
         "counts": {
             "entities": len(annotated.get("entities") or []),
             "relations": len(annotated.get("relations") or []),
-            "places": len(annotated.get("places") or []),
+            # virtual L1/L2 只是地理容器，不算“地点”；单独报容器数。
+            "places": len([p for p in annotated.get("places") or [] if not p.get("virtual")]),
+            "place_containers": len([p for p in annotated.get("places") or [] if p.get("virtual")]),
             "chapters": len(annotated.get("chapters") or []),
             "foreshadows": len(annotated.get("foreshadows") or []),
         },

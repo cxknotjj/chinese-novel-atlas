@@ -1,7 +1,7 @@
 {
   "product": "Novel Atlas Reader",
   "title": "凡人修仙传",
-  "generated_at": "2026-11-28T10:22:11.179050+00:00",
+  "generated_at": "2026-11-28T10:27:32.064495+00:00",
   "coverage": {
     "chapters_done": 800,
     "chapters_skipped": 1643
@@ -95,7 +95,8 @@
   "counts": {
     "entities": 682,
     "relations": 764,
-    "places": 210,
+    "places": 205,
+    "place_containers": 5,
     "chapters": 800,
     "foreshadows": 336
   }
