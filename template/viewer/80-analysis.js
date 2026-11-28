@@ -64,7 +64,7 @@
       <div class="power-metrics">
         <div class="power-metric"><div class="v">${topCount}</div><div class="k">顶层势力</div></div>
         <div class="power-metric"><div class="v">${withPlaces}</div><div class="k">有据点记录</div></div>
-        <div class="power-metric"><div class="v">${PLACES.length}</div><div class="k">地点总数</div></div>
+        <div class="power-metric"><div class="v">${placeRealCount()}</div><div class="k">地点总数</div></div>
         <div class="power-metric"><div class="v" style="color:${unassigned.length ? 'var(--danger)' : 'var(--ink)'}">${unassigned.length}</div><div class="k">未归属地点</div></div>
         <div class="power-metric"><div class="v">${disputed.length + special.length}</div><div class="k">交界/共管</div></div>
         <div class="power-metric"><div class="v">${relPairs.length}</div><div class="k">势力关系边</div></div>

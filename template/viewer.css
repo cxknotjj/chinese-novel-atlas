@@ -418,6 +418,20 @@
   .geo-toggle.leaf { visibility: hidden; }
   .geo-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .geo-name { font-size: 12.5px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .geo-lv {
+    display: inline-block; min-width: 20px; margin-right: 4px;
+    padding: 1px 3px; border-radius: 3px; background: #F0ECE2;
+    color: var(--ink-3); font: 9px/1.4 -apple-system, "PingFang SC", sans-serif;
+    font-style: normal; text-align: center; vertical-align: 1px;
+  }
+  .geo-lv.l1 { color: #8A4B3A; background: #F7E9E1; }
+  .geo-lv.l2 { color: #5B6650; background: #EEF1E7; }
+  .geo-lv.l3 { color: #5A6A73; background: #EAF0F2; }
+  .geo-lv.l4 { color: #77716A; background: #F2EFE8; }
+  .geo-path-lv {
+    display: inline-block; margin-right: 4px; color: #A5A095;
+    font: 9px/1.4 -apple-system, "PingFang SC", sans-serif; font-style: normal;
+  }
   .geo-ch { font-size: 10px; color: var(--ink-3); white-space: nowrap; }
   .geo-owner {
     max-width: 94px; overflow: hidden; text-overflow: ellipsis;

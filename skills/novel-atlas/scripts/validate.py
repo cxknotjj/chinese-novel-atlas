@@ -49,6 +49,7 @@ MARKER_TYPES = {"city", "sect", "secret", "danger", "place", "none"}
 ID_PREFIX = {"entities": "e_", "places": "p_", "concepts": "c_",
              "realms": "r_", "foreshadows": "f_", "knowledge": "k_",
              "volumes": "v"}
+GEO_BRANCHES = {"continent", "ocean", "realm"}
 
 
 class Report:
@@ -151,6 +152,41 @@ def validate(data, report):
     for p in data.get("places") or []:
         if p.get("parent") and p["parent"] not in place:
             report.err("规则1", f"地点 {p.get('id')} 的 parent 不存在：{p['parent']}")
+    # ---------- 规则9 地理层级 L1–L4 ----------
+    # level 表示地理类型而不是 parent 深度；旧档案没有这两个字段时跳过。
+    for p in data.get("places") or []:
+        lv = p.get("level")
+        branch = p.get("branch")
+        if lv is not None:
+            if isinstance(lv, bool) or not isinstance(lv, int) or lv not in (1, 2, 3, 4):
+                report.err("规则9", f"地点 {p.get('id')} 的 level 必须是 1–4：{lv}")
+        if branch is not None and branch not in GEO_BRANCHES:
+            report.err("规则9", f"地点 {p.get('id')} 的 branch 越界：{branch}")
+        if lv == 1 and p.get("parent"):
+            report.err("规则9", f"L1 地点 {p.get('id')} 不应有 parent：{p['parent']}")
+        if isinstance(lv, int) and not isinstance(lv, bool) and lv > 1 and not p.get("parent"):
+            report.err("规则9", f"L{lv} 地点 {p.get('id')} 没有 parent，L1 不能空")
+        parent = place.get(p.get("parent")) if p.get("parent") else None
+        if parent:
+            plv = parent.get("level")
+            if isinstance(lv, int) and isinstance(plv, int):
+                if lv > plv + 1:
+                    report.err("规则9",
+                               f"地点 {p.get('id')} 从 L{plv} 跳到 L{lv}：{parent.get('id')}")
+                if lv < plv:
+                    report.err("规则9",
+                               f"地点 {p.get('id')} 的 L{lv} 低于父级 {parent.get('id')} 的 L{plv}")
+            if branch and parent.get("branch") and branch != parent.get("branch"):
+                report.err("规则9",
+                           f"地点 {p.get('id')} 的 branch={branch} 与父级 {parent.get('id')} 不一致")
+        # 非 L1 必须能沿 parent 走到 L1；只在地点本身有 level 时检查
+        if isinstance(lv, int) and not isinstance(lv, bool) and lv > 1 and parent:
+            cur, seen = p, set()
+            while cur.get("parent") and cur["parent"] in place and cur["id"] not in seen:
+                seen.add(cur["id"])
+                cur = place[cur["parent"]]
+            if isinstance(cur.get("level"), int) and cur["level"] != 1:
+                report.err("规则9", f"地点 {p.get('id')} 的路径没有落到 L1：终止于 {cur.get('id')}")
     for e in data.get("entities") or []:
         if e.get("parent") and e["parent"] not in ent:
             report.err("规则1", f"实体 {e.get('id')} 的 parent 不存在：{e['parent']}")

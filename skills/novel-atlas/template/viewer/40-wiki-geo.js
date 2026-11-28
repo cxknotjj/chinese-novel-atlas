@@ -169,7 +169,7 @@
       <button class="geo-toggle${kids.length ? '' : ' leaf'}" data-toggle="${p.id}"
         aria-label="展开或收起">${geoExpanded.has(p.id) ? '−' : '+'}</button>
       <i class="geo-dot" style="background:${st.color}"></i>
-      <span class="geo-name" title="${escHtml(p.name)}">${escHtml(p.name)}</span>
+      <span class="geo-name" title="${escHtml(p.name)}"><i class="geo-lv l${placeLevel(p)}">L${placeLevel(p)}</i>${escHtml(p.name)}</span>
       <span class="geo-ch">${p.first_ch ? '第' + p.first_ch + '章' : '—'}</span>
       <span class="geo-owner${info.roots.length || info.special ? ' owned' : ''}"
         title="${escHtml(placeOwnerText(p))}">${escHtml(owner)}</span>
@@ -177,8 +177,6 @@
   }
 
   function geoDetailHTML(p) {
-    const st = placeStage(p);
-    const depth = placeDepth(p);
     const info = placeOwnerInfo(p);
     const kids = placeChildren.get(p.id) || [];
     const path = placePath(p);
@@ -214,14 +212,14 @@
     const attrs = Object.entries(p.attrs || {});
     return `
       <h2 class="geo-detail-title">${escHtml(p.name)}</h2>
-      <div class="geo-meta">第 ${p.first_ch || '—'} 章首现 · ${st.label} · 第 ${depth + 1} 层</div>
+      <div class="geo-meta">${escHtml(placeGeoTag(p))} · 第 ${p.first_ch || '—'} 章首现${p.virtual ? ' · 地理分支容器' : ''}</div>
       <div class="geo-badges">${ownerBadgesHTML(info)}<span class="geo-badge">${kids.length} 个下级地点</span></div>
       <p class="geo-desc">${escHtml(p.desc || '暂无档案描述。')}</p>
 
       <div class="geo-sec-title">位置档案</div>
       <div class="geo-kv">
         <div class="k">父级路径</div>
-        <div class="v">${path.map(x => `<button class="geo-jump" data-jump="${x.id}">${escHtml(x.name)}</button>`).join(' › ') || '—'}</div>
+        <div class="v">${path.map(x => `<button class="geo-jump" data-jump="${x.id}"><i class="geo-path-lv">L${placeLevel(x)}</i>${escHtml(x.name)}</button>`).join(' › ') || '—'}</div>
         ${attrs.map(([k, v]) => `<div class="k">${escHtml(k)}</div><div class="v">${escHtml(v)}</div>`).join('')}
       </div>
 
@@ -282,14 +280,14 @@
     }));
     views.geo.innerHTML = `
       <div class="geo-note">
-        ${PLACES.length} 个地点按 <b>parent</b> 组成层级容器，按卷/首现章分 ${GEO_STAGES.length} 个阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
+        ${placeRealCount()} 个地点 + ${PLACES.length - placeRealCount()} 个地理容器按 <b>L1–L4</b> 组成层级，按卷/首现章分 ${GEO_STAGES.length} 个阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
       </div>
       <div class="geo-stage-strip">${counts.map(s => `
         <span class="geo-stage-chip"><i style="background:${s.color}"></i><b>${s.label}</b>
           <span>${s.count} 处 · ${s.note}</span></span>`).join('')}</div>
       <div class="geo-layout">
         <div class="geo-tree-panel">
-          <div class="geo-tree-head"><b>地点层级树</b><span>${PLACES.length} 个地点 · ${placeRoots.length} 个顶层容器</span></div>
+          <div class="geo-tree-head"><b>地点层级树</b><span>${placeRealCount()} 个地点 · ${placeRoots.length} 个 L1 容器</span></div>
           ${placeRoots.map(p => geoRowHTML(p, 0)).join('')}
         </div>
         <div class="geo-detail">${p ? geoDetailHTML(p) : '<div class="geo-empty">没有地点数据。</div>'}</div>

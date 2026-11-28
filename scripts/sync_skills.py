@@ -51,7 +51,7 @@ VENDOR = {
     "novel-atlas": {
         "scripts": "all",
         "template": True,
-        "references": ["schema.md"],
+        "references": ["schema.md", "place-taxonomy.md"],
         "atlas_kit": ["manifest.json"],
     },
 }

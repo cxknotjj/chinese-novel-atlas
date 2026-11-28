@@ -424,6 +424,20 @@
   .geo-toggle.leaf { visibility: hidden; }
   .geo-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .geo-name { font-size: 12.5px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .geo-lv {
+    display: inline-block; min-width: 20px; margin-right: 4px;
+    padding: 1px 3px; border-radius: 3px; background: #F0ECE2;
+    color: var(--ink-3); font: 9px/1.4 -apple-system, "PingFang SC", sans-serif;
+    font-style: normal; text-align: center; vertical-align: 1px;
+  }
+  .geo-lv.l1 { color: #8A4B3A; background: #F7E9E1; }
+  .geo-lv.l2 { color: #5B6650; background: #EEF1E7; }
+  .geo-lv.l3 { color: #5A6A73; background: #EAF0F2; }
+  .geo-lv.l4 { color: #77716A; background: #F2EFE8; }
+  .geo-path-lv {
+    display: inline-block; margin-right: 4px; color: #A5A095;
+    font: 9px/1.4 -apple-system, "PingFang SC", sans-serif; font-style: normal;
+  }
   .geo-ch { font-size: 10px; color: var(--ink-3); white-space: nowrap; }
   .geo-owner {
     max-width: 94px; overflow: hidden; text-overflow: ellipsis;
@@ -1216,8 +1230,11 @@
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
   /* 地点层级树：容器复用，随阅读进度重算（截断后可能有地点消失或父级被隐藏） */
-  const byFirstCh = (a, b) => (a.first_ch || 9999) - (b.first_ch || 9999) ||
-    a.name.localeCompare(b.name, 'zh');
+  const byFirstCh = (a, b) => {
+    const ac = a.first_ch === 0 ? 0 : (a.first_ch || 9999);
+    const bc = b.first_ch === 0 ? 0 : (b.first_ch || 9999);
+    return ac - bc || a.name.localeCompare(b.name, 'zh');
+  };
   const placeChildren = new Map();
   const placeRoots = [];
   function rebuildPlaceTree() {
@@ -1231,7 +1248,11 @@
         placeRoots.push(p);
       }
     });
-    placeRoots.sort(byFirstCh);
+    const branchOrder = { continent: 0, ocean: 1, realm: 2 };
+    placeRoots.sort((a, b) =>
+      ((a.geo_order ?? 99) - (b.geo_order ?? 99)) ||
+      ((branchOrder[a.branch] ?? 9) - (branchOrder[b.branch] ?? 9)) ||
+      byFirstCh(a, b));
     placeChildren.forEach(list => list.sort(byFirstCh));
   }
 
@@ -1369,6 +1390,23 @@
       cur = cur.parent ? placeById.get(cur.parent) : null;
     }
     return path;
+  }
+  /** 地理层级：优先用数据里的 L1–L4，旧数据按 parent 深度退化。 */
+  const GEO_BRANCH_CN = { continent: '大陆', ocean: '海洋', realm: '界面' };
+  function placeLevel(p) {
+    const n = p && Number(p.level);
+    return n >= 1 && n <= 4 ? Math.round(n) : Math.min(4, placeDepth(p) + 1);
+  }
+  function placeBranchCN(p) {
+    return GEO_BRANCH_CN[p && p.branch] || '';
+  }
+  function placeGeoTag(p) {
+    const branch = placeBranchCN(p);
+    return `L${placeLevel(p)}${branch ? ' · ' + branch : ''}`;
+  }
+  /** 真实剧情地点数：不含天南/人界这类地理分支容器。 */
+  function placeRealCount() {
+    return PLACES.filter(p => !p.virtual).length;
   }
 
   function realmIndex(id) {
@@ -2671,7 +2709,7 @@
     const entries = [
       ['graph', '人物图谱', `${chars.length} 个角色`, '按关系网络看人，点击节点看档案'],
       ['wiki', '设定百科', `${D.concepts.length} 条设定`, '人物、势力、地点、概念、境界速查'],
-      ['geo', '地点志', `${D.places.length} 个地点`, '按 parent 层级展开，带首现章与证据'],
+      ['geo', '地点志', `${placeRealCount()} 个地点`, '按 L1–L4 地理层级展开，带首现章与证据'],
       ['map', `世界地图`, `${mapLevel} 证据等级`, '按阅读进度显示地点与路线，不剧透'],
       ['power', '势力版图', `${D.entities.filter(e => e.type === 'org').length} 个势力`, '据点、同盟、敌对与未归属缺口'],
       ['rhythm', '节奏曲线', `${D.chapters.length} 章`, '钩子率、爽点间隔、张力与章末钩子'],
@@ -2993,7 +3031,7 @@
       <button class="geo-toggle${kids.length ? '' : ' leaf'}" data-toggle="${p.id}"
         aria-label="展开或收起">${geoExpanded.has(p.id) ? '−' : '+'}</button>
       <i class="geo-dot" style="background:${st.color}"></i>
-      <span class="geo-name" title="${escHtml(p.name)}">${escHtml(p.name)}</span>
+      <span class="geo-name" title="${escHtml(p.name)}"><i class="geo-lv l${placeLevel(p)}">L${placeLevel(p)}</i>${escHtml(p.name)}</span>
       <span class="geo-ch">${p.first_ch ? '第' + p.first_ch + '章' : '—'}</span>
       <span class="geo-owner${info.roots.length || info.special ? ' owned' : ''}"
         title="${escHtml(placeOwnerText(p))}">${escHtml(owner)}</span>
@@ -3001,8 +3039,6 @@
   }
 
   function geoDetailHTML(p) {
-    const st = placeStage(p);
-    const depth = placeDepth(p);
     const info = placeOwnerInfo(p);
     const kids = placeChildren.get(p.id) || [];
     const path = placePath(p);
@@ -3038,14 +3074,14 @@
     const attrs = Object.entries(p.attrs || {});
     return `
       <h2 class="geo-detail-title">${escHtml(p.name)}</h2>
-      <div class="geo-meta">第 ${p.first_ch || '—'} 章首现 · ${st.label} · 第 ${depth + 1} 层</div>
+      <div class="geo-meta">${escHtml(placeGeoTag(p))} · 第 ${p.first_ch || '—'} 章首现${p.virtual ? ' · 地理分支容器' : ''}</div>
       <div class="geo-badges">${ownerBadgesHTML(info)}<span class="geo-badge">${kids.length} 个下级地点</span></div>
       <p class="geo-desc">${escHtml(p.desc || '暂无档案描述。')}</p>
 
       <div class="geo-sec-title">位置档案</div>
       <div class="geo-kv">
         <div class="k">父级路径</div>
-        <div class="v">${path.map(x => `<button class="geo-jump" data-jump="${x.id}">${escHtml(x.name)}</button>`).join(' › ') || '—'}</div>
+        <div class="v">${path.map(x => `<button class="geo-jump" data-jump="${x.id}"><i class="geo-path-lv">L${placeLevel(x)}</i>${escHtml(x.name)}</button>`).join(' › ') || '—'}</div>
         ${attrs.map(([k, v]) => `<div class="k">${escHtml(k)}</div><div class="v">${escHtml(v)}</div>`).join('')}
       </div>
 
@@ -3106,14 +3142,14 @@
     }));
     views.geo.innerHTML = `
       <div class="geo-note">
-        ${PLACES.length} 个地点按 <b>parent</b> 组成层级容器，按卷/首现章分 ${GEO_STAGES.length} 个阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
+        ${placeRealCount()} 个地点 + ${PLACES.length - placeRealCount()} 个地理容器按 <b>L1–L4</b> 组成层级，按卷/首现章分 ${GEO_STAGES.length} 个阶段。数据只有层级、归属和出现章号，没有坐标；这张页面不画地图，也不猜方位。
       </div>
       <div class="geo-stage-strip">${counts.map(s => `
         <span class="geo-stage-chip"><i style="background:${s.color}"></i><b>${s.label}</b>
           <span>${s.count} 处 · ${s.note}</span></span>`).join('')}</div>
       <div class="geo-layout">
         <div class="geo-tree-panel">
-          <div class="geo-tree-head"><b>地点层级树</b><span>${PLACES.length} 个地点 · ${placeRoots.length} 个顶层容器</span></div>
+          <div class="geo-tree-head"><b>地点层级树</b><span>${placeRealCount()} 个地点 · ${placeRoots.length} 个 L1 容器</span></div>
           ${placeRoots.map(p => geoRowHTML(p, 0)).join('')}
         </div>
         <div class="geo-detail">${p ? geoDetailHTML(p) : '<div class="geo-empty">没有地点数据。</div>'}</div>
@@ -3212,13 +3248,23 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     return out;
   }
   function mapLayerList() {
-    const roots = placeRoots.map(p => ({ id: p.id, name: p.name, count: mapSubtree(p.id).size }));
+    // 只收显式标出的地图层：越国 / 乱星海 / 虚天殿。后端 layers 里
+    // 还会带出车骑国、风都国这些节点根，不能全塞进层下拉。
+    const declared = ((D._mapLevels || {}).layers || [])
+      .map(l => placeById.get(l.id)).filter(p => p && !p.virtual && p.map_layer);
+    let roots = declared;
+    if (!roots.length) {
+      roots = PLACES.filter(p => p.map_layer && !p.virtual);
+    }
+    if (!roots.length) roots = placeRoots.filter(p => !p.virtual);
+    roots = roots.map(p => ({ id: p.id, name: p.name, count: mapSubtree(p.id).size }));
     roots.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'zh'));
-    return [{ id: 'all', name: '全部', count: PLACES.length }, ...roots];
+    return [{ id: 'all', name: '全部', count: placeRealCount() }, ...roots];
   }
   function mapRootOf(id) {
     let cur = placeById.get(id), seen = new Set();
     while (cur && cur.parent && placeById.has(cur.parent) && !seen.has(cur.id)) {
+      if (cur.map_layer || placeLevel(cur) === 1) break;
       seen.add(cur.id); cur = placeById.get(cur.parent);
     }
     return cur ? cur.id : id;
@@ -5507,7 +5553,7 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
       <div class="power-metrics">
         <div class="power-metric"><div class="v">${topCount}</div><div class="k">顶层势力</div></div>
         <div class="power-metric"><div class="v">${withPlaces}</div><div class="k">有据点记录</div></div>
-        <div class="power-metric"><div class="v">${PLACES.length}</div><div class="k">地点总数</div></div>
+        <div class="power-metric"><div class="v">${placeRealCount()}</div><div class="k">地点总数</div></div>
         <div class="power-metric"><div class="v" style="color:${unassigned.length ? 'var(--danger)' : 'var(--ink)'}">${unassigned.length}</div><div class="k">未归属地点</div></div>
         <div class="power-metric"><div class="v">${disputed.length + special.length}</div><div class="k">交界/共管</div></div>
         <div class="power-metric"><div class="v">${relPairs.length}</div><div class="k">势力关系边</div></div>

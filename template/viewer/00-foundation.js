@@ -296,8 +296,11 @@
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
   /* 地点层级树：容器复用，随阅读进度重算（截断后可能有地点消失或父级被隐藏） */
-  const byFirstCh = (a, b) => (a.first_ch || 9999) - (b.first_ch || 9999) ||
-    a.name.localeCompare(b.name, 'zh');
+  const byFirstCh = (a, b) => {
+    const ac = a.first_ch === 0 ? 0 : (a.first_ch || 9999);
+    const bc = b.first_ch === 0 ? 0 : (b.first_ch || 9999);
+    return ac - bc || a.name.localeCompare(b.name, 'zh');
+  };
   const placeChildren = new Map();
   const placeRoots = [];
   function rebuildPlaceTree() {
@@ -311,7 +314,11 @@
         placeRoots.push(p);
       }
     });
-    placeRoots.sort(byFirstCh);
+    const branchOrder = { continent: 0, ocean: 1, realm: 2 };
+    placeRoots.sort((a, b) =>
+      ((a.geo_order ?? 99) - (b.geo_order ?? 99)) ||
+      ((branchOrder[a.branch] ?? 9) - (branchOrder[b.branch] ?? 9)) ||
+      byFirstCh(a, b));
     placeChildren.forEach(list => list.sort(byFirstCh));
   }
 
@@ -449,6 +456,23 @@
       cur = cur.parent ? placeById.get(cur.parent) : null;
     }
     return path;
+  }
+  /** 地理层级：优先用数据里的 L1–L4，旧数据按 parent 深度退化。 */
+  const GEO_BRANCH_CN = { continent: '大陆', ocean: '海洋', realm: '界面' };
+  function placeLevel(p) {
+    const n = p && Number(p.level);
+    return n >= 1 && n <= 4 ? Math.round(n) : Math.min(4, placeDepth(p) + 1);
+  }
+  function placeBranchCN(p) {
+    return GEO_BRANCH_CN[p && p.branch] || '';
+  }
+  function placeGeoTag(p) {
+    const branch = placeBranchCN(p);
+    return `L${placeLevel(p)}${branch ? ' · ' + branch : ''}`;
+  }
+  /** 真实剧情地点数：不含天南/人界这类地理分支容器。 */
+  function placeRealCount() {
+    return PLACES.filter(p => !p.virtual).length;
   }
 
   function realmIndex(id) {

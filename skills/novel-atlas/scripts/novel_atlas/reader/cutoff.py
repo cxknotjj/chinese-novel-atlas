@@ -202,7 +202,9 @@ def filter_data(data: dict, cutoff: int | None = None) -> dict:
     places = []
     place_ids = set()
     for p in out.get("places") or []:
-        if not _visible_ch(p, c):
+        # 地理分支容器没有剧情首现章；它们必须留下，否则所有子树会掉回
+        # 越国/乱星海这些旧根，L1 又空了。
+        if not p.get("virtual") and not _visible_ch(p, c):
             continue
         places.append(p)
         place_ids.add(p.get("id"))

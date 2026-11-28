@@ -13,9 +13,16 @@ from collections import defaultdict
 def _root(place_id: str, places: dict[str, dict]) -> str:
     cur = place_id
     seen = set()
-    while cur in places and places[cur].get("parent") in places and cur not in seen:
+    while cur in places:
+        p = places[cur]
+        # L1 是地理分支；map_layer 是显式地图层根。两者都终止上溯，
+        # 否则「越国 → 天南」会把三层地图压成一个天南层。
+        if p.get("level") == 1 or p.get("map_layer"):
+            break
+        if p.get("parent") not in places or cur in seen:
+            break
         seen.add(cur)
-        cur = places[cur]["parent"]
+        cur = p["parent"]
     return cur
 
 

@@ -46,13 +46,23 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
     return out;
   }
   function mapLayerList() {
-    const roots = placeRoots.map(p => ({ id: p.id, name: p.name, count: mapSubtree(p.id).size }));
+    // 只收显式标出的地图层：越国 / 乱星海 / 虚天殿。后端 layers 里
+    // 还会带出车骑国、风都国这些节点根，不能全塞进层下拉。
+    const declared = ((D._mapLevels || {}).layers || [])
+      .map(l => placeById.get(l.id)).filter(p => p && !p.virtual && p.map_layer);
+    let roots = declared;
+    if (!roots.length) {
+      roots = PLACES.filter(p => p.map_layer && !p.virtual);
+    }
+    if (!roots.length) roots = placeRoots.filter(p => !p.virtual);
+    roots = roots.map(p => ({ id: p.id, name: p.name, count: mapSubtree(p.id).size }));
     roots.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'zh'));
-    return [{ id: 'all', name: '全部', count: PLACES.length }, ...roots];
+    return [{ id: 'all', name: '全部', count: placeRealCount() }, ...roots];
   }
   function mapRootOf(id) {
     let cur = placeById.get(id), seen = new Set();
     while (cur && cur.parent && placeById.has(cur.parent) && !seen.has(cur.id)) {
+      if (cur.map_layer || placeLevel(cur) === 1) break;
       seen.add(cur.id); cur = placeById.get(cur.parent);
     }
     return cur ? cur.id : id;

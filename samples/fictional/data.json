@@ -1382,7 +1382,10 @@
       "parent": null,
       "desc": "青云宗所在的大域，三大宗门并立。",
       "first_ch": 1,
-      "attrs": {}
+      "attrs": {},
+      "level": 1,
+      "branch": "continent",
+      "virtual": false
     },
     {
       "id": "p_qingyunshan",
@@ -1390,7 +1393,9 @@
       "parent": "p_dongyu",
       "desc": "青云宗山门所在，主峰九座。",
       "first_ch": 1,
-      "attrs": {}
+      "attrs": {},
+      "level": 2,
+      "branch": "continent"
     },
     {
       "id": "p_zayiyuan",
@@ -1400,7 +1405,9 @@
       "first_ch": 1,
       "attrs": {
         "主人": "杂役"
-      }
+      },
+      "level": 3,
+      "branch": "continent"
     },
     {
       "id": "p_yanwuchang",
@@ -1408,7 +1415,9 @@
       "parent": "p_qingyunshan",
       "desc": "外门弟子比试之地，第 60 章一战在此。",
       "first_ch": 4,
-      "attrs": {}
+      "attrs": {},
+      "level": 3,
+      "branch": "continent"
     },
     {
       "id": "p_houshan",
@@ -1418,15 +1427,19 @@
       "first_ch": 18,
       "attrs": {
         "禁令": "非宗主不得入"
-      }
+      },
+      "level": 3,
+      "branch": "continent"
     },
     {
       "id": "p_jishiji",
       "name": "集市",
-      "parent": "p_dongyu",
+      "parent": "p_qingyunshan",
       "desc": "山门外的凡人集市，第 5 章施舍乞丐处。",
       "first_ch": 5,
-      "attrs": {}
+      "attrs": {},
+      "level": 3,
+      "branch": "continent"
     }
   ],
   "concepts": [

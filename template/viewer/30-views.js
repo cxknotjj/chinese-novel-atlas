@@ -146,7 +146,7 @@
     const entries = [
       ['graph', '人物图谱', `${chars.length} 个角色`, '按关系网络看人，点击节点看档案'],
       ['wiki', '设定百科', `${D.concepts.length} 条设定`, '人物、势力、地点、概念、境界速查'],
-      ['geo', '地点志', `${D.places.length} 个地点`, '按 parent 层级展开，带首现章与证据'],
+      ['geo', '地点志', `${placeRealCount()} 个地点`, '按 L1–L4 地理层级展开，带首现章与证据'],
       ['map', `世界地图`, `${mapLevel} 证据等级`, '按阅读进度显示地点与路线，不剧透'],
       ['power', '势力版图', `${D.entities.filter(e => e.type === 'org').length} 个势力`, '据点、同盟、敌对与未归属缺口'],
       ['rhythm', '节奏曲线', `${D.chapters.length} 章`, '钩子率、爽点间隔、张力与章末钩子'],

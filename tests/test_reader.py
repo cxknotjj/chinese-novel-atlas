@@ -103,6 +103,17 @@ class CutoffTest(unittest.TestCase):
         self.assertEqual([p["ch"] for p in e1["power_history"]], [5])
         self.assertIsNone(e1["last_ch"])
 
+    def test_virtual_geo_container_survives_cutoff(self):
+        """L1 分支容器没有首现章，截断时也必须保留，否则子树会掉回旧根。"""
+        data = base_data()
+        data["places"].append({
+            "id": "p0", "name": "天南", "level": 1, "branch": "continent",
+            "virtual": True, "first_ch": 0,
+        })
+        data["places"][0]["parent"] = "p0"
+        out = filter_data(data, 10)
+        self.assertIn("p0", {p["id"] for p in out["places"]})
+
     def test_foreshadow_payoff_and_status_are_derived_at_cutoff(self):
         out = filter_data(base_data(), 10)
         f2 = next(f for f in out["foreshadows"] if f["id"] == "f2")
