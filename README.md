@@ -84,7 +84,7 @@
 | `atlas-compare` | “对比两本书的伏笔回收率” | 节奏、伏笔、战力、势力、疑点密度 | `metrics.md`、`diff.json`、`compare.html` |
 | `atlas-export` | “导出《我的书》读者站” | 读者站 / 单文件 / 设定集 / 角色表 | `reader/`、`atlas.html`、MD/CSV |
 | `atlas-map` | “给《我的书》做地图” | M0–M4 分级、JSON 编排、地图审计、渲染 | `map_layout`、PNG/SVG、地图页 |
-| `atlas-audit` | “复核《我的书》的疑点” | 疑点列表、证据回看、标记已核实/误报 | `anomalies-verdicts.json` |
+| `atlas-audit` | “复核《我的书》的疑点” | 疑点列表、证据回看、标记已核实/误报；可选 `--web` 联网核对（只碰别名/归属/术语等非剧情字段） | `anomalies-verdicts.json`、`review/web-leads.md` |
 
 把 `skills/` 整体挂到 Agent 的 skill root，或让 Agent 直接读取对应 `SKILL.md` 即可；不需要启动服务，也不调用外部模型 API。
 
