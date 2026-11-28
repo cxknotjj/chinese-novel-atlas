@@ -7,7 +7,8 @@
 [![MIT](https://img.shields.io/badge/license-MIT-5A7A5E)](LICENSE)
 ![Skills](https://img.shields.io/badge/Skills-6-5A7A5E)
 
-**[在线试玩：《凡人修仙传》前 500 章真实档案](http://deerfect.me/chinese-novel-atlas/demo/)** ·
+**[八视图档案](http://deerfect.me/chinese-novel-atlas/demo/)** ·
+**[读者站（按阅读进度截断，不剧透）](http://deerfect.me/chinese-novel-atlas/demo/reader/)** ·
 [数据契约](references/schema.md) ·
 [功能文档](docs/功能文档.md) ·
 [English](README_EN.md)
