@@ -4,6 +4,14 @@ version: 0.2.0
 description: "把两本或多本已拆解的网文放在一起对比：节奏、伏笔回收率、战力体系、势力规模、钩子率、疑点密度。用于书评考据、同题材横向阅读、系列作品设定延续检查；不做作者改稿诊断。触发词：对比这两本书、跨书比较、两本书对比、哪本书节奏更好、比较设定、伏笔回收率对比、atlas compare。"
 ---
 
+> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
+> 若尚未获取仓库：
+> ```bash
+> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+> cd chinese-novel-atlas
+> ```
+> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+
 # atlas-compare · 跨书对比
 
 把多个 `data.json` 放在一起，产出可比指标和并排视图。对比是**读者/研究者视角**，不是“作者和爆款差在哪”的改稿诊断。
