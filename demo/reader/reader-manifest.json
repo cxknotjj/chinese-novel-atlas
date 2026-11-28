@@ -1,55 +1,101 @@
 {
   "product": "Novel Atlas Reader",
-  "title": "青云签到三十年",
-  "generated_at": "2026-11-28T05:28:49.870423+00:00",
+  "title": "凡人修仙传",
+  "generated_at": "2026-11-28T05:43:52.486046+00:00",
   "coverage": {
-    "chapters_done": 120,
-    "chapters_skipped": 180
+    "chapters_done": 500,
+    "chapters_skipped": 1943
   },
   "source_coverage": {
-    "chapters_done": 120,
-    "chapters_skipped": 180
+    "chapters_done": 500,
+    "chapters_skipped": 1943
   },
   "coverage_complete": false,
   "publishable": false,
   "reader": {
-    "cutoff_ch": 120,
-    "analyzed_ch": 120,
-    "chapter_max": 120,
-    "total_chapters": 300,
+    "cutoff_ch": 500,
+    "analyzed_ch": 500,
+    "chapter_max": 500,
+    "total_chapters": 2443,
     "analysis_complete": false,
     "is_spoiler_safe": false
   },
   "anomalies": {
-    "total": 8,
-    "visible": 8,
+    "total": 108,
+    "visible": 108,
     "counts": {
-      "foreshadow_unresolved": 7,
-      "battle_gap": 1
+      "foreshadow_unresolved": 79,
+      "death_reappearance": 2,
+      "entity_after_last": 19,
+      "battle_gap": 2,
+      "alias_candidate": 3,
+      "relation_reversal": 3
     },
     "path": "anomalies.json"
   },
   "map_levels": {
-    "global": "M1",
+    "global": "M3",
     "layers": [
       {
-        "id": "p_dongyu",
-        "name": "东域",
+        "id": "p_cheqiguo",
+        "name": "车骑国",
+        "level": "M1",
+        "direction_constraints": 0
+      },
+      {
+        "id": "p_fengduguo",
+        "name": "风都国",
         "level": "M1",
         "direction_constraints": 1
+      },
+      {
+        "id": "p_jiuguomeng",
+        "name": "九国盟",
+        "level": "M1",
+        "direction_constraints": 1
+      },
+      {
+        "id": "p_luanxinghai",
+        "name": "乱星海",
+        "level": "M1",
+        "direction_constraints": 0
+      },
+      {
+        "id": "p_tianluoguo",
+        "name": "天罗国",
+        "level": "M1",
+        "direction_constraints": 1
+      },
+      {
+        "id": "p_xutian_dian",
+        "name": "虚天殿",
+        "level": "M1",
+        "direction_constraints": 0
+      },
+      {
+        "id": "p_yuanwuguo",
+        "name": "元武国",
+        "level": "M1",
+        "direction_constraints": 1
+      },
+      {
+        "id": "p_yueguo",
+        "name": "越国",
+        "level": "M2",
+        "direction_constraints": 6
       }
     ],
-    "reason": "只有示意坐标，没有足够方向证据",
+    "reason": "存在 8 个显式层",
     "time_slices": 0
   },
   "entry": "index.html",
   "data": "data.js",
   "snapshot": null,
   "counts": {
-    "entities": 18,
-    "relations": 25,
-    "places": 6,
-    "chapters": 20,
-    "foreshadows": 12
+    "entities": 384,
+    "relations": 459,
+    "places": 119,
+    "chapters": 500,
+    "foreshadows": 215
   }
 }
