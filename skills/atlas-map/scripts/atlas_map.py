@@ -37,11 +37,18 @@ def find_project_root(explicit: str | None) -> Path:
     for cand in candidates:
         cand = cand.expanduser().resolve()
         for p in [cand, *cand.parents]:
-            if (p / "atlas-kit" / "manifest.json").is_file() and (p / "scripts" / "build.py").is_file():
+            # atlas-kit/base 是关键区分：skill 里也带了 manifest.json 与 scripts/build.py，
+            # 但没有 21 件手绘素材，渲染会失败，所以不能把 skill 目录当项目根。
+            if ((p / "atlas-kit" / "manifest.json").is_file()
+                    and (p / "atlas-kit" / "base").is_dir()
+                    and (p / "scripts" / "build.py").is_file()):
                 return p
     raise SystemExit(
-        "找不到 Novel Atlas 项目根：需要包含 atlas-kit/manifest.json 与 scripts/build.py。"
-        "请传 --project-root 或设置 NOVEL_ATLAS_ROOT。"
+        "找不到 Novel Atlas 项目根：需要同时包含 atlas-kit/manifest.json、"
+        "atlas-kit/base/ 与 scripts/build.py。\n"
+        "地图渲染依赖 20MB 手绘素材，无法随 skill 分发，请 clone 仓库后指定：\n"
+        "  git clone https://github.com/cxknotjj/chinese-novel-atlas.git\n"
+        "  或设置 NOVEL_ATLAS_ROOT=<仓库根>"
     )
 
 

@@ -34,3 +34,9 @@ data/config.json
 # 构建检查产物
 build-check/
 build-reader/
+
+# 根目录的临时截图 / 调色试验图 / 打包文件（视觉验收残留，不属于仓库内容）
+/*.png
+/*.webp
+/*.zip
+/*.jpg
