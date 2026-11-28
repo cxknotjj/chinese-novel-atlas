@@ -34,6 +34,10 @@ SKILLS = ROOT / "skills"
 EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", ".mypy_cache"}
 EXCLUDE_SUFFIX = {".pyc", ".pyo"}
 
+# 仓库维护工具，不是 skill 的运行时依赖，不随副本分发。
+# 留在副本里会误导 agent 去「重新同步」一个不存在的仓库。
+NEVER_VENDOR = {"sync_skills.py"}
+
 # 每个 skill 自带什么。
 #
 # scripts: "all" = 整棵 scripts/ 树（含 novel_atlas 包）；list = 只带指定文件
@@ -55,6 +59,18 @@ VENDOR = {
     "atlas-export": {"scripts": "all", "template": True},
 }
 
+# skill 自有文件：不参与同步，也绝不能被 prune 删掉。
+# audit.py / atlas_map.py 是 skill 自己维护的包装脚本，源码不在 scripts/ 下。
+OWN_REL = {"SKILL.md", "_VENDORED.md", "scripts/audit.py", "scripts/atlas_map.py"}
+
+
+def is_own(dst_root: Path, f: Path) -> bool:
+    """判断副本里的文件是否属于 skill 自己（而非同步进来的）。"""
+    if f.suffix == ".md":            # SKILL.md、references/*.md、_VENDORED.md
+        return True
+    return f.relative_to(dst_root).as_posix() in OWN_REL
+
+
 BANNER = """<!-- 由 scripts/sync_skills.py 生成，请勿手改。 -->
 <!-- 改逻辑请改仓库根的 scripts/ 或 template/，然后重跑同步脚本。 -->
 """
@@ -64,14 +80,21 @@ def digest(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()[:16]
 
 
-def iter_files(src: Path):
-    """按稳定顺序遍历源目录，跳过编译产物。"""
+def iter_files(src: Path, skip_vendor_tools: bool = True):
+    """按稳定顺序遍历目录，跳过编译产物。
+
+    skip_vendor_tools=True 用于扫描**源**：仓库维护脚本不参与分发。
+    扫描**副本**时必须传 False，否则残留的 sync_skills.py 会被这里遮住，
+    永远查不出来也删不掉。
+    """
     for p in sorted(src.rglob("*")):
         if p.is_dir():
             continue
         if any(part in EXCLUDE_DIRS for part in p.parts):
             continue
         if p.suffix in EXCLUDE_SUFFIX:
+            continue
+        if skip_vendor_tools and p.name in NEVER_VENDOR:
             continue
         yield p
 
@@ -131,11 +154,8 @@ def check(skill: str, verbose: bool) -> tuple[int, int, int]:
             if verbose:
                 print(f"  旧  {dst.relative_to(SKILLS)}")
 
-    for f in iter_files(dst_root):
-        if f in expected:
-            continue
-        # 自有文件（如 atlas-map/scripts/atlas_map.py）不算多余
-        if f.name in ("SKILL.md", "atlas_map.py", "audit.py") or f.suffix == ".md":
+    for f in iter_files(dst_root, skip_vendor_tools=False):
+        if f in expected or is_own(dst_root, f):
             continue
         extra += 1
         if verbose:
@@ -163,10 +183,8 @@ def sync(skill: str, prune: bool) -> tuple[int, int]:
     pruned = 0
     if prune:
         expected = {d for _, d in pairs}
-        for f in list(iter_files(dst_root)):
-            if f in expected or f.name in ("SKILL.md", "_VENDORED.md"):
-                continue
-            if f.suffix == ".md":       # 自有参考资料
+        for f in list(iter_files(dst_root, skip_vendor_tools=False)):
+            if f in expected or is_own(dst_root, f):
                 continue
             f.unlink()
             pruned += 1

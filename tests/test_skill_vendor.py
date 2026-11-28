@@ -46,6 +46,25 @@ class SkillVendorTest(unittest.TestCase):
                     missing.append(f"{p.parent.name}/{rel}")
         self.assertEqual(missing, [], f"skill 里缺这些脚本：{missing}")
 
+    def test_prune_protects_skill_owned_scripts(self):
+        """prune 曾把 skill 自有的 audit.py 当成「多余文件」删掉。"""
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "sync_skills", ROOT / "scripts" / "sync_skills.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        audit_root = ROOT / "skills" / "atlas-audit"
+        map_root = ROOT / "skills" / "atlas-map"
+        self.assertTrue(mod.is_own(audit_root, audit_root / "scripts" / "audit.py"))
+        self.assertTrue(mod.is_own(map_root, map_root / "scripts" / "atlas_map.py"))
+        self.assertTrue(mod.is_own(audit_root, audit_root / "SKILL.md"))
+        # 同步进来的文件不享受保护，否则漂移永远清不掉
+        self.assertFalse(mod.is_own(audit_root, audit_root / "scripts" / "anomalies.py"))
+        self.assertTrue((audit_root / "scripts" / "audit.py").exists(),
+                        "audit.py 是 skill 自有脚本，不该被同步流程删除")
+
 
 class MentionsScopeTest(unittest.TestCase):
     """只分析了前 5 章时，第 8 章的提及不能算数。"""
