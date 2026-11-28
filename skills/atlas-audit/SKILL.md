@@ -3,6 +3,14 @@ name: atlas-audit
 description: "复核 Novel Atlas 的读者向疑点索引：查看 anomalies.json、按严重度/规则筛选、回到原文坐标核对、把某条标为已核实或误报，并输出考据统计。适用于读者考据、书评作者核对设定矛盾、维护疑点误报库、给读者站补疑点说明。触发词：疑点、考据、矛盾、伏笔没回收、死亡又出现、战力倒退、越级战斗、atlas-audit、anomalies.json、误报标记。"
 ---
 
+> **工作目录**：下文所有 `python scripts/...` 均以 Novel Atlas 仓库根为工作目录。
+> 若尚未获取仓库：
+> ```bash
+> git clone https://github.com/cxknotjj/chinese-novel-atlas.git
+> cd chinese-novel-atlas
+> ```
+> skill 本体只含说明与参考资料，CLI 在仓库的 `scripts/` 下。
+
 # atlas-audit · 疑点复核
 
 `atlas-audit` 不重新分析小说，只消费 `anomalies.json` 和 `data.json`。它回答的是“这条疑点值不值得信、原文在哪、是不是误报”，不是“作者该怎么改”。
