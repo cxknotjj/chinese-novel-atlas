@@ -12,7 +12,6 @@ import hashlib
 import json
 import re
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -385,7 +384,14 @@ def rule_timeline(data: dict) -> list[dict]:
     return out
 
 
-def build_anomalies(data: dict, *, live: int | None = None) -> dict:
+def build_anomalies(data: dict, *, live: int | None = None, generated_at: str = "") -> dict:
+    """构建疑点报告。
+
+    generated_at 默认取 data.meta.analyzed_at，而不是 time.now()：
+    报告描述的是「分析产物」，同一份 data.json 必须得到逐字节相同的结果，
+    否则每次重建都会在 data.js 里写进一个新的时间戳，产生几百 KB 的假 diff。
+    需要「本次生成时间」的调用方（例如导出独立报告）可以显式传入。
+    """
     meta = data.get("meta") or {}
     analyzed = _ch((meta.get("coverage") or {}).get("chapters_done"), 0) or 0
     total = _ch(meta.get("chapters"), 0) or 0
@@ -432,7 +438,7 @@ def build_anomalies(data: dict, *, live: int | None = None) -> dict:
     counts = Counter(a.get("kind") for a in unique)
     return {
         "version": "1.0",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": generated_at or meta.get("analyzed_at") or "",
         "source_title": meta.get("title"),
         "source_file": meta.get("source_file"),
         "coverage": meta.get("coverage"),

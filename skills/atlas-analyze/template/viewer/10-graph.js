@@ -18,6 +18,19 @@
   let coreCount = 0;
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 
+  /** 确定性伪随机：[0,1)，由字符串 id 决定。
+      布局不能依赖 Math.random()，否则同一本书每次打开、每张截图都不一样，
+      回归测试也没法比对。用节点 id 取哈希的好处是：节点增删只影响自己，
+      不会像全局种子那样把整张图的初始相位推倒重来。 */
+  function hash01(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return ((h >>> 0) % 1000003) / 1000003;
+  }
+
   /** 按当前 D 重建节点与连线。
       reusePos=true 时保留同 id 节点的坐标 —— 切阅读进度只是增减节点，
       整张图重新抖成另一个形状会让人丢掉「刚才看的是哪一坨」。 */
@@ -73,9 +86,10 @@
       members.forEach((n, i) => {
         if (placed.has(n.id)) return;
         const t = (i / Math.max(1, members.length)) * Math.PI * 2 + (gi % 2 ? 0.35 : 0);
-        const rr = memberR * (0.72 + Math.random() * 0.4);
-        n.x = cx + Math.cos(t) * rr + (Math.random() - .5) * 12;
-        n.y = cy + Math.sin(t) * rr + (Math.random() - .5) * 12;
+        // 半径与抖动都按 id 取哈希：同一节点每次落在同一处
+        const rr = memberR * (0.72 + hash01(n.id + ':r') * 0.4);
+        n.x = cx + Math.cos(t) * rr + (hash01(n.id + ':x') - .5) * 12;
+        n.y = cy + Math.sin(t) * rr + (hash01(n.id + ':y') - .5) * 12;
       });
     });
 
@@ -321,7 +335,12 @@
         const b = nodes[j];
         let dx = b.x - a.x, dy = b.y - a.y;
         let d2 = dx * dx + dy * dy;
-        if (d2 < 1) { d2 = 1; dx = Math.random() - .5; dy = Math.random() - .5; }
+        if (d2 < 1) {
+          // 两点完全重合：按这对 id 的哈希取一个固定方向推开。
+          // 用 Math.random 会让同一份数据每次抖动出不同形状。
+          const ang = hash01(a.id + '|' + b.id) * Math.PI * 2;
+          dx = Math.cos(ang); dy = Math.sin(ang); d2 = 1;
+        }
         const d = Math.sqrt(d2);
         const f = (3400 * alpha) / d2;
         const fx = (dx / d) * f, fy = (dy / d) * f;
@@ -377,6 +396,26 @@
     view.fitK = k;      // 缩放倍数以此为基准，见 20-graph-interaction 的 wheel
     view.x = W / 2 - (minX + maxX) / 2 * k;
     view.y = H / 2 - (minY + maxY) / 2 * k;
+  }
+
+  /** 归一化布局尺度。
+      力导向的最终大小受初始摆放影响，同一份数据可能收敛到 1.4 倍大小；
+      fitView 的缩放有 0.42 的下限，夹不住时整张图就会溢出画布。
+      这里把包围盒整体缩到「刚好装得下」——等价于 zoom out，形状不变。 */
+  function normalizeLayoutScale() {
+    if (!nodes.length || W <= 0) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodes.forEach(n => {
+      minX = Math.min(minX, n.x - n.r); maxX = Math.max(maxX, n.x + n.r);
+      minY = Math.min(minY, n.y - n.r); maxY = Math.max(maxY, n.y + n.r);
+    });
+    const pad = 46, floor = 0.42;      // floor 与 fitView 的下限一致
+    const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+    const fit = Math.min((W - pad * 2) / w, (H - pad * 2) / h);
+    if (fit >= floor) return;
+    const s = fit / floor;
+    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+    nodes.forEach(n => { n.x = cx + (n.x - cx) * s; n.y = cy + (n.y - cy) * s; });
   }
 
   // 力导向天然接近圆形；宽屏下把横向铺开，避免左右两侧大片留白

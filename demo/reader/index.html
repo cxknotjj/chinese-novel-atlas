@@ -195,7 +195,9 @@
   #searchPanel .sp-locked .sp-name { color: var(--ink-3); font-weight: 400; }
   #searchPanel .sp-empty { padding: 10px 8px 14px; color: var(--ink-3); font-size: 12px; }
   #stage { flex: 1; position: relative; min-width: 0; }
-  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  /* touch-action: none —— 图谱/地图自己处理单指平移与双指缩放，
+     否则浏览器会把触屏手势当成页面滚动，canvas 一个事件都收不到 */
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; user-select: none; }
   canvas.dragging { cursor: grabbing; }
 
   #legend {
@@ -1528,6 +1530,19 @@
   let coreCount = 0;
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 
+  /** 确定性伪随机：[0,1)，由字符串 id 决定。
+      布局不能依赖 Math.random()，否则同一本书每次打开、每张截图都不一样，
+      回归测试也没法比对。用节点 id 取哈希的好处是：节点增删只影响自己，
+      不会像全局种子那样把整张图的初始相位推倒重来。 */
+  function hash01(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return ((h >>> 0) % 1000003) / 1000003;
+  }
+
   /** 按当前 D 重建节点与连线。
       reusePos=true 时保留同 id 节点的坐标 —— 切阅读进度只是增减节点，
       整张图重新抖成另一个形状会让人丢掉「刚才看的是哪一坨」。 */
@@ -1583,9 +1598,10 @@
       members.forEach((n, i) => {
         if (placed.has(n.id)) return;
         const t = (i / Math.max(1, members.length)) * Math.PI * 2 + (gi % 2 ? 0.35 : 0);
-        const rr = memberR * (0.72 + Math.random() * 0.4);
-        n.x = cx + Math.cos(t) * rr + (Math.random() - .5) * 12;
-        n.y = cy + Math.sin(t) * rr + (Math.random() - .5) * 12;
+        // 半径与抖动都按 id 取哈希：同一节点每次落在同一处
+        const rr = memberR * (0.72 + hash01(n.id + ':r') * 0.4);
+        n.x = cx + Math.cos(t) * rr + (hash01(n.id + ':x') - .5) * 12;
+        n.y = cy + Math.sin(t) * rr + (hash01(n.id + ':y') - .5) * 12;
       });
     });
 
@@ -1831,7 +1847,12 @@
         const b = nodes[j];
         let dx = b.x - a.x, dy = b.y - a.y;
         let d2 = dx * dx + dy * dy;
-        if (d2 < 1) { d2 = 1; dx = Math.random() - .5; dy = Math.random() - .5; }
+        if (d2 < 1) {
+          // 两点完全重合：按这对 id 的哈希取一个固定方向推开。
+          // 用 Math.random 会让同一份数据每次抖动出不同形状。
+          const ang = hash01(a.id + '|' + b.id) * Math.PI * 2;
+          dx = Math.cos(ang); dy = Math.sin(ang); d2 = 1;
+        }
         const d = Math.sqrt(d2);
         const f = (3400 * alpha) / d2;
         const fx = (dx / d) * f, fy = (dy / d) * f;
@@ -1887,6 +1908,26 @@
     view.fitK = k;      // 缩放倍数以此为基准，见 20-graph-interaction 的 wheel
     view.x = W / 2 - (minX + maxX) / 2 * k;
     view.y = H / 2 - (minY + maxY) / 2 * k;
+  }
+
+  /** 归一化布局尺度。
+      力导向的最终大小受初始摆放影响，同一份数据可能收敛到 1.4 倍大小；
+      fitView 的缩放有 0.42 的下限，夹不住时整张图就会溢出画布。
+      这里把包围盒整体缩到「刚好装得下」——等价于 zoom out，形状不变。 */
+  function normalizeLayoutScale() {
+    if (!nodes.length || W <= 0) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodes.forEach(n => {
+      minX = Math.min(minX, n.x - n.r); maxX = Math.max(maxX, n.x + n.r);
+      minY = Math.min(minY, n.y - n.r); maxY = Math.max(maxY, n.y + n.r);
+    });
+    const pad = 46, floor = 0.42;      // floor 与 fitView 的下限一致
+    const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+    const fit = Math.min((W - pad * 2) / w, (H - pad * 2) / h);
+    if (fit >= floor) return;
+    const s = fit / floor;
+    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+    nodes.forEach(n => { n.x = cx + (n.x - cx) * s; n.y = cy + (n.y - cy) * s; });
   }
 
   // 力导向天然接近圆形；宽屏下把横向铺开，避免左右两侧大片留白
@@ -2137,23 +2178,62 @@
   }
 
   let dragNode = null, panning = false, last = null, moved = false, clickedEmpty = false;
+  let pressNode = null;              // 按下时命中的节点：抬手没移动就直接选中
+  const activePointers = new Map();  // pointerId → { x, y }，双指缩放用
+  let pinch = null;                  // { d, k, world }：起始指距、起始缩放、锚点世界坐标
 
-  canvas.addEventListener('mousedown', e => {
-    if (e.button !== 0 && e.button !== 2) return;   // 只认左键与右键
-    camAnim = null;
+  function canvasPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const n = pick(e.clientX - rect.left, e.clientY - rect.top);
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function pinchAnchor() {
+    const [a, b] = [...activePointers.values()];
+    const rect = canvas.getBoundingClientRect();
+    const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
+    return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, k: view.k, world: toWorld(mx, my) };
+  }
+  function endGesture() {
+    dragNode = null; panning = false; last = null;
+    clickedEmpty = false; pressNode = null;
+    canvas.classList.remove('dragging');
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    const mouse = e.pointerType === 'mouse';
+    if (mouse && e.button !== 0 && e.button !== 2) return;   // 只认左键与右键
+    if (!mouse) e.preventDefault();   // 触屏：别让页面滚动/缩放抢走手势
+    camAnim = null;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* 老浏览器忽略 */ }
+
+    // 第二根手指落下：进入双指缩放，丢掉单指状态
+    if (activePointers.size === 2) {
+      endGesture();
+      pinch = pinchAnchor();
+      hoverId = hoverLink = null;
+      canvas.classList.add('dragging');
+      return;
+    }
+    if (activePointers.size > 2) return;
+
+    const p = canvasPos(e);
+    const n = pick(p.x, p.y);
     moved = false;
-    // 右键与地图一致：只平移，不抓节点、不选中，也不弹浏览器菜单
-    if (e.button === 2) {
-      dragNode = null; clickedEmpty = false;
+    if (mouse && e.button === 2) {
+      // 右键与地图一致：只平移，不抓节点、不选中，也不弹浏览器菜单
+      dragNode = null; pressNode = null; clickedEmpty = false;
       panning = true; last = { x: e.clientX, y: e.clientY };
-    } else if (n) {
-      clickedEmpty = false;
+    } else if (mouse && n) {
+      clickedEmpty = false; pressNode = n;
       dragNode = n; n.fixed = true; n._px = e.clientX; n._py = e.clientY;
-    } else {
-      clickedEmpty = true;
+    } else if (mouse) {
+      clickedEmpty = true; pressNode = null;
       panning = true; last = { x: e.clientX, y: e.clientY };
+    } else {
+      // 触屏：单指一律平移，轻点才选中 —— 否则按在节点上就再也拖不动图了
+      pressNode = n; clickedEmpty = !n; dragNode = null;
+      panning = true; last = { x: e.clientX, y: e.clientY };
+      hoverId = hoverLink = null;
     }
     canvas.classList.add('dragging');
   });
@@ -2162,14 +2242,28 @@
   // 地图早就阻止了，图谱这里补上；右键拖拽的平移逻辑在上面。
   canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-  window.addEventListener('mousemove', e => {
-    if (e.target !== canvas) { hoverId = null; hoverLink = null; return; }
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  window.addEventListener('pointermove', e => {
+    if (activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // 双指缩放：以两指中点为锚，缩放同时跟随中点平移
+    if (pinch && activePointers.size >= 2) {
+      const [a, b] = [...activePointers.values()];
+      const rect = canvas.getBoundingClientRect();
+      const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
+      const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      const fit = view.fitK || view.k || 1;
+      const z = Math.max(0.35, Math.min(6, (pinch.k / fit) * (d / pinch.d)));
+      view.k = fit * z;
+      view.x = mx - pinch.world.x * view.k;
+      view.y = my - pinch.world.y * view.k;
+      return;
+    }
+
     if (dragNode) {
-      const p = toWorld(mx, my);
+      const p = canvasPos(e);
       if (Math.hypot(e.clientX - dragNode._px, e.clientY - dragNode._py) > 3) moved = true;
-      dragNode.x = p.x; dragNode.y = p.y;
+      const w = toWorld(p.x, p.y);
+      dragNode.x = w.x; dragNode.y = w.y;
       alpha = Math.max(alpha, 0.28);
       return;
     }
@@ -2178,25 +2272,49 @@
       last = { x: e.clientX, y: e.clientY }; moved = true;
       return;
     }
-    if (mx < 0 || my < 0 || mx > W || my > H) { hoverId = null; hoverLink = null; return; }
-    const n = pick(mx, my);
+    // 以下只服务鼠标悬停：触屏没有 hover，别在拖动时反复算命中
+    if (e.pointerType !== 'mouse' || e.target !== canvas) { hoverId = null; hoverLink = null; return; }
+    const p = canvasPos(e);
+    if (p.x < 0 || p.y < 0 || p.x > W || p.y > H) { hoverId = null; hoverLink = null; return; }
+    const n = pick(p.x, p.y);
     hoverId = n ? n.id : null;
-    hoverLink = n ? null : pickLink(mx, my);
-    pointer = { x: mx, y: my };
+    hoverLink = n ? null : pickLink(p.x, p.y);
+    pointer = { x: p.x, y: p.y };
     canvas.style.cursor = (n || hoverLink) ? 'pointer' : 'grab';
   });
 
-  window.addEventListener('mouseup', e => {
+  function onPointerEnd(e) {
+    if (!activePointers.has(e.pointerId)) return;   // 只处理自己按下过的指针
+    activePointers.delete(e.pointerId);
+    try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* 指针已释放 */ }
+
+    if (pinch) {
+      if (activePointers.size >= 2) { pinch = pinchAnchor(); return; }
+      pinch = null;
+      if (activePointers.size === 1) {
+        // 还剩一指：以它当前位置继续平移，避免抬手瞬间图跳一下
+        const [p] = [...activePointers.values()];
+        dragNode = null; panning = true; moved = true;
+        last = { x: p.x, y: p.y };
+        return;
+      }
+      endGesture();
+      return;
+    }
+
     if (dragNode) {
       const n = dragNode;
       const dist = Math.hypot(e.clientX - n._px, e.clientY - n._py);
       if (dist < 6) select(n.id); else n.fixed = false;
+    } else if (pressNode && !moved) {
+      select(pressNode.id);                    // 触屏轻点节点
     } else if (clickedEmpty && !moved) {
       selectId = null; closePanel();
     }
-    dragNode = null; panning = false; last = null; clickedEmpty = false;
-    canvas.classList.remove('dragging');
-  });
+    endGesture();
+  }
+  window.addEventListener('pointerup', onPointerEnd);
+  window.addEventListener('pointercancel', onPointerEnd);
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
@@ -5873,6 +5991,15 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
       nodes.forEach(n => { minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x); minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y); });
       d.textContent = `W=${W|0} H=${H|0} dpr=${DPR} parent=${r.width|0}x${r.height|0}\nview k=${view.k.toFixed(3)} x=${view.x|0} y=${view.y|0}\nnodes ${nodes.length} bbox x[${minX|0},${maxX|0}] y[${minY|0},${maxY|0}]\translated center=(${((minX+maxX)/2*view.k+view.x)|0},${((minY+maxY)/2*view.k+view.y)|0})\ndoc ${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight} inner ${innerWidth}x${innerHeight}`;
     }, 400);
+    // 只读调试桥，供浏览器验收脚本读取布局与相机（与 window.__atlasMap 对齐）
+    window.__atlasGraph = {
+      nodes: () => nodes.map(n => ({ id: n.id, x: n.x, y: n.y, r: n.r })),
+      view: () => ({ ...view }),
+      screenOf: id => {
+        const n = nodeById.get(id);
+        return n ? toScreen(n) : null;
+      }
+    };
   }
 
   window.addEventListener('resize', resize);
@@ -5888,6 +6015,7 @@ let mapEditMode = false, mapDirty = false, mapEditSelected = null;
   requestAnimationFrame(loop);
   for (let i = 0; i < 900; i++) tick();
   spreadLayoutAspect();
+  normalizeLayoutScale();
   fitView();
   alpha = 0.03;
 

@@ -167,6 +167,15 @@
       nodes.forEach(n => { minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x); minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y); });
       d.textContent = `W=${W|0} H=${H|0} dpr=${DPR} parent=${r.width|0}x${r.height|0}\nview k=${view.k.toFixed(3)} x=${view.x|0} y=${view.y|0}\nnodes ${nodes.length} bbox x[${minX|0},${maxX|0}] y[${minY|0},${maxY|0}]\translated center=(${((minX+maxX)/2*view.k+view.x)|0},${((minY+maxY)/2*view.k+view.y)|0})\ndoc ${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight} inner ${innerWidth}x${innerHeight}`;
     }, 400);
+    // 只读调试桥，供浏览器验收脚本读取布局与相机（与 window.__atlasMap 对齐）
+    window.__atlasGraph = {
+      nodes: () => nodes.map(n => ({ id: n.id, x: n.x, y: n.y, r: n.r })),
+      view: () => ({ ...view }),
+      screenOf: id => {
+        const n = nodeById.get(id);
+        return n ? toScreen(n) : null;
+      }
+    };
   }
 
   window.addEventListener('resize', resize);
@@ -182,5 +191,6 @@
   requestAnimationFrame(loop);
   for (let i = 0; i < 900; i++) tick();
   spreadLayoutAspect();
+  normalizeLayoutScale();
   fitView();
   alpha = 0.03;

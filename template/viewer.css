@@ -189,7 +189,9 @@
   #searchPanel .sp-locked .sp-name { color: var(--ink-3); font-weight: 400; }
   #searchPanel .sp-empty { padding: 10px 8px 14px; color: var(--ink-3); font-size: 12px; }
   #stage { flex: 1; position: relative; min-width: 0; }
-  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  /* touch-action: none —— 图谱/地图自己处理单指平移与双指缩放，
+     否则浏览器会把触屏手势当成页面滚动，canvas 一个事件都收不到 */
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; user-select: none; }
   canvas.dragging { cursor: grabbing; }
 
   #legend {

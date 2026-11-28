@@ -146,6 +146,25 @@ class AnomalyTest(unittest.TestCase):
             self.assertTrue(a["id"])
             self.assertTrue(a["evidence"])
 
+    def test_report_is_reproducible(self):
+        """同一份 data.json 必须得到逐字节相同的报告。
+
+        generated_at 取 meta.analyzed_at 而不是构建时刻，否则每次重跑
+        build_reader 都会在 data.js 里写进一个新时间戳，产生几百 KB 的假 diff。
+        """
+        d = base_data()
+        d["meta"]["analyzed_at"] = "2026-11-27T12:00:00Z"
+        one = json.dumps(build_anomalies(d, live=10), ensure_ascii=False)
+        two = json.dumps(build_anomalies(d, live=10), ensure_ascii=False)
+        self.assertEqual(one, two)
+        self.assertEqual(json.loads(one)["generated_at"], "2026-11-27T12:00:00Z")
+
+    def test_generated_at_defaults_to_empty_and_can_be_overridden(self):
+        # 没有 analyzed_at 就留空，不能退回 time.now()
+        self.assertEqual(build_anomalies(base_data(), live=10)["generated_at"], "")
+        report = build_anomalies(base_data(), live=10, generated_at="2020-01-01T00:00:00Z")
+        self.assertEqual(report["generated_at"], "2020-01-01T00:00:00Z")
+
 
 class MapLevelTest(unittest.TestCase):
     def test_no_places_is_m0(self):

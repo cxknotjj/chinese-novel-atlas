@@ -30,23 +30,62 @@
   }
 
   let dragNode = null, panning = false, last = null, moved = false, clickedEmpty = false;
+  let pressNode = null;              // 按下时命中的节点：抬手没移动就直接选中
+  const activePointers = new Map();  // pointerId → { x, y }，双指缩放用
+  let pinch = null;                  // { d, k, world }：起始指距、起始缩放、锚点世界坐标
 
-  canvas.addEventListener('mousedown', e => {
-    if (e.button !== 0 && e.button !== 2) return;   // 只认左键与右键
-    camAnim = null;
+  function canvasPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const n = pick(e.clientX - rect.left, e.clientY - rect.top);
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function pinchAnchor() {
+    const [a, b] = [...activePointers.values()];
+    const rect = canvas.getBoundingClientRect();
+    const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
+    return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, k: view.k, world: toWorld(mx, my) };
+  }
+  function endGesture() {
+    dragNode = null; panning = false; last = null;
+    clickedEmpty = false; pressNode = null;
+    canvas.classList.remove('dragging');
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    const mouse = e.pointerType === 'mouse';
+    if (mouse && e.button !== 0 && e.button !== 2) return;   // 只认左键与右键
+    if (!mouse) e.preventDefault();   // 触屏：别让页面滚动/缩放抢走手势
+    camAnim = null;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* 老浏览器忽略 */ }
+
+    // 第二根手指落下：进入双指缩放，丢掉单指状态
+    if (activePointers.size === 2) {
+      endGesture();
+      pinch = pinchAnchor();
+      hoverId = hoverLink = null;
+      canvas.classList.add('dragging');
+      return;
+    }
+    if (activePointers.size > 2) return;
+
+    const p = canvasPos(e);
+    const n = pick(p.x, p.y);
     moved = false;
-    // 右键与地图一致：只平移，不抓节点、不选中，也不弹浏览器菜单
-    if (e.button === 2) {
-      dragNode = null; clickedEmpty = false;
+    if (mouse && e.button === 2) {
+      // 右键与地图一致：只平移，不抓节点、不选中，也不弹浏览器菜单
+      dragNode = null; pressNode = null; clickedEmpty = false;
       panning = true; last = { x: e.clientX, y: e.clientY };
-    } else if (n) {
-      clickedEmpty = false;
+    } else if (mouse && n) {
+      clickedEmpty = false; pressNode = n;
       dragNode = n; n.fixed = true; n._px = e.clientX; n._py = e.clientY;
-    } else {
-      clickedEmpty = true;
+    } else if (mouse) {
+      clickedEmpty = true; pressNode = null;
       panning = true; last = { x: e.clientX, y: e.clientY };
+    } else {
+      // 触屏：单指一律平移，轻点才选中 —— 否则按在节点上就再也拖不动图了
+      pressNode = n; clickedEmpty = !n; dragNode = null;
+      panning = true; last = { x: e.clientX, y: e.clientY };
+      hoverId = hoverLink = null;
     }
     canvas.classList.add('dragging');
   });
@@ -55,14 +94,28 @@
   // 地图早就阻止了，图谱这里补上；右键拖拽的平移逻辑在上面。
   canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-  window.addEventListener('mousemove', e => {
-    if (e.target !== canvas) { hoverId = null; hoverLink = null; return; }
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  window.addEventListener('pointermove', e => {
+    if (activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // 双指缩放：以两指中点为锚，缩放同时跟随中点平移
+    if (pinch && activePointers.size >= 2) {
+      const [a, b] = [...activePointers.values()];
+      const rect = canvas.getBoundingClientRect();
+      const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
+      const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      const fit = view.fitK || view.k || 1;
+      const z = Math.max(0.35, Math.min(6, (pinch.k / fit) * (d / pinch.d)));
+      view.k = fit * z;
+      view.x = mx - pinch.world.x * view.k;
+      view.y = my - pinch.world.y * view.k;
+      return;
+    }
+
     if (dragNode) {
-      const p = toWorld(mx, my);
+      const p = canvasPos(e);
       if (Math.hypot(e.clientX - dragNode._px, e.clientY - dragNode._py) > 3) moved = true;
-      dragNode.x = p.x; dragNode.y = p.y;
+      const w = toWorld(p.x, p.y);
+      dragNode.x = w.x; dragNode.y = w.y;
       alpha = Math.max(alpha, 0.28);
       return;
     }
@@ -71,25 +124,49 @@
       last = { x: e.clientX, y: e.clientY }; moved = true;
       return;
     }
-    if (mx < 0 || my < 0 || mx > W || my > H) { hoverId = null; hoverLink = null; return; }
-    const n = pick(mx, my);
+    // 以下只服务鼠标悬停：触屏没有 hover，别在拖动时反复算命中
+    if (e.pointerType !== 'mouse' || e.target !== canvas) { hoverId = null; hoverLink = null; return; }
+    const p = canvasPos(e);
+    if (p.x < 0 || p.y < 0 || p.x > W || p.y > H) { hoverId = null; hoverLink = null; return; }
+    const n = pick(p.x, p.y);
     hoverId = n ? n.id : null;
-    hoverLink = n ? null : pickLink(mx, my);
-    pointer = { x: mx, y: my };
+    hoverLink = n ? null : pickLink(p.x, p.y);
+    pointer = { x: p.x, y: p.y };
     canvas.style.cursor = (n || hoverLink) ? 'pointer' : 'grab';
   });
 
-  window.addEventListener('mouseup', e => {
+  function onPointerEnd(e) {
+    if (!activePointers.has(e.pointerId)) return;   // 只处理自己按下过的指针
+    activePointers.delete(e.pointerId);
+    try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* 指针已释放 */ }
+
+    if (pinch) {
+      if (activePointers.size >= 2) { pinch = pinchAnchor(); return; }
+      pinch = null;
+      if (activePointers.size === 1) {
+        // 还剩一指：以它当前位置继续平移，避免抬手瞬间图跳一下
+        const [p] = [...activePointers.values()];
+        dragNode = null; panning = true; moved = true;
+        last = { x: p.x, y: p.y };
+        return;
+      }
+      endGesture();
+      return;
+    }
+
     if (dragNode) {
       const n = dragNode;
       const dist = Math.hypot(e.clientX - n._px, e.clientY - n._py);
       if (dist < 6) select(n.id); else n.fixed = false;
+    } else if (pressNode && !moved) {
+      select(pressNode.id);                    // 触屏轻点节点
     } else if (clickedEmpty && !moved) {
       selectId = null; closePanel();
     }
-    dragNode = null; panning = false; last = null; clickedEmpty = false;
-    canvas.classList.remove('dragging');
-  });
+    endGesture();
+  }
+  window.addEventListener('pointerup', onPointerEnd);
+  window.addEventListener('pointercancel', onPointerEnd);
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
