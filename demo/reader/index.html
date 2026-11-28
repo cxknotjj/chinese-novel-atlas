@@ -970,15 +970,16 @@
     return copy;
   }
 
-  const CUTOFF = readCutoff(FULL_D);
-  const D = cutForReader(FULL_D, CUTOFF);
+  // let 而非 const：切换阅读进度时原地换掉，不刷新页面（见 applyCutoff）
+  let CUTOFF = readCutoff(FULL_D);
+  let D = cutForReader(FULL_D, CUTOFF);
   window.ATLAS_DATA = D;
 
   /* ================= 数据适配 ================= */
-  const CHAPTERS = D.chapters || [];
-  const REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
-  const FORESHADOWS = D.foreshadows || [];
-  const CURRENT_CH = (D._reader && D._reader.cutoff_ch) || Math.max(
+  let CHAPTERS = D.chapters || [];
+  let REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
+  let FORESHADOWS = D.foreshadows || [];
+  let CURRENT_CH = (D._reader && D._reader.cutoff_ch) || Math.max(
     ...CHAPTERS.map(c => c.ch),
     (D.meta.coverage && D.meta.coverage.chapters_done) || 0,
     1
@@ -987,8 +988,8 @@
   // 以「已分析到的章数」为跨度基准，下限 50 章。
   // 不能全用全书章数——只拆前 200 章时，2443 章的 15% 是 366，
   // 会让所有坑永远无法触发告警，功能形同失效。
-  const FS_SPAN = Math.max(CURRENT_CH, 1);
-  const FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
+  let FS_SPAN = Math.max(CURRENT_CH, 1);
+  let FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
 
   // 阵营配色：按出现顺序动态分配，任何书都能用
   const PALETTE = ['#A6314A', '#3D6B7D', '#6B4A7A', '#B8925A', '#5A7A5E',
@@ -1067,33 +1068,62 @@
     return fsSilent(f) > FS_THRESHOLD ? 'overdue' : 'planted';
   }
 
-  /* ================= 建索引 ================= */
+  /* ================= 建索引 =================
+     全部用容器复用（clear + 重填）而不是重新赋值：
+     其它模块通过闭包持有这些 Map/Set，换掉引用会让它们指向旧数据。
+     applyCutoff 切换进度时调 rebuildIndexes() 原地刷新。 */
   const byId = new Map();
-  D.entities.forEach(e => byId.set(e.id, e));
   const allById = new Map();
-  D.entities.forEach(e => allById.set(e.id, Object.assign({ _kind: 'entity' }, e)));
-  D.places.forEach(p => allById.set(p.id, Object.assign({ _kind: 'place' }, p)));
-  D.concepts.forEach(c => allById.set(c.id, Object.assign({ _kind: 'concept' }, c)));
-  const realmById = new Map(REALMS.map(r => [r.id, r]));
+  const realmById = new Map();
+  const placeById = new Map();
+  const chapterByCh = new Map();
+  const orgByName = new Map();
+  const orgRootCache = new Map();
+  const placeOwnerCache = new Map();
+  const deg = new Map();
+  let PLACES = [];
+  let orgEntities = [];
 
-  /* ---------- 地点 / 势力索引 ---------- */
-  const PLACES = D.places || [];
-  const placeById = new Map(PLACES.map(p => [p.id, p]));
-  const chapterByCh = new Map(CHAPTERS.map(c => [c.ch, c]));
-  const orgEntities = D.entities.filter(e => e.type === 'org');
   const keyName = s => String(s || '').replace(/\s+/g, '').trim();
   const escHtml = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const orgByName = new Map();
-  orgEntities.forEach(o => {
-    [o.name, ...(o.aliases || [])].forEach(n => {
-      const k = keyName(n);
-      if (k && !orgByName.has(k)) orgByName.set(k, o);
-    });
-  });
 
-  const orgRootCache = new Map();
+  function rebuildIndexes() {
+    [byId, allById, realmById, placeById, chapterByCh, orgByName,
+     orgRootCache, placeOwnerCache, deg].forEach(m => m.clear());
+
+    D.entities.forEach(e => byId.set(e.id, e));
+    D.entities.forEach(e => allById.set(e.id, Object.assign({ _kind: 'entity' }, e)));
+    D.places.forEach(p => allById.set(p.id, Object.assign({ _kind: 'place' }, p)));
+    D.concepts.forEach(c => allById.set(c.id, Object.assign({ _kind: 'concept' }, c)));
+    REALMS.forEach(r => realmById.set(r.id, r));
+
+    PLACES = D.places || [];
+    PLACES.forEach(p => placeById.set(p.id, p));
+    CHAPTERS.forEach(c => chapterByCh.set(c.ch, c));
+
+    orgEntities = D.entities.filter(e => e.type === 'org');
+    orgEntities.forEach(o => {
+      [o.name, ...(o.aliases || [])].forEach(n => {
+        const k = keyName(n);
+        if (k && !orgByName.has(k)) orgByName.set(k, o);
+      });
+    });
+
+    D.relations.forEach(r => {
+      deg.set(r.s, (deg.get(r.s) || 0) + 1);
+      deg.set(r.t, (deg.get(r.t) || 0) + 1);
+    });
+
+    // 阵营配色按出现顺序动态分配，实体集合变了要重排
+    Object.keys(GROUP_COLOR).forEach(k => { delete GROUP_COLOR[k]; });
+    [...new Set(D.entities.map(e => e.group))].forEach((g, i) => {
+      GROUP_COLOR[g] = PALETTE[i % PALETTE.length];
+    });
+  }
+  rebuildIndexes();
+
   function orgRootOf(o) {
     if (!o || o.type !== 'org') return null;
     if (orgRootCache.has(o.id)) return orgRootCache.get(o.id);
@@ -1118,7 +1148,6 @@
     return null;
   }
 
-  const placeOwnerCache = new Map();
   function placeOwnerInfo(p) {
     if (placeOwnerCache.has(p.id)) return placeOwnerCache.get(p.id);
     const attrs = p.attrs || {};
@@ -1213,12 +1242,6 @@
     return path;
   }
 
-  const deg = new Map();
-  D.relations.forEach(r => {
-    deg.set(r.s, (deg.get(r.s) || 0) + 1);
-    deg.set(r.t, (deg.get(r.t) || 0) + 1);
-  });
-
   function realmIndex(id) {
     const r = realmById.get(id);
     return r ? r.order : 0;
@@ -1302,7 +1325,7 @@
   const overdueCnt = FORESHADOWS.filter(f => fsStatus(f) === 'overdue').length;
   const analyzedCh = (D.meta.coverage && D.meta.coverage.chapters_done) || D.chapters.length;
   const isPartial = analyzedCh < D.meta.chapters;
-  const cutoff = CURRENT_CH;
+  let cutoff = CURRENT_CH;
   document.getElementById('title').textContent = D.meta.title;
   document.getElementById('tag').textContent =
     [D.meta.genre, D.meta.platform, D.meta.status].filter(Boolean).join(' · ') +
@@ -1346,25 +1369,69 @@
       hint.textContent = '全书已解锁 · 可拖动进度回看任意章节';
     }
   }
-  function goCutoff(n) {
+  /** 切换阅读进度：原地换数据 + 重渲染，不刷新页面。
+      可行的前提有三条，缺一不可：
+      1. 所有视图都从 D 读数据（没有各自缓存副本）
+      2. render 函数幂等（清空重建，见 setView 无条件调用）
+      3. 索引与图谱用容器复用（clear/splice 而非换引用），
+         否则其它模块闭包里持有的还是旧 Map。 */
+  function applyCutoff(n) {
     const max = maxChapter(FULL_D);
     const next = Math.max(1, Math.min(max, Math.round(n)));
+    if (next === CUTOFF) return;
+
+    CUTOFF = next;
+    cutoff = next;
     try { localStorage.setItem(titleKey(FULL_D), String(next)); } catch (e) {}
+
+    // URL 同步但不跳转：刷新或分享后仍停在同一个进度
     const url = new URL(location.href);
     url.searchParams.set('cutoff', String(next));
     url.hash = '';
-    location.href = url.toString();
+    history.replaceState(null, '', url.toString());
+
+    // 1) 换数据
+    D = cutForReader(FULL_D, next);
+    window.ATLAS_DATA = D;
+    CHAPTERS = D.chapters || [];
+    REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
+    FORESHADOWS = D.foreshadows || [];
+    CURRENT_CH = (D._reader && D._reader.cutoff_ch) || Math.max(
+      ...CHAPTERS.map(c => c.ch),
+      (D.meta.coverage && D.meta.coverage.chapters_done) || 0,
+      1
+    );
+    FS_SPAN = Math.max(CURRENT_CH, 1);
+    FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
+
+    // 2) 重建索引与图谱（容器复用，其它模块的闭包引用仍然有效）
+    rebuildIndexes();
+    buildGraphData(true);            // 保留同 id 节点的坐标，只增减
+    const wasGraph = curView === 'graph';
+    const wasMap = curView === 'map';
+
+    // 3) 当前选中/悬停的实体可能已被截断掉
+    if (selectId && !nodeById.has(selectId)) { selectId = null; closePanel(); }
+    hoverId = hoverLink = null;
+
+    // 4) 重渲染
+    renderReaderBar();
+    setView(curView);                // setView 无幂等短路，同视图也会重画
+    updateGraphTools();
+    if (wasGraph) { resize(); fitView(); alpha = Math.max(alpha, 0.25); }
+    if (wasMap) drawMap();
   }
+
   if (document.getElementById('cutoff')) {
     renderReaderBar();
     const range = document.getElementById('cutoff');
     range.addEventListener('input', () => {
       document.getElementById('cutoffLabel').textContent = `第 ${range.value} / ${maxChapter(FULL_D)} 章`;
     });
-    range.addEventListener('change', () => goCutoff(range.value));
-    document.getElementById('cutoffPrev').addEventListener('click', () => goCutoff(cutoff - 10));
-    document.getElementById('cutoffNext').addEventListener('click', () => goCutoff(cutoff + 10));
-    document.getElementById('cutoffAll').addEventListener('click', () => goCutoff(maxChapter(FULL_D)));
+    range.addEventListener('change', () => applyCutoff(Number(range.value)));
+    document.getElementById('cutoffPrev').addEventListener('click', () => applyCutoff(cutoff - 10));
+    document.getElementById('cutoffNext').addEventListener('click', () => applyCutoff(cutoff + 10));
+    document.getElementById('cutoffAll').addEventListener('click', () => applyCutoff(maxChapter(FULL_D)));
   }
 
 
@@ -1376,78 +1443,111 @@
   const ctx = canvas.getContext('2d');
   let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-  const rawNodes = D.entities.map(e => {
-    const d = deg.get(e.id) || 0;
-    return {
-      id: e.id, ref: e, name: e.name,
-      r: 6.8 + Math.min(d, 22) * 0.58,
-      d, x: 0, y: 0, vx: 0, vy: 0, fixed: false,
-      dimT: 0, selT: 0        // 变暗 / 选中的过渡进度，0→1 插值用
-    };
-  });
-  // 只画有关系连线的节点。孤立点没有信息量，还会把核心群挤到角落
-  const nodes = rawNodes.filter(n => n.d > 0);
-  const isolatedCount = rawNodes.length - nodes.length;
-  const nodeById = new Map(nodes.map(n => [n.id, n]));
-
-  const groups = [...new Set(nodes.map(n => n.ref.group))];
-  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
-  groups.forEach((g, gi) => {
-    const members = nodes.filter(n => n.ref.group === g);
-    const count = members.length;
-
-    // “其他”大多是互不相干的散点，硬塞进一个阵营会堆成一团
-    if (g === '其他' || count > 42) {
-      members.forEach((n, i) => {
-        const a = i * GOLDEN + gi * 1.7;
-        const ring = 315 + (i % 7) * 27 + (count > 42 ? 30 : 0);
-        n.x = Math.cos(a) * ring * 1.12;
-        n.y = Math.sin(a) * ring * 0.82;
-      });
-      return;
-    }
-
-    const a = (gi / Math.max(groups.length, 1)) * Math.PI * 2 - Math.PI / 2;
-    const ring = 245 + Math.min(120, Math.sqrt(count) * 15);
-    const cx = Math.cos(a) * ring * 1.2;
-    const cy = Math.sin(a) * ring * 0.9;
-    const memberR = 38 + Math.sqrt(count) * 13;
-    members.forEach((n, i) => {
-      const t = (i / Math.max(1, members.length)) * Math.PI * 2 + (gi % 2 ? 0.35 : 0);
-      const rr = memberR * (0.72 + Math.random() * 0.4);
-      n.x = cx + Math.cos(t) * rr + (Math.random() - .5) * 12;
-      n.y = cy + Math.sin(t) * rr + (Math.random() - .5) * 12;
-    });
-  });
-
+  /* 容器保持引用不变：其它模块通过闭包持有这些结构，
+     换掉引用会让它们指向旧数据。切进度时用 buildGraphData() 原地重建。 */
+  const rawNodes = [];
+  const nodes = [];
+  const nodeById = new Map();
+  const groups = [];
   const groupAnchors = new Map();
-  groups.forEach(g => {
-    const members = nodes.filter(n => n.ref.group === g);
-    if (g !== '其他' && members.length > 1) {
-      groupAnchors.set(g, {
-        x: members.reduce((s, n) => s + n.x, 0) / members.length,
-        y: members.reduce((s, n) => s + n.y, 0) / members.length
-      });
-    }
-  });
-
-  const links = D.relations.map(r => ({
-    s: nodeById.get(r.s), t: nodeById.get(r.t), ref: r,
-    w: r.weight || 0.5, type: r.type,
-    actT: 1                  // 高亮过渡进度，初始全亮
-  })).filter(l => l.s && l.t);
-
+  const links = [];
   const adj = new Map();
-  links.forEach(l => {
-    if (!adj.has(l.s.id)) adj.set(l.s.id, new Set());
-    if (!adj.has(l.t.id)) adj.set(l.t.id, new Set());
-    adj.get(l.s.id).add(l.t.id);
-    adj.get(l.t.id).add(l.s.id);
-  });
+  let isolatedCount = 0;
+  let coreCount = 0;
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+
+  /** 按当前 D 重建节点与连线。
+      reusePos=true 时保留同 id 节点的坐标 —— 切阅读进度只是增减节点，
+      整张图重新抖成另一个形状会让人丢掉「刚才看的是哪一坨」。 */
+  function buildGraphData(reusePos) {
+    const prev = new Map();
+    if (reusePos) nodes.forEach(n => prev.set(n.id, { x: n.x, y: n.y }));
+
+    const fresh = D.entities.map(e => {
+      const d = deg.get(e.id) || 0;
+      const old = prev.get(e.id);
+      return {
+        id: e.id, ref: e, name: e.name,
+        r: 6.8 + Math.min(d, 22) * 0.58,
+        d,
+        x: old ? old.x : 0, y: old ? old.y : 0,
+        vx: 0, vy: 0, fixed: false,
+        dimT: 0, selT: 0        // 变暗 / 选中的过渡进度，0→1 插值用
+      };
+    });
+    rawNodes.splice(0, rawNodes.length, ...fresh);
+
+    // 只画有关系连线的节点。孤立点没有信息量，还会把核心群挤到角落
+    const visible = fresh.filter(n => n.d > 0);
+    isolatedCount = fresh.length - visible.length;
+    nodes.splice(0, nodes.length, ...visible);
+
+    nodeById.clear();
+    nodes.forEach(n => nodeById.set(n.id, n));
+
+    groups.splice(0, groups.length, ...[...new Set(nodes.map(n => n.ref.group))]);
+    const placed = new Set(prev.keys());
+    groups.forEach((g, gi) => {
+      const members = nodes.filter(n => n.ref.group === g);
+      const count = members.length;
+
+      // “其他”大多是互不相干的散点，硬塞进一个阵营会堆成一团
+      if (g === '其他' || count > 42) {
+        members.forEach((n, i) => {
+          if (placed.has(n.id)) return;
+          const a = i * GOLDEN + gi * 1.7;
+          const ring = 315 + (i % 7) * 27 + (count > 42 ? 30 : 0);
+          n.x = Math.cos(a) * ring * 1.12;
+          n.y = Math.sin(a) * ring * 0.82;
+        });
+        return;
+      }
+
+      const a = (gi / Math.max(groups.length, 1)) * Math.PI * 2 - Math.PI / 2;
+      const ring = 245 + Math.min(120, Math.sqrt(count) * 15);
+      const cx = Math.cos(a) * ring * 1.2;
+      const cy = Math.sin(a) * ring * 0.9;
+      const memberR = 38 + Math.sqrt(count) * 13;
+      members.forEach((n, i) => {
+        if (placed.has(n.id)) return;
+        const t = (i / Math.max(1, members.length)) * Math.PI * 2 + (gi % 2 ? 0.35 : 0);
+        const rr = memberR * (0.72 + Math.random() * 0.4);
+        n.x = cx + Math.cos(t) * rr + (Math.random() - .5) * 12;
+        n.y = cy + Math.sin(t) * rr + (Math.random() - .5) * 12;
+      });
+    });
+
+    groupAnchors.clear();
+    groups.forEach(g => {
+      const members = nodes.filter(n => n.ref.group === g);
+      if (g !== '其他' && members.length > 1) {
+        groupAnchors.set(g, {
+          x: members.reduce((s, n) => s + n.x, 0) / members.length,
+          y: members.reduce((s, n) => s + n.y, 0) / members.length
+        });
+      }
+    });
+
+    links.splice(0, links.length, ...D.relations.map(r => ({
+      s: nodeById.get(r.s), t: nodeById.get(r.t), ref: r,
+      w: r.weight || 0.5, type: r.type,
+      actT: 1                  // 高亮过渡进度，初始全亮
+    })).filter(l => l.s && l.t));
+
+    adj.clear();
+    links.forEach(l => {
+      if (!adj.has(l.s.id)) adj.set(l.s.id, new Set());
+      if (!adj.has(l.t.id)) adj.set(l.t.id, new Set());
+      adj.get(l.s.id).add(l.t.id);
+      adj.get(l.t.id).add(l.s.id);
+    });
+
+    coreCount = nodes.filter(n => n.ref.type === 'org' || n.d >= 3).length;
+  }
+  buildGraphData(false);
 
   let graphScope = 'core';
   let groupFilter = '';
-  const coreCount = nodes.filter(n => n.ref.type === 'org' || n.d >= 3).length;
 
   function visibleNode(n) {
     if (groupFilter) return n.ref.group === groupFilter;
@@ -1474,18 +1574,23 @@
     all.textContent = `全部 ${nodes.length}`;
     core.classList.toggle('on', graphScope === 'core');
     all.classList.toggle('on', graphScope === 'all');
-    if (!sel.dataset.init) {
+    // 势力列表随数据变化：切进度后可能多出或少掉阵营，按签名重填
+    if (sel.dataset.groups !== groups.join('|')) {
       sel.innerHTML = `<option value="">全部势力</option>` +
         groups.map(g => `<option value="${g}">${g}</option>`).join('');
-      sel.dataset.init = '1';
-      sel.addEventListener('change', () => {
-        groupFilter = sel.value;
-        if (groupFilter) graphScope = 'all';
-        updateGraphTools();
-        hoverId = hoverLink = null;
-        fitView();
-        alpha = Math.max(alpha, 0.22);
-      });
+      sel.dataset.groups = groups.join('|');
+      if (!groups.includes(groupFilter)) groupFilter = '';   // 选中的势力已不存在
+      if (!sel.dataset.bound) {
+        sel.dataset.bound = '1';
+        sel.addEventListener('change', () => {
+          groupFilter = sel.value;
+          if (groupFilter) graphScope = 'all';
+          updateGraphTools();
+          hoverId = hoverLink = null;
+          fitView();
+          alpha = Math.max(alpha, 0.22);
+        });
+      }
     }
     sel.value = groupFilter;
     document.getElementById('scopeCore').onclick = () => {

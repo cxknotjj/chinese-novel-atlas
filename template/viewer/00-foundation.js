@@ -132,15 +132,16 @@
     return copy;
   }
 
-  const CUTOFF = readCutoff(FULL_D);
-  const D = cutForReader(FULL_D, CUTOFF);
+  // let 而非 const：切换阅读进度时原地换掉，不刷新页面（见 applyCutoff）
+  let CUTOFF = readCutoff(FULL_D);
+  let D = cutForReader(FULL_D, CUTOFF);
   window.ATLAS_DATA = D;
 
   /* ================= 数据适配 ================= */
-  const CHAPTERS = D.chapters || [];
-  const REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
-  const FORESHADOWS = D.foreshadows || [];
-  const CURRENT_CH = (D._reader && D._reader.cutoff_ch) || Math.max(
+  let CHAPTERS = D.chapters || [];
+  let REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
+  let FORESHADOWS = D.foreshadows || [];
+  let CURRENT_CH = (D._reader && D._reader.cutoff_ch) || Math.max(
     ...CHAPTERS.map(c => c.ch),
     (D.meta.coverage && D.meta.coverage.chapters_done) || 0,
     1
@@ -149,8 +150,8 @@
   // 以「已分析到的章数」为跨度基准，下限 50 章。
   // 不能全用全书章数——只拆前 200 章时，2443 章的 15% 是 366，
   // 会让所有坑永远无法触发告警，功能形同失效。
-  const FS_SPAN = Math.max(CURRENT_CH, 1);
-  const FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
+  let FS_SPAN = Math.max(CURRENT_CH, 1);
+  let FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
 
   // 阵营配色：按出现顺序动态分配，任何书都能用
   const PALETTE = ['#A6314A', '#3D6B7D', '#6B4A7A', '#B8925A', '#5A7A5E',
@@ -229,33 +230,62 @@
     return fsSilent(f) > FS_THRESHOLD ? 'overdue' : 'planted';
   }
 
-  /* ================= 建索引 ================= */
+  /* ================= 建索引 =================
+     全部用容器复用（clear + 重填）而不是重新赋值：
+     其它模块通过闭包持有这些 Map/Set，换掉引用会让它们指向旧数据。
+     applyCutoff 切换进度时调 rebuildIndexes() 原地刷新。 */
   const byId = new Map();
-  D.entities.forEach(e => byId.set(e.id, e));
   const allById = new Map();
-  D.entities.forEach(e => allById.set(e.id, Object.assign({ _kind: 'entity' }, e)));
-  D.places.forEach(p => allById.set(p.id, Object.assign({ _kind: 'place' }, p)));
-  D.concepts.forEach(c => allById.set(c.id, Object.assign({ _kind: 'concept' }, c)));
-  const realmById = new Map(REALMS.map(r => [r.id, r]));
+  const realmById = new Map();
+  const placeById = new Map();
+  const chapterByCh = new Map();
+  const orgByName = new Map();
+  const orgRootCache = new Map();
+  const placeOwnerCache = new Map();
+  const deg = new Map();
+  let PLACES = [];
+  let orgEntities = [];
 
-  /* ---------- 地点 / 势力索引 ---------- */
-  const PLACES = D.places || [];
-  const placeById = new Map(PLACES.map(p => [p.id, p]));
-  const chapterByCh = new Map(CHAPTERS.map(c => [c.ch, c]));
-  const orgEntities = D.entities.filter(e => e.type === 'org');
   const keyName = s => String(s || '').replace(/\s+/g, '').trim();
   const escHtml = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const orgByName = new Map();
-  orgEntities.forEach(o => {
-    [o.name, ...(o.aliases || [])].forEach(n => {
-      const k = keyName(n);
-      if (k && !orgByName.has(k)) orgByName.set(k, o);
-    });
-  });
 
-  const orgRootCache = new Map();
+  function rebuildIndexes() {
+    [byId, allById, realmById, placeById, chapterByCh, orgByName,
+     orgRootCache, placeOwnerCache, deg].forEach(m => m.clear());
+
+    D.entities.forEach(e => byId.set(e.id, e));
+    D.entities.forEach(e => allById.set(e.id, Object.assign({ _kind: 'entity' }, e)));
+    D.places.forEach(p => allById.set(p.id, Object.assign({ _kind: 'place' }, p)));
+    D.concepts.forEach(c => allById.set(c.id, Object.assign({ _kind: 'concept' }, c)));
+    REALMS.forEach(r => realmById.set(r.id, r));
+
+    PLACES = D.places || [];
+    PLACES.forEach(p => placeById.set(p.id, p));
+    CHAPTERS.forEach(c => chapterByCh.set(c.ch, c));
+
+    orgEntities = D.entities.filter(e => e.type === 'org');
+    orgEntities.forEach(o => {
+      [o.name, ...(o.aliases || [])].forEach(n => {
+        const k = keyName(n);
+        if (k && !orgByName.has(k)) orgByName.set(k, o);
+      });
+    });
+
+    D.relations.forEach(r => {
+      deg.set(r.s, (deg.get(r.s) || 0) + 1);
+      deg.set(r.t, (deg.get(r.t) || 0) + 1);
+    });
+
+    // 阵营配色按出现顺序动态分配，实体集合变了要重排
+    Object.keys(GROUP_COLOR).forEach(k => { delete GROUP_COLOR[k]; });
+    [...new Set(D.entities.map(e => e.group))].forEach((g, i) => {
+      GROUP_COLOR[g] = PALETTE[i % PALETTE.length];
+    });
+  }
+  rebuildIndexes();
+
   function orgRootOf(o) {
     if (!o || o.type !== 'org') return null;
     if (orgRootCache.has(o.id)) return orgRootCache.get(o.id);
@@ -280,7 +310,6 @@
     return null;
   }
 
-  const placeOwnerCache = new Map();
   function placeOwnerInfo(p) {
     if (placeOwnerCache.has(p.id)) return placeOwnerCache.get(p.id);
     const attrs = p.attrs || {};
@@ -375,12 +404,6 @@
     return path;
   }
 
-  const deg = new Map();
-  D.relations.forEach(r => {
-    deg.set(r.s, (deg.get(r.s) || 0) + 1);
-    deg.set(r.t, (deg.get(r.t) || 0) + 1);
-  });
-
   function realmIndex(id) {
     const r = realmById.get(id);
     return r ? r.order : 0;
@@ -464,7 +487,7 @@
   const overdueCnt = FORESHADOWS.filter(f => fsStatus(f) === 'overdue').length;
   const analyzedCh = (D.meta.coverage && D.meta.coverage.chapters_done) || D.chapters.length;
   const isPartial = analyzedCh < D.meta.chapters;
-  const cutoff = CURRENT_CH;
+  let cutoff = CURRENT_CH;
   document.getElementById('title').textContent = D.meta.title;
   document.getElementById('tag').textContent =
     [D.meta.genre, D.meta.platform, D.meta.status].filter(Boolean).join(' · ') +
@@ -508,24 +531,68 @@
       hint.textContent = '全书已解锁 · 可拖动进度回看任意章节';
     }
   }
-  function goCutoff(n) {
+  /** 切换阅读进度：原地换数据 + 重渲染，不刷新页面。
+      可行的前提有三条，缺一不可：
+      1. 所有视图都从 D 读数据（没有各自缓存副本）
+      2. render 函数幂等（清空重建，见 setView 无条件调用）
+      3. 索引与图谱用容器复用（clear/splice 而非换引用），
+         否则其它模块闭包里持有的还是旧 Map。 */
+  function applyCutoff(n) {
     const max = maxChapter(FULL_D);
     const next = Math.max(1, Math.min(max, Math.round(n)));
+    if (next === CUTOFF) return;
+
+    CUTOFF = next;
+    cutoff = next;
     try { localStorage.setItem(titleKey(FULL_D), String(next)); } catch (e) {}
+
+    // URL 同步但不跳转：刷新或分享后仍停在同一个进度
     const url = new URL(location.href);
     url.searchParams.set('cutoff', String(next));
     url.hash = '';
-    location.href = url.toString();
+    history.replaceState(null, '', url.toString());
+
+    // 1) 换数据
+    D = cutForReader(FULL_D, next);
+    window.ATLAS_DATA = D;
+    CHAPTERS = D.chapters || [];
+    REALMS = (D.realms || []).slice().sort((a, b) => a.order - b.order);
+    FORESHADOWS = D.foreshadows || [];
+    CURRENT_CH = (D._reader && D._reader.cutoff_ch) || Math.max(
+      ...CHAPTERS.map(c => c.ch),
+      (D.meta.coverage && D.meta.coverage.chapters_done) || 0,
+      1
+    );
+    FS_SPAN = Math.max(CURRENT_CH, 1);
+    FS_THRESHOLD = Math.max(50, Math.round(FS_SPAN * 0.15));
+
+    // 2) 重建索引与图谱（容器复用，其它模块的闭包引用仍然有效）
+    rebuildIndexes();
+    buildGraphData(true);            // 保留同 id 节点的坐标，只增减
+    const wasGraph = curView === 'graph';
+    const wasMap = curView === 'map';
+
+    // 3) 当前选中/悬停的实体可能已被截断掉
+    if (selectId && !nodeById.has(selectId)) { selectId = null; closePanel(); }
+    hoverId = hoverLink = null;
+
+    // 4) 重渲染
+    renderReaderBar();
+    setView(curView);                // setView 无幂等短路，同视图也会重画
+    updateGraphTools();
+    if (wasGraph) { resize(); fitView(); alpha = Math.max(alpha, 0.25); }
+    if (wasMap) drawMap();
   }
+
   if (document.getElementById('cutoff')) {
     renderReaderBar();
     const range = document.getElementById('cutoff');
     range.addEventListener('input', () => {
       document.getElementById('cutoffLabel').textContent = `第 ${range.value} / ${maxChapter(FULL_D)} 章`;
     });
-    range.addEventListener('change', () => goCutoff(range.value));
-    document.getElementById('cutoffPrev').addEventListener('click', () => goCutoff(cutoff - 10));
-    document.getElementById('cutoffNext').addEventListener('click', () => goCutoff(cutoff + 10));
-    document.getElementById('cutoffAll').addEventListener('click', () => goCutoff(maxChapter(FULL_D)));
+    range.addEventListener('change', () => applyCutoff(Number(range.value)));
+    document.getElementById('cutoffPrev').addEventListener('click', () => applyCutoff(cutoff - 10));
+    document.getElementById('cutoffNext').addEventListener('click', () => applyCutoff(cutoff + 10));
+    document.getElementById('cutoffAll').addEventListener('click', () => applyCutoff(maxChapter(FULL_D)));
   }
 

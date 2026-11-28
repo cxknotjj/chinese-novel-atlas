@@ -5,78 +5,111 @@
   const ctx = canvas.getContext('2d');
   let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-  const rawNodes = D.entities.map(e => {
-    const d = deg.get(e.id) || 0;
-    return {
-      id: e.id, ref: e, name: e.name,
-      r: 6.8 + Math.min(d, 22) * 0.58,
-      d, x: 0, y: 0, vx: 0, vy: 0, fixed: false,
-      dimT: 0, selT: 0        // 变暗 / 选中的过渡进度，0→1 插值用
-    };
-  });
-  // 只画有关系连线的节点。孤立点没有信息量，还会把核心群挤到角落
-  const nodes = rawNodes.filter(n => n.d > 0);
-  const isolatedCount = rawNodes.length - nodes.length;
-  const nodeById = new Map(nodes.map(n => [n.id, n]));
-
-  const groups = [...new Set(nodes.map(n => n.ref.group))];
-  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
-  groups.forEach((g, gi) => {
-    const members = nodes.filter(n => n.ref.group === g);
-    const count = members.length;
-
-    // “其他”大多是互不相干的散点，硬塞进一个阵营会堆成一团
-    if (g === '其他' || count > 42) {
-      members.forEach((n, i) => {
-        const a = i * GOLDEN + gi * 1.7;
-        const ring = 315 + (i % 7) * 27 + (count > 42 ? 30 : 0);
-        n.x = Math.cos(a) * ring * 1.12;
-        n.y = Math.sin(a) * ring * 0.82;
-      });
-      return;
-    }
-
-    const a = (gi / Math.max(groups.length, 1)) * Math.PI * 2 - Math.PI / 2;
-    const ring = 245 + Math.min(120, Math.sqrt(count) * 15);
-    const cx = Math.cos(a) * ring * 1.2;
-    const cy = Math.sin(a) * ring * 0.9;
-    const memberR = 38 + Math.sqrt(count) * 13;
-    members.forEach((n, i) => {
-      const t = (i / Math.max(1, members.length)) * Math.PI * 2 + (gi % 2 ? 0.35 : 0);
-      const rr = memberR * (0.72 + Math.random() * 0.4);
-      n.x = cx + Math.cos(t) * rr + (Math.random() - .5) * 12;
-      n.y = cy + Math.sin(t) * rr + (Math.random() - .5) * 12;
-    });
-  });
-
+  /* 容器保持引用不变：其它模块通过闭包持有这些结构，
+     换掉引用会让它们指向旧数据。切进度时用 buildGraphData() 原地重建。 */
+  const rawNodes = [];
+  const nodes = [];
+  const nodeById = new Map();
+  const groups = [];
   const groupAnchors = new Map();
-  groups.forEach(g => {
-    const members = nodes.filter(n => n.ref.group === g);
-    if (g !== '其他' && members.length > 1) {
-      groupAnchors.set(g, {
-        x: members.reduce((s, n) => s + n.x, 0) / members.length,
-        y: members.reduce((s, n) => s + n.y, 0) / members.length
-      });
-    }
-  });
-
-  const links = D.relations.map(r => ({
-    s: nodeById.get(r.s), t: nodeById.get(r.t), ref: r,
-    w: r.weight || 0.5, type: r.type,
-    actT: 1                  // 高亮过渡进度，初始全亮
-  })).filter(l => l.s && l.t);
-
+  const links = [];
   const adj = new Map();
-  links.forEach(l => {
-    if (!adj.has(l.s.id)) adj.set(l.s.id, new Set());
-    if (!adj.has(l.t.id)) adj.set(l.t.id, new Set());
-    adj.get(l.s.id).add(l.t.id);
-    adj.get(l.t.id).add(l.s.id);
-  });
+  let isolatedCount = 0;
+  let coreCount = 0;
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+
+  /** 按当前 D 重建节点与连线。
+      reusePos=true 时保留同 id 节点的坐标 —— 切阅读进度只是增减节点，
+      整张图重新抖成另一个形状会让人丢掉「刚才看的是哪一坨」。 */
+  function buildGraphData(reusePos) {
+    const prev = new Map();
+    if (reusePos) nodes.forEach(n => prev.set(n.id, { x: n.x, y: n.y }));
+
+    const fresh = D.entities.map(e => {
+      const d = deg.get(e.id) || 0;
+      const old = prev.get(e.id);
+      return {
+        id: e.id, ref: e, name: e.name,
+        r: 6.8 + Math.min(d, 22) * 0.58,
+        d,
+        x: old ? old.x : 0, y: old ? old.y : 0,
+        vx: 0, vy: 0, fixed: false,
+        dimT: 0, selT: 0        // 变暗 / 选中的过渡进度，0→1 插值用
+      };
+    });
+    rawNodes.splice(0, rawNodes.length, ...fresh);
+
+    // 只画有关系连线的节点。孤立点没有信息量，还会把核心群挤到角落
+    const visible = fresh.filter(n => n.d > 0);
+    isolatedCount = fresh.length - visible.length;
+    nodes.splice(0, nodes.length, ...visible);
+
+    nodeById.clear();
+    nodes.forEach(n => nodeById.set(n.id, n));
+
+    groups.splice(0, groups.length, ...[...new Set(nodes.map(n => n.ref.group))]);
+    const placed = new Set(prev.keys());
+    groups.forEach((g, gi) => {
+      const members = nodes.filter(n => n.ref.group === g);
+      const count = members.length;
+
+      // “其他”大多是互不相干的散点，硬塞进一个阵营会堆成一团
+      if (g === '其他' || count > 42) {
+        members.forEach((n, i) => {
+          if (placed.has(n.id)) return;
+          const a = i * GOLDEN + gi * 1.7;
+          const ring = 315 + (i % 7) * 27 + (count > 42 ? 30 : 0);
+          n.x = Math.cos(a) * ring * 1.12;
+          n.y = Math.sin(a) * ring * 0.82;
+        });
+        return;
+      }
+
+      const a = (gi / Math.max(groups.length, 1)) * Math.PI * 2 - Math.PI / 2;
+      const ring = 245 + Math.min(120, Math.sqrt(count) * 15);
+      const cx = Math.cos(a) * ring * 1.2;
+      const cy = Math.sin(a) * ring * 0.9;
+      const memberR = 38 + Math.sqrt(count) * 13;
+      members.forEach((n, i) => {
+        if (placed.has(n.id)) return;
+        const t = (i / Math.max(1, members.length)) * Math.PI * 2 + (gi % 2 ? 0.35 : 0);
+        const rr = memberR * (0.72 + Math.random() * 0.4);
+        n.x = cx + Math.cos(t) * rr + (Math.random() - .5) * 12;
+        n.y = cy + Math.sin(t) * rr + (Math.random() - .5) * 12;
+      });
+    });
+
+    groupAnchors.clear();
+    groups.forEach(g => {
+      const members = nodes.filter(n => n.ref.group === g);
+      if (g !== '其他' && members.length > 1) {
+        groupAnchors.set(g, {
+          x: members.reduce((s, n) => s + n.x, 0) / members.length,
+          y: members.reduce((s, n) => s + n.y, 0) / members.length
+        });
+      }
+    });
+
+    links.splice(0, links.length, ...D.relations.map(r => ({
+      s: nodeById.get(r.s), t: nodeById.get(r.t), ref: r,
+      w: r.weight || 0.5, type: r.type,
+      actT: 1                  // 高亮过渡进度，初始全亮
+    })).filter(l => l.s && l.t));
+
+    adj.clear();
+    links.forEach(l => {
+      if (!adj.has(l.s.id)) adj.set(l.s.id, new Set());
+      if (!adj.has(l.t.id)) adj.set(l.t.id, new Set());
+      adj.get(l.s.id).add(l.t.id);
+      adj.get(l.t.id).add(l.s.id);
+    });
+
+    coreCount = nodes.filter(n => n.ref.type === 'org' || n.d >= 3).length;
+  }
+  buildGraphData(false);
 
   let graphScope = 'core';
   let groupFilter = '';
-  const coreCount = nodes.filter(n => n.ref.type === 'org' || n.d >= 3).length;
 
   function visibleNode(n) {
     if (groupFilter) return n.ref.group === groupFilter;
@@ -103,18 +136,23 @@
     all.textContent = `全部 ${nodes.length}`;
     core.classList.toggle('on', graphScope === 'core');
     all.classList.toggle('on', graphScope === 'all');
-    if (!sel.dataset.init) {
+    // 势力列表随数据变化：切进度后可能多出或少掉阵营，按签名重填
+    if (sel.dataset.groups !== groups.join('|')) {
       sel.innerHTML = `<option value="">全部势力</option>` +
         groups.map(g => `<option value="${g}">${g}</option>`).join('');
-      sel.dataset.init = '1';
-      sel.addEventListener('change', () => {
-        groupFilter = sel.value;
-        if (groupFilter) graphScope = 'all';
-        updateGraphTools();
-        hoverId = hoverLink = null;
-        fitView();
-        alpha = Math.max(alpha, 0.22);
-      });
+      sel.dataset.groups = groups.join('|');
+      if (!groups.includes(groupFilter)) groupFilter = '';   // 选中的势力已不存在
+      if (!sel.dataset.bound) {
+        sel.dataset.bound = '1';
+        sel.addEventListener('change', () => {
+          groupFilter = sel.value;
+          if (groupFilter) graphScope = 'all';
+          updateGraphTools();
+          hoverId = hoverLink = null;
+          fitView();
+          alpha = Math.max(alpha, 0.22);
+        });
+      }
     }
     sel.value = groupFilter;
     document.getElementById('scopeCore').onclick = () => {
