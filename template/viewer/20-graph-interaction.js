@@ -83,7 +83,12 @@
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
     const before = toWorld(mx, my);
-    view.k = Math.min(3.2, Math.max(0.35, view.k * (e.deltaY < 0 ? 1.1 : 0.9)));
+    // 倍数作用于「适配比例」，与地图 zoomMapBy 同一套语义。
+    // fitView 算出的 k 随节点分布与视口在 0.42–1.4 之间浮动，用绝对上限（原 3.2）
+    // 会让布局紧凑的书只能放大一点点，布局稀疏的书又能放到很大。
+    const fit = view.fitK || view.k || 1;
+    const z = Math.max(0.35, Math.min(6, (view.k / fit) * (e.deltaY < 0 ? 1.1 : 0.9)));
+    view.k = fit * z;
     const after = toWorld(mx, my);
     view.x += (after.x - before.x) * view.k;
     view.y += (after.y - before.y) * view.k;

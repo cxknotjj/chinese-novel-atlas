@@ -125,7 +125,7 @@
     };
   }
 
-  let view = { x: 0, y: 0, k: 1 };
+  let view = { x: 0, y: 0, k: 1, fitK: 1 };
   let hoverId = null, hoverLink = null, selectId = null, alpha = 1;
   let camAnim = null;
   const ripples = [];
@@ -336,6 +336,7 @@
     const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
     const k = Math.max(0.42, Math.min((W - pad * 2) / w, (H - pad * 2) / h, 1.4));
     view.k = k;
+    view.fitK = k;      // 缩放倍数以此为基准，见 20-graph-interaction 的 wheel
     view.x = W / 2 - (minX + maxX) / 2 * k;
     view.y = H / 2 - (minY + maxY) / 2 * k;
   }
