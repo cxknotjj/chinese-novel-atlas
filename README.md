@@ -13,7 +13,7 @@
 [功能文档](docs/功能文档.md) ·
 [English](README_EN.md)
 
-![读者世界档案：八个视图共用一份数据](docs/screenshots/reader-home.png)
+![读者世界档案：384 实体 · 199 角色 · 119 地点 · 215 伏笔，八个视图共用一份数据](docs/screenshots/reader-home-fanren.png)
 
 同一份 `data.json` 投影出八个视图：人物图谱、设定百科、地点志、世界地图、势力版图、节奏曲线、境界轨迹、伏笔台账。拖动顶部进度条，整站内容跟着截断到你读到的那一章。
 
@@ -61,7 +61,7 @@
 
 | 疑点索引：每条带证据，可标已核实/误报 | 境界轨迹：多色相 + 同境界浅到深 |
 |---|---|
-| ![疑点索引](docs/screenshots/reader-anomalies.png) | ![境界轨迹](docs/screenshots/realm-colors.png) |
+| ![疑点索引：第 7 章埋下的线索，到第 500 章仍未再提，沉默 493 章](docs/screenshots/reader-anomalies-fanren.png) | ![境界轨迹：同境界内由浅到深，突破换色](docs/screenshots/realm-colors-fanren.png) |
 
 ![《凡人修仙传》多层地图：21 件手绘 PNG + 9 类 SVG 变量层](docs/screenshots/map-fanren.png)
 
