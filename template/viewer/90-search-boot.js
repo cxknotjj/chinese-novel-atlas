@@ -155,6 +155,15 @@
       (isolatedCount ? `<span style="color:#9A9488">另有 ${isolatedCount} 个角色无关系连线（见百科）</span>` : '');
   }
   renderLegend();
+  const legendToggle = document.getElementById('legendToggle');
+  const legendEl = document.getElementById('legend');
+  if (legendToggle && legendEl) {
+    legendToggle.addEventListener('click', () => {
+      const open = legendEl.classList.toggle('mobile-open');
+      legendToggle.setAttribute('aria-expanded', String(open));
+      legendToggle.textContent = open ? '收起图例' : '图例';
+    });
+  }
 
   /* ================= 启动 ================= */
   if (location.search.includes('debug=1')) {
